@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import { buildPayload, emptyFacts, applyEvent } from "../src/facts";
-import { type Clock, Observer, type Report, type Transport, type TransportResult, parseReading } from "../src/observer";
+import { applyEvent, buildPayload, emptyFacts, LIMITS } from "../src/facts";
+import { type Clock, type Estimate, Observer, type Report, type Transport, type TransportResult, parseReading } from "../src/observer";
+import { widgetLines } from "../src/widget";
 
 class FakeClock implements Clock {
 	time = 0;
@@ -43,7 +44,7 @@ function harness(transport: Transport, options = {}) {
 	const clock = new FakeClock();
 	const observer = new Observer(clock, { debounceMs: 1_000, maxWaitMs: 5_000, minIntervalMs: 10_000, maxCalls: 3, timeoutMs: 20_000, ...options });
 	const reports: Report[] = [];
-	observer.enable("s1", "@tiny → fake/model", transport, r => reports.push(r));
+	observer.enable("s1", transport, r => reports.push(r));
 	let n = 0;
 	const tool = (sessionId = "s1", isError = false) => {
 		n += 1;
@@ -152,7 +153,7 @@ describe("stale replies, switch and disable", () => {
 		await clock.advance(1_000);
 		// Switch: the old session's observer is replaced by an opt-in on s2.
 		const s2: Report[] = [];
-		observer.enable("s2", "@tiny → fake/model", async () => ({ text: '{"summary":"s2","blocker":null,"next":"unknown"}' }), r => s2.push(r));
+		observer.enable("s2", async () => ({ text: '{"summary":"s2","blocker":null,"next":"unknown"}' }), r => s2.push(r));
 		expect(held.signal()?.aborted).toBe(true);
 		held.release(); // late s1 reply
 		tool("s1"); // late s1 event
@@ -247,7 +248,7 @@ describe("privacy boundary", () => {
 			applyEvent(facts, { type: "tool_execution_start", toolCallId: `${i}`, toolName: "read", intent: "y".repeat(500) });
 			applyEvent(facts, { type: "tool_execution_end", toolCallId: `${i}`, toolName: "read", isError: i % 7 === 0 });
 		}
-		expect(buildPayload(facts).length).toBeLessThanOrEqual(3_000);
+		expect(buildPayload(facts).length).toBeLessThanOrEqual(LIMITS.payloadChars);
 	});
 
 	test("model output is sanitized and cannot claim percentages or ETAs", () => {
@@ -257,5 +258,107 @@ describe("privacy boundary", () => {
 		expect(r.summary).not.toContain("\u001b");
 		expect(r.blocker).toBeNull();
 		expect(r.next).toBe("unknown");
+	});
+});
+
+describe("progress estimate", () => {
+	test("a staged estimate keeps its scope and basis; percentages in the basis are removed", () => {
+		const r = parseReading(
+			'{"summary":"s","estimate":{"scope":"current prompt","stage":"Middle","basis":"2 of 5 steps done, about 40% through"},"blocker":null,"next":"step 3"}',
+			0,
+		);
+		expect(r.estimate.stage).toBe("middle");
+		expect(r.estimate.scope).toBe("current prompt");
+		expect(r.estimate.basis).toContain("2 of 5 steps done");
+		expect(r.estimate.basis).not.toContain("40%");
+	});
+
+	test("null, missing or invented stages are abstentions with a reason, never a guess", () => {
+		const abstain = parseReading('{"summary":"s","estimate":{"stage":null,"basis":"request names no deliverable"},"next":"unknown"}', 0);
+		expect(abstain.estimate).toEqual({ scope: "current prompt", stage: null, basis: "request names no deliverable" });
+		const invented = parseReading('{"summary":"s","estimate":{"stage":"75% done","basis":"3 of 4 files"},"next":"x"}', 0);
+		expect(invented.estimate.stage).toBeNull();
+		expect(invented.estimate.basis).toContain("unrecognized stage");
+		expect(parseReading('{"summary":"s","next":"x"}', 0).estimate).toEqual({ scope: "current prompt", stage: null, basis: "no reason given" });
+	});
+
+	test("without an observed request or plan the estimate is withheld whatever the model says", async () => {
+		const { clock, observer, tool } = harness(async () => ({
+			text: '{"summary":"s","estimate":{"scope":"current prompt","stage":"late","basis":"many tools ran"},"next":"x"}',
+		}));
+		tool();
+		await clock.advance(1_000);
+		expect(observer.report().reading?.estimate).toEqual({ scope: "current prompt", stage: null, basis: "no request or plan seen since opt-in" });
+	});
+
+	test("a new prompt restarts per-prompt counts, keeps the todo list and names the earlier request", () => {
+		const facts = emptyFacts();
+		applyEvent(facts, { type: "before_agent_start", prompt: "Build the parser" });
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "t", toolName: "todo", args: { op: "init", list: [{ items: ["lex", "parse"] }] } });
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "t", toolName: "todo", isError: true });
+		applyEvent(facts, { type: "before_agent_start", prompt: "Now add tests" });
+		const doc = JSON.parse(buildPayload(facts));
+		expect(doc.current_prompt.request).toBe("Now add tests");
+		expect(doc.current_prompt.number_since_opt_in).toBe(2);
+		expect(doc.current_prompt.tool_calls).toEqual({ finished: 0, failed: 0 });
+		expect(doc.current_prompt.recent_failures).toEqual([]);
+		expect(doc.todo_list.total).toBe(2);
+		expect(doc.earlier_request).toBe("Build the parser");
+	});
+});
+
+describe("widget content", () => {
+	const report = (estimate: Estimate | null): Report => {
+		const facts = emptyFacts();
+		applyEvent(facts, { type: "before_agent_start", prompt: "Do five steps" });
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "1", toolName: "bash", intent: "Running step 3" });
+		return {
+			phase: "on",
+			sessionId: "s1",
+			facts,
+			reading: estimate ? { summary: "steps 1-2 done", estimate, blocker: null, next: "step 4", at: 0 } : null,
+			calls: 1,
+			skippedUnchanged: 0,
+			staleDropped: 0,
+			failures: 0,
+			lastError: null,
+			inputTokens: 0,
+			outputTokens: 0,
+			inFlight: false,
+		};
+	};
+	const plain = (_tone: string, text: string) => text;
+
+	test("2-4 rows: stage up front, observed facts, labeled estimate and prediction; fits narrow widths", () => {
+		const r = report({ scope: "current prompt", stage: "middle", basis: "2 of 5 steps done" });
+		const wide = widgetLines(r, 5_000, 100, plain);
+		expect(wide).toHaveLength(4);
+		expect(wide[0]).toMatch(/^ PROGRESS {2}prompt · est: middle · 5s ago +@widget$/);
+		expect(wide[1]).toBe("  ├─ observed: 0 tools · now: bash: Running step 3");
+		expect(wide[2]).toBe("  ├─ estimate: 2 of 5 steps done");
+		expect(wide[3]).toBe("  └─ next? (pred): step 4");
+		for (const width of [40, 54, 80, 100]) {
+			for (const line of widgetLines(r, 5_000, width, plain)) expect(line.length).toBeLessThan(width);
+		}
+		const narrow = widgetLines(r, 5_000, 54, plain).join("\n");
+		expect(narrow).not.toContain("@widget");
+		expect(narrow).toContain("├─ obs: ");
+	});
+
+	test("an abstention says so with its reason; an unknown next step is left out; off draws nothing", () => {
+		const r = report({ scope: "current prompt", stage: null, basis: "no deliverable named" });
+		const lines = widgetLines({ ...r, reading: { ...r.reading!, next: "unknown" } }, 0, 100, plain);
+		expect(lines).toHaveLength(3);
+		expect(lines[0]).toContain("no estimate");
+		expect(lines[2]).toBe("  └─ estimate: not enough evidence to estimate — no deliverable named");
+		expect(widgetLines({ ...r, phase: "off" }, 0, 100, plain)).toEqual([]);
+	});
+
+	test("a reading older than 30 s while the agent works is marked stale; before any reading only facts show", () => {
+		const r = report({ scope: "current prompt", stage: "early", basis: "1 of 5" });
+		expect(widgetLines(r, 45_000, 100, plain)[0]).toContain("est: early · stale 45s");
+		const pending = widgetLines(report(null), 0, 100, plain);
+		expect(pending).toHaveLength(2);
+		expect(pending[0]).toContain("watching");
 	});
 });

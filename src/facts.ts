@@ -10,14 +10,15 @@
 // credential-looking tokens and length-capped.
 
 export const LIMITS = {
-	goal: 280,
+	goal: 500,
+	previousGoal: 160,
 	note: 160,
 	intent: 90,
 	todoText: 80,
 	todoItems: 12,
 	recent: 8,
 	failures: 3,
-	payloadChars: 3000,
+	payloadChars: 3500,
 } as const;
 
 export interface TodoItem {
@@ -27,8 +28,13 @@ export interface TodoItem {
 
 export interface Facts {
 	running: boolean;
+	/** Requests seen since opt-in; the current prompt is number `requests`. */
+	requests: number;
 	goal: string | null;
+	previousGoal: string | null;
+	/** The agent's todo list; it can outlive one prompt. */
 	todos: TodoItem[];
+	/** Counts and labels below are for the current prompt only. */
 	toolCalls: number;
 	failedCalls: number;
 	underway: Map<string, string>; // toolCallId -> label, tools started and not ended
@@ -41,7 +47,9 @@ export interface Facts {
 export function emptyFacts(): Facts {
 	return {
 		running: false,
+		requests: 0,
 		goal: null,
+		previousGoal: null,
 		todos: [],
 		toolCalls: 0,
 		failedCalls: 0,
@@ -149,7 +157,16 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 	switch (event.type) {
 		case "before_agent_start": {
 			const goal = clean(event.prompt, LIMITS.goal);
-			if (goal) facts.goal = goal;
+			if (!goal) return false;
+			// A new prompt: the per-prompt record starts over, the todo list carries on.
+			facts.previousGoal = facts.goal ? clean(facts.goal, LIMITS.previousGoal) : null;
+			facts.goal = goal;
+			facts.requests += 1;
+			facts.toolCalls = 0;
+			facts.failedCalls = 0;
+			facts.recent = [];
+			facts.failures = [];
+			facts.agentNote = null;
 			facts.running = true;
 			facts.retry = null;
 			return true;
@@ -212,23 +229,35 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 
 /** The bounded JSON document sent to the auxiliary model. */
 export function buildPayload(facts: Facts): string {
-	const done = facts.todos.filter(t => t.status === "done").length;
+	const live = facts.todos.filter(t => t.status !== "dropped");
 	const doc = {
-		state: facts.running ? "agent working" : "agent idle",
-		request: facts.goal,
-		todos: facts.todos.slice(-LIMITS.todoItems).map(t => `[${t.status}] ${t.text}`),
-		todo_counts: facts.todos.length ? { done, total: facts.todos.filter(t => t.status !== "dropped").length } : null,
-		tool_calls: { finished: facts.toolCalls, failed: facts.failedCalls },
-		running_now: [...facts.underway.values()].slice(-3),
-		recent_actions: [...facts.recent],
-		recent_failures: [...facts.failures],
-		retry_or_error: facts.retry,
-		latest_agent_message: facts.agentNote,
+		current_prompt: {
+			number_since_opt_in: facts.requests,
+			request: facts.goal,
+			turn: facts.running ? "agent working" : "turn ended (agent idle)",
+			tool_calls: { finished: facts.toolCalls, failed: facts.failedCalls },
+			running_now: [...facts.underway.values()].slice(-3),
+			recent_actions: [...facts.recent],
+			recent_failures: [...facts.failures],
+			retry_or_error: facts.retry,
+			latest_agent_message: facts.agentNote,
+		},
+		todo_list: live.length
+			? {
+					note: "the agent's own plan; it may span several prompts",
+					done: live.filter(t => t.status === "done").length,
+					total: live.length,
+					items: facts.todos.slice(-LIMITS.todoItems).map(t => `[${t.status}] ${t.text}`),
+				}
+			: null,
+		earlier_request: facts.previousGoal,
 	};
 	let json = JSON.stringify(doc);
-	while (json.length > LIMITS.payloadChars && (doc.recent_actions.length > 2 || doc.todos.length > 4)) {
-		if (doc.recent_actions.length > 2) doc.recent_actions.shift();
-		else doc.todos.shift();
+	const recent = doc.current_prompt.recent_actions;
+	const items = doc.todo_list?.items ?? [];
+	while (json.length > LIMITS.payloadChars && (recent.length > 2 || items.length > 4)) {
+		if (recent.length > 2) recent.shift();
+		else items.shift();
 		json = JSON.stringify(doc);
 	}
 	return json.length > LIMITS.payloadChars ? json.slice(0, LIMITS.payloadChars) : json;

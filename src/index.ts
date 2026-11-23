@@ -1,31 +1,35 @@
-// omp-session-progress: an opt-in, read-only progress observer for the current
-// OMP session. A cheap role model (@tiny by default) reads a bounded digest of
-// the session's events and its answer is shown in the status line and by
-// `/progress`. Nothing is sent into the observed session.
+// omp-session-progress: an opt-in, read-only progress widget for the current
+// OMP session. The @widget role model reads a bounded digest of the session's
+// events and estimates how far along the current prompt is; the reading is
+// drawn in a native TUI widget above the editor. Nothing is sent into the
+// observed session.
 
 import { appendFileSync } from "node:fs";
 import { completeSimple } from "@oh-my-pi/pi-ai";
+import { truncateToWidth } from "@oh-my-pi/pi-tui";
 import type { ObservedEvent } from "./facts";
-import { Observer, type Report, reportText, statusText, type Transport } from "./observer";
+import { Observer, type Report, type Transport } from "./observer";
+import { type Tone, widgetLines } from "./widget";
 
-const STATUS_KEY = "session-progress";
-const ROLES = ["tiny", "widget"] as const;
-type Role = (typeof ROLES)[number];
-const DEFAULT_ROLE: Role = "tiny";
-const MAX_OUTPUT_TOKENS = 200;
+const WIDGET_KEY = "session-progress";
+const ROLE = "@widget";
+const MAX_OUTPUT_TOKENS = 240;
+// Width used for the plain string-array widget of RPC hosts, which have no TUI width.
+const RPC_WIDTH = 78;
 
 // The slice of the OMP extension API this file uses (19.1.x).
 interface Model {
 	provider: string;
 	id: string;
-	name?: string;
-	reasoning?: boolean;
-	contextWindow?: number;
-	cost?: { input: number; output: number };
 }
+interface Component {
+	render(width: number): string[];
+	invalidate(): void;
+}
+type WidgetFactory = (tui: { requestRender?: () => void }, theme: { fg(tone: Tone, text: string): string }) => Component;
 interface Ui {
 	notify(message: string, type?: "info" | "warning" | "error"): void;
-	setStatus(key: string, text: string | undefined): void;
+	setWidget(key: string, content: WidgetFactory | string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }): void;
 	confirm(title: string, message: string): Promise<boolean>;
 }
 interface Ctx {
@@ -35,7 +39,7 @@ interface Ctx {
 	agent?: { kind: "main" | "sub" };
 	sessionManager: { getSessionId(): string; getBranch(): Array<{ type: string; message?: { role?: string; content?: unknown } }> };
 	modelRegistry: { getApiKey(model: Model, sessionId?: string, options?: { signal?: AbortSignal }): Promise<string | undefined> };
-	models: { resolve(spec: string): Model | undefined; current(): Model | undefined };
+	models: { resolve(spec: string): Model | undefined };
 	isIdle(): boolean;
 	setTimeout(fn: () => void, ms: number): unknown;
 	clearTimer(handle: unknown): void;
@@ -45,15 +49,7 @@ interface Api {
 	registerCommand(name: string, options: { description: string; handler: (args: string, ctx: Ctx) => Promise<void> | void }): void;
 }
 
-const label = (role: Role, model: Model) => `@${role} → ${model.provider}/${model.id}`;
-
-function describeModel(role: Role, model: Model | undefined): string {
-	if (!model) return `@${role}: does not resolve to an available model`;
-	const cost = model.cost ? `$${model.cost.input}/$${model.cost.output} per Mtok in/out` : "cost unknown";
-	return `${label(role, model)} (${model.name ?? model.id}; reasoning ${model.reasoning ? "yes" : "no"}; context ${model.contextWindow ?? "?"}; ${cost})`;
-}
-
-function makeTransport(ctx: Ctx, role: Role, model: Model, sessionId: string): Transport {
+function makeTransport(ctx: Ctx, model: Model, sessionId: string): Transport {
 	// A key of its own, so the observer never shares a provider cache lineage with the session.
 	const key = `${sessionId}:session-progress`;
 	const logPath = process.env.OMP_SESSION_PROGRESS_LOG;
@@ -73,11 +69,13 @@ function makeTransport(ctx: Ctx, role: Role, model: Model, sessionId: string): T
 		if (logPath) {
 			appendFileSync(
 				logPath,
-				`${JSON.stringify({ at: new Date(started).toISOString(), ms: Date.now() - started, role: `@${role}`, model: `${model.provider}/${model.id}`, sent: user, stopReason: reply.stopReason, error: reply.errorMessage, reply: text, usage: reply.usage })}\n`,
+				`${JSON.stringify({ at: new Date(started).toISOString(), ms: Date.now() - started, role: ROLE, model: `${model.provider}/${model.id}`, sent: user, stopReason: reply.stopReason, error: reply.errorMessage, reply: text, usage: reply.usage })}\n`,
 			);
 		}
 		if (reply.stopReason === "error" || reply.stopReason === "aborted") throw new Error(reply.errorMessage || reply.stopReason);
-		return { text, inputTokens: reply.usage?.input, outputTokens: reply.usage?.output };
+		// Anthropic reports cached prompt tokens separately from `input`.
+		const usage = reply.usage;
+		return { text, inputTokens: (usage?.input ?? 0) + (usage?.cacheRead ?? 0) + (usage?.cacheWrite ?? 0), outputTokens: usage?.output };
 	};
 }
 
@@ -101,11 +99,11 @@ function latestRequest(ctx: Ctx): string | undefined {
 }
 
 const PRIVACY = [
-	"Sent to the observer model on each refresh (about 1-3 KB, at most every 15 s while work happens, at most 30 calls):",
-	"• your latest request (first 280 chars), todo titles, tool names with the agent's one-line intent (or just the target file name), success/failure counts,",
-	"• provider retry/error notes and the first sentence of the agent's latest reply.",
+	"Sent to the observer model on each refresh (at most 3.5 KB, at most every 15 s while work happens, at most 30 calls):",
+	"• your current request (first 500 chars) and the previous one (160), todo titles, tool names with the agent's one-line intent",
+	"  (or just the target file name), per-prompt success/failure counts, provider retry/error notes, and the first sentence of the agent's latest reply.",
 	"Never sent: commands, other tool arguments, tool output, file contents, thinking, other sessions. Code spans and credential-like tokens are redacted.",
-	"The observer only displays its reading; it sends nothing into this session. Off again with /progress off; it never persists.",
+	"The widget only displays the observer's reading; nothing is sent into this session. /progress off removes it; it never persists.",
 ].join("\n");
 
 export default function sessionProgress(pi: Api) {
@@ -122,7 +120,7 @@ export default function sessionProgress(pi: Api) {
 
 	const turnOff = () => {
 		observer.disable();
-		ui?.setStatus(STATUS_KEY, undefined);
+		ui?.setWidget(WIDGET_KEY, undefined);
 		ui = null;
 		timerCtx = null;
 	};
@@ -164,61 +162,64 @@ export default function sessionProgress(pi: Api) {
 		});
 	}
 
+	const turnOn = async (ctx: Ctx) => {
+		if (!ctx.hasUI) {
+			ctx.ui.notify("The progress widget needs the interactive TUI.", "warning");
+			return;
+		}
+		// OMP's own role resolution; no other role and not the session's model.
+		const model = ctx.models.resolve(ROLE);
+		if (!model) {
+			ctx.ui.notify(`${ROLE} does not resolve to an available model; set modelRoles.widget (or smol, which it inherits).`, "error");
+			return;
+		}
+		const modelLabel = `${ROLE} → ${model.provider}/${model.id}`;
+		if (!(await ctx.ui.confirm(`Show a progress widget estimated by ${modelLabel}?`, PRIVACY))) return;
+		const sessionId = ctx.sessionManager.getSessionId();
+		ui = ctx.ui;
+		timerCtx = ctx;
+		const target = ctx.ui;
+		let latest: Report | null = null;
+		let requestRender: (() => void) | undefined;
+		if (ctx.mode === "tui") {
+			// A width-aware component: one physical row per line at any terminal width. Not focusable.
+			target.setWidget(
+				WIDGET_KEY,
+				(tui, theme) => {
+					requestRender = tui.requestRender?.bind(tui);
+					return {
+						render: width =>
+							latest ? widgetLines(latest, Date.now(), width, (tone, text) => theme.fg(tone, text)).map(line => truncateToWidth(line, width)) : [],
+						invalidate() {},
+					};
+				},
+				{ placement: "aboveEditor" },
+			);
+		}
+		const sink = (report: Report) => {
+			if (report.sessionId !== sessionId) return;
+			latest = report;
+			if (ctx.mode === "tui") requestRender?.();
+			// RPC hosts take plain string-array widgets.
+			else target.setWidget(WIDGET_KEY, widgetLines(report, Date.now(), RPC_WIDTH, (_tone, text) => text), { placement: "aboveEditor" });
+		};
+		observer.enable(sessionId, makeTransport(ctx, model, sessionId), sink);
+		// Context from before the opt-in is recorded but triggers no call; the next event does.
+		const request = latestRequest(ctx);
+		if (request) observer.seed(sessionId, { type: "before_agent_start", prompt: request });
+		observer.seed(sessionId, { type: ctx.isIdle() ? "agent_end" : "agent_start" });
+	};
+
 	pi.registerCommand("progress", {
-		description: "Opt-in progress observer for this session: /progress [on [tiny|widget] | off | roles]",
+		description: "Progress widget for this session, estimated by the @widget model: /progress [on | off]",
 		handler: async (args, ctx) => {
-			const [verb = "", roleArg] = args.trim().split(/\s+/);
 			if (!isMain(ctx)) return;
-			if (verb === "off") {
-				const wasOn = observer.phase !== "off";
-				turnOff();
-				ctx.ui.notify(wasOn ? "Session progress observer off." : "Session progress observer was already off.", "info");
-				return;
-			}
-			if (verb === "roles") {
-				ctx.ui.notify(ROLES.map(role => describeModel(role, ctx.models.resolve(`@${role}`))).join("\n"), "info");
-				return;
-			}
-			if (verb === "on") {
-				const role = (roleArg ?? DEFAULT_ROLE).replace(/^@/, "") as Role;
-				if (!ROLES.includes(role)) {
-					ctx.ui.notify(`Unknown observer role "${roleArg}". Use tiny or widget.`, "warning");
-					return;
-				}
-				if (!ctx.hasUI) {
-					ctx.ui.notify("The progress observer needs a UI to show its status.", "warning");
-					return;
-				}
-				const model = ctx.models.resolve(`@${role}`);
-				if (!model) {
-					// No fallback to another role or the session's model: the user picks the role.
-					ctx.ui.notify(`@${role} does not resolve to an available model; set modelRoles.${role} or pick the other role.`, "error");
-					return;
-				}
-				const consent = await ctx.ui.confirm(`Watch this session with ${label(role, model)}?`, PRIVACY);
-				if (!consent) {
-					ctx.ui.notify("Session progress observer stays off.", "info");
-					return;
-				}
-				const sessionId = ctx.sessionManager.getSessionId();
-				ui = ctx.ui;
-				timerCtx = ctx;
-				const sink = (report: Report) => {
-					if (report.sessionId === sessionId) ctx.ui.setStatus(STATUS_KEY, statusText(report));
-				};
-				observer.enable(sessionId, label(role, model), makeTransport(ctx, role, model, sessionId), sink);
-				// Context from before the opt-in is recorded but triggers no call; the next event does.
-				const request = latestRequest(ctx);
-				if (request) observer.seed(sessionId, { type: "before_agent_start", prompt: request });
-				observer.seed(sessionId, { type: ctx.isIdle() ? "agent_end" : "agent_start" });
-				ctx.ui.notify(`Session progress observer on (${label(role, model)}). /progress shows the report, /progress off stops it.`, "info");
-				return;
-			}
-			if (verb !== "" && verb !== "show") {
-				ctx.ui.notify("Usage: /progress [on [tiny|widget] | off | roles | show]", "warning");
-				return;
-			}
-			ctx.ui.notify(reportText(observer.report(), Date.now()), "info");
+			const verb = args.trim();
+			if (verb === "off" || (verb === "" && observer.phase !== "off")) turnOff();
+			else if (verb === "on" || verb === "") {
+				// From off, or to restart after a pause or the call cap.
+				if (observer.phase !== "on") await turnOn(ctx);
+			} else ctx.ui.notify("Usage: /progress [on | off]", "warning");
 		},
 	});
 }

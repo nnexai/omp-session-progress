@@ -1,25 +1,26 @@
 #!/usr/bin/env bun
-// Live smoke test against the installed `omp`, in a disposable session:
-// a temporary workspace and session directory, no ambient extensions, skills,
-// rules, context files, memory or autolearn. It loads this extension with -e,
-// opts in with /progress on, runs a synthetic multi-phase task on the primary
-// model (@smol by default), and records every RPC frame plus every observer
-// call (what was sent to the observer model and what it answered).
+// Live check against the installed `omp`, in disposable sessions: a temporary
+// workspace and session directory, no ambient extensions, skills, rules,
+// context files, memory, autolearn or advisor. It drives `omp --mode rpc`,
+// whose extension UI carries the widget as plain lines, so every widget update
+// is recorded with its time. Two prompts:
+//   1. a constrained five-phase task with a todo list (the estimate should move
+//      through intermediate stages before the run ends), and
+//   2. after /new and a fresh opt-in, an underspecified request (the observer
+//      should abstain: "not enough evidence to estimate").
+// Every observer call (what was sent to @widget and what it answered) is logged.
 //
-// Usage: bun scripts/live-smoke.ts [--primary @smol] [--role tiny|widget]
-// Evidence: evidence/live-<timestamp>/{frames.jsonl,observer-calls.jsonl,summary.md}
+// Usage: bun scripts/live-smoke.ts [--primary @tiny]
+// Evidence: evidence/live-<timestamp>/{summary.md,observer-calls.jsonl,frames.jsonl,...}
 
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync, appendFileSync, existsSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const argv = process.argv.slice(2);
-const opt = (name: string, fallback: string) => {
-	const i = argv.indexOf(`--${name}`);
-	return i >= 0 && argv[i + 1] ? argv[i + 1]! : fallback;
-};
-const primary = opt("primary", "@smol");
-const role = opt("role", "tiny");
+const primaryIndex = argv.indexOf("--primary");
+// The primary agent runs on a different role than the observer, so the two never share a model.
+const primary = primaryIndex >= 0 && argv[primaryIndex + 1] ? argv[primaryIndex + 1]! : "@tiny";
 
 const project = resolve(import.meta.dir, "..");
 const stamp = new Date().toISOString().replace(/[:.]/g, "-");
@@ -48,7 +49,7 @@ const args = [
 	"--max-cost", "1",
 ];
 
-const TASK = [
+const FIXTURE = [
 	"This is a synthetic test task in a scratch directory. Work in phases and track them with the todo tool:",
 	"init the list first and mark each phase done as you finish it.",
 	"1. Create data.txt containing the numbers 1 to 5, one per line.",
@@ -58,6 +59,7 @@ const TASK = [
 	"5. Reply with one sentence stating the sum.",
 	"Do nothing else.",
 ].join("\n");
+const AMBIGUOUS = "Have a look around this folder and tidy things up a bit if it seems worth it.";
 
 interface Frame {
 	t: number;
@@ -109,7 +111,7 @@ const waitFor = (pred: (f: Frame) => boolean, ms: number, what: string, since = 
 			const entry = { t: Date.now() - t0, frame };
 			frames.push(entry);
 			if (frame.type !== "message_update") appendFileSync(framesPath, `${JSON.stringify(entry)}\n`);
-			// Consent dialog of /progress on: the smoke test opts in explicitly.
+			// The consent dialog of /progress on: this check opts in explicitly.
 			if (frame.type === "extension_ui_request" && frame.method === "confirm") {
 				send({ type: "extension_ui_response", id: frame.id, confirmed: true });
 			}
@@ -123,78 +125,73 @@ const waitFor = (pred: (f: Frame) => boolean, ms: number, what: string, since = 
 	}
 })();
 
-const ui = (method: string, text?: string) => (f: Frame) =>
-	f.frame.type === "extension_ui_request" && f.frame.method === method && (text === undefined || String(f.frame.message ?? f.frame.statusText ?? "").includes(text));
+const isWidget = (f: Frame) => f.frame.type === "extension_ui_request" && f.frame.method === "setWidget" && f.frame.widgetKey === "session-progress";
+const widgetShown = (f: Frame) => isWidget(f) && Array.isArray(f.frame.widgetLines);
+const widgetCleared = (f: Frame) => isWidget(f) && !Array.isArray(f.frame.widgetLines);
 const response = (id: string) => (f: Frame) => f.frame.type === "response" && f.frame.id === id;
 const steps: string[] = [];
 const step = (s: string) => {
 	steps.push(`${((Date.now() - t0) / 1000).toFixed(1)}s ${s}`);
 	console.log(steps[steps.length - 1]);
 };
+const readCalls = () =>
+	existsSync(callsPath) ? readFileSync(callsPath, "utf8").trim().split("\n").filter(Boolean).map(l => JSON.parse(l)) : [];
+
+interface Run {
+	name: string;
+	optIn: number;
+	start: number;
+	end: number;
+	sessionFile?: string;
+	messages: Array<{ role: string; content?: unknown }>;
+}
+const runs: Run[] = [];
+
+async function optIn(id: string) {
+	const mark = frames.length;
+	const at = Date.now() - t0;
+	send({ id, type: "prompt", message: "/progress on" });
+	await waitFor(widgetShown, 30_000, "widget after opt-in", mark);
+	step("opted in; widget shown");
+	return at;
+}
+
+async function runPrompt(name: string, message: string, optInAt: number) {
+	const mark = frames.length;
+	send({ id: name, type: "prompt", message });
+	const start = await waitFor(f => f.frame.type === "agent_start", 60_000, `${name} agent_start`, mark);
+	const end = await waitFor(f => f.frame.type === "agent_end", 8 * 60_000, `${name} agent_end`, mark);
+	step(`${name}: agent ran ${((end.t - start.t) / 1000).toFixed(1)} s`);
+	// The observer refreshes once more after agent_end (subject to its 15 s spacing); wait for that reply.
+	for (let i = 0; i < 80 && !readCalls().some(c => Date.parse(c.at) - t0 > end.t); i++) await Bun.sleep(500);
+	await Bun.sleep(300);
+	send({ id: `${name}-state`, type: "get_state" });
+	const state = (await waitFor(response(`${name}-state`), 30_000, "state")).frame.data;
+	send({ id: `${name}-messages`, type: "get_messages" });
+	const messages = (await waitFor(response(`${name}-messages`), 30_000, "messages")).frame.data?.messages ?? [];
+	runs.push({ name, optIn: optInAt, start: start.t, end: end.t, sessionFile: state?.sessionFile, messages });
+	if (state?.sessionFile && existsSync(state.sessionFile)) writeFileSync(join(evidence, `session-${name}.jsonl`), readFileSync(state.sessionFile));
+}
 
 let failure: string | null = null;
 try {
 	await waitFor(f => f.frame.type === "ready", 60_000, "ready");
 	step("omp ready");
+	await runPrompt("fixture", FIXTURE, await optIn("on-1"));
 
-	send({ id: "roles", type: "prompt", message: "/progress roles" });
-	const roles = await waitFor(ui("notify", "@tiny"), 30_000, "roles notify");
-	step(`roles:\n${roles.frame.message}`);
-
+	// Session switch while on: the widget must be removed and the new session starts off.
 	let mark = frames.length;
-	send({ id: "on", type: "prompt", message: `/progress on ${role}` });
-	const on = await waitFor(ui("notify", "observer on"), 30_000, "opt-in notify", mark);
-	step(on.frame.message);
-
-	mark = frames.length;
-	send({ id: "task", type: "prompt", message: TASK });
-	await waitFor(f => f.frame.type === "agent_start", 60_000, "agent_start", mark);
-	step("agent started");
-	const end = await waitFor(f => f.frame.type === "agent_end", 8 * 60_000, "agent_end", mark);
-	step("agent ended");
-	// The observer refreshes once more after agent_end (subject to its 15 s spacing); wait for that reply.
-	const endAt = t0 + end.t;
-	const finalCall = async () => {
-		for (let i = 0; i < 80; i++) {
-			const lines = existsSync(callsPath) ? readFileSync(callsPath, "utf8").trim().split("\n").filter(Boolean) : [];
-			if (lines.some(l => Date.parse(JSON.parse(l).at) > endAt)) return true;
-			await Bun.sleep(500);
-		}
-		return false;
-	};
-	step((await finalCall()) ? "final post-run observer call completed" : "no post-run observer call within 40 s");
-	await Bun.sleep(300); // let its setStatus frame arrive
-
-	mark = frames.length;
-	send({ id: "show", type: "prompt", message: "/progress" });
-	const report = await waitFor(ui("notify", "Session progress ("), 30_000, "report", mark);
-	step(`report:\n${report.frame.message}`);
-
-	send({ id: "state", type: "get_state" });
-	const state = (await waitFor(response("state"), 30_000, "state")).frame.data;
-	send({ id: "messages", type: "get_messages" });
-	const messages = (await waitFor(response("messages"), 30_000, "messages")).frame.data?.messages ?? [];
-	writeFileSync(join(evidence, "messages.json"), JSON.stringify(messages, null, 2));
-	step(`session ${state?.sessionId} file ${state?.sessionFile}; ${messages.length} messages`);
-
-	// Session switch while on: the status must be cleared and the new session must start off.
-	mark = frames.length;
-	send({ id: "on2", type: "prompt", message: `/progress on ${role}` });
-	await waitFor(ui("notify", "observer on"), 30_000, "second opt-in", mark);
-	mark = frames.length;
 	send({ id: "new", type: "new_session" });
 	await waitFor(response("new"), 30_000, "new_session");
-	await waitFor(f => ui("setStatus")(f) && (f.frame.statusText === undefined || f.frame.statusText === null), 10_000, "status cleared", mark);
-	step("new_session cleared the status");
-	mark = frames.length;
-	send({ id: "show2", type: "prompt", message: "/progress" });
-	const after = await waitFor(ui("notify", "observer is off"), 30_000, "off after switch", mark);
-	step(`after switch: ${after.frame.message}`);
+	await waitFor(widgetCleared, 10_000, "widget cleared on new_session", mark);
+	step("new_session removed the widget");
 
-	writeFileSync(join(evidence, "state.json"), JSON.stringify(state, null, 2));
-	if (state?.sessionFile && existsSync(state.sessionFile)) {
-		writeFileSync(join(evidence, "session-file-copy.jsonl"), readFileSync(state.sessionFile));
-	}
+	await runPrompt("ambiguous", AMBIGUOUS, await optIn("on-2"));
+
+	mark = frames.length;
+	send({ id: "off", type: "prompt", message: "/progress off" });
+	await waitFor(widgetCleared, 10_000, "widget cleared on /progress off", mark);
+	step("/progress off removed the widget");
 } catch (error) {
 	failure = error instanceof Error ? error.message : String(error);
 	step(`FAILED: ${failure}`);
@@ -204,45 +201,45 @@ try {
 	proc.kill();
 }
 
-// Summary: timeline of tool events and status updates, observer calls, transcript check.
-const calls = existsSync(callsPath)
-	? readFileSync(callsPath, "utf8").trim().split("\n").filter(Boolean).map(l => JSON.parse(l))
-	: [];
-const agentStart = frames.find(f => f.frame.type === "agent_start")?.t ?? 0;
-const agentEnd = frames.find(f => f.frame.type === "agent_end")?.t ?? 0;
-const timeline = frames
-	.filter(
-		f =>
-			["tool_execution_start", "tool_execution_end", "agent_start", "agent_end"].includes(f.frame.type) ||
-			(f.frame.type === "extension_ui_request" && f.frame.method === "setStatus"),
-	)
-	.map(f => {
-		const s = ((f.t - agentStart) / 1000).toFixed(1).padStart(6);
-		const x = f.frame;
-		if (x.type === "tool_execution_start") return `| ${s} | tool start | ${x.toolName}: ${x.intent ?? ""} |`;
-		if (x.type === "tool_execution_end") return `| ${s} | tool end | ${x.toolName}${x.isError ? " (error)" : ""} |`;
-		if (x.type === "extension_ui_request") return `| ${s} | **status** | ${x.statusText ?? "(cleared)"} |`;
-		return `| ${s} | ${x.type} | |`;
+// ---- Summary ----------------------------------------------------------------
+const calls = readCalls();
+const notifies = frames.filter(f => f.frame.type === "extension_ui_request" && f.frame.method === "notify");
+const sec = (ms: number) => (ms / 1000).toFixed(1);
+const assistantText = (m: { role: string; content?: unknown }) =>
+	m.role === "assistant" && Array.isArray(m.content)
+		? m.content.filter((b: any) => b?.type === "text").map((b: any) => b.text).join(" ").trim()
+		: "";
+
+function callRows(run: Run) {
+	// Each opt-in starts a fresh observer: its calls are the ones made before the next opt-in.
+	const until = runs[runs.indexOf(run) + 1]?.optIn ?? Number.POSITIVE_INFINITY;
+	const mine = calls.filter(c => {
+		const at = Date.parse(c.at) - t0;
+		return at >= run.optIn && at < until;
 	});
-const sessionCopy = join(evidence, "session-file-copy.jsonl");
-const sessionText = existsSync(sessionCopy) ? readFileSync(sessionCopy, "utf8") : "";
-const leaks = ["observed session data", "You watch another coding agent", "session-progress", "\"summary\":"].filter(m => sessionText.includes(m));
-const messagesJson = existsSync(join(evidence, "messages.json")) ? JSON.parse(readFileSync(join(evidence, "messages.json"), "utf8")) : [];
-const userMessages = messagesJson.filter((m: { role: string }) => m.role === "user").length;
-const midRun = calls.filter(c => {
-	const at = Date.parse(c.at) - t0;
-	return at > agentStart && at < agentEnd;
-}).length;
+	return mine.map((c, i) => {
+		const sent = JSON.parse(c.sent);
+		let reply: any = {};
+		try {
+			reply = JSON.parse(c.reply.slice(c.reply.indexOf("{"), c.reply.lastIndexOf("}") + 1));
+		} catch {}
+		const todo = sent.todo_list ? `${sent.todo_list.done}/${sent.todo_list.total}` : "none";
+		const stage = reply.estimate?.stage ?? "**not enough evidence**";
+		return `| ${i + 1} | ${sec(Date.parse(c.at) - t0 - run.start)} | ${sent.current_prompt.turn} | ${todo} | ${sent.current_prompt.tool_calls.finished} (${sent.current_prompt.tool_calls.failed} failed) | ${stage} (${reply.estimate?.scope ?? "?"}) | ${reply.estimate?.basis ?? ""} | ${reply.next ?? c.error ?? ""} |`;
+	});
+}
+
+const widgetSnapshots = frames
+	.filter(isWidget)
+	.map(f => `t=${sec(f.t)}s\n${Array.isArray(f.frame.widgetLines) ? f.frame.widgetLines.join("\n") : "(widget removed)"}`);
 
 const md = [
-	`# Live smoke ${stamp}`,
+	`# Live check ${stamp}`,
 	"",
-	`- omp: ${Bun.spawnSync(["omp", "--version"]).stdout.toString().trim()}; primary model: ${primary}; observer role: @${role}`,
+	`- omp: ${Bun.spawnSync(["omp", "--version"]).stdout.toString().trim()}; primary agent: ${primary}; observer: @widget`,
 	`- result: ${failure ? `FAILED: ${failure}` : "passed"}`,
-	`- observer calls: ${calls.length} (${midRun} while the agent was running, agent ran ${((agentEnd - agentStart) / 1000).toFixed(1)} s)`,
-	`- observer models used: ${[...new Set(calls.map(c => c.model))].join(", ") || "none"}`,
-	`- tokens: ${calls.reduce((a, c) => a + (c.usage?.input ?? 0), 0)} input / ${calls.reduce((a, c) => a + (c.usage?.output ?? 0), 0)} output`,
-	`- primary transcript: ${messagesJson.length} messages, ${userMessages} user message(s); observer markers in session file: ${leaks.length ? leaks.join(", ") : "none"}`,
+	`- observer models used: ${[...new Set(calls.map(c => c.model))].join(", ") || "none"}; ${calls.length} calls; ${calls.reduce((a, c) => a + (c.usage?.input ?? 0) + (c.usage?.cacheRead ?? 0) + (c.usage?.cacheWrite ?? 0), 0)} input (incl. cached) / ${calls.reduce((a, c) => a + (c.usage?.output ?? 0), 0)} output tokens`,
+	`- extension notify frames (chat/toast output): ${notifies.length}`,
 	`- scratch dir (disposable): ${scratch}`,
 	"",
 	"## Steps",
@@ -251,27 +248,30 @@ const md = [
 	...steps,
 	"```",
 	"",
-	"## Timeline (seconds from agent_start)",
+	...runs.flatMap(run => {
+		const sessionText = existsSync(join(evidence, `session-${run.name}.jsonl`)) ? readFileSync(join(evidence, `session-${run.name}.jsonl`), "utf8") : "";
+		const markers = ["observed session data", "how far along", "session-progress", '"estimate"'].filter(m => sessionText.includes(m));
+		const last = [...run.messages].reverse().map(assistantText).find(Boolean) ?? "";
+		return [
+			`## Prompt "${run.name}": agent ran ${sec(run.end - run.start)} s`,
+			"",
+			"Observer readings (t = seconds from agent_start; observed columns are what was sent):",
+			"",
+			"| # | t | turn | todos done | tool calls | estimate (scope) | basis | likely next |",
+			"|---|---|---|---|---|---|---|---|",
+			...callRows(run),
+			"",
+			`What the agent finally did: ${last ? `"${last.slice(0, 300)}"` : "(no reply text)"}`,
+			"",
+			`Transcript: ${run.messages.length} messages, ${run.messages.filter(m => m.role === "user").length} user message(s); observer markers in the session file: ${markers.length ? markers.join(", ") : "none"}`,
+			"",
+		];
+	}),
+	"## Widget updates (as sent to the RPC host)",
 	"",
-	"| t | event | detail |",
-	"|---|---|---|",
-	...timeline,
-	"",
-	"## Observer calls: observed (sent) vs predicted (reply)",
-	"",
-	...calls.flatMap((c, i) => [
-		`### Call ${i + 1} at ${((Date.parse(c.at) - t0 - agentStart) / 1000).toFixed(1)} s, ${c.ms} ms, ${c.model}, stop ${c.stopReason}`,
-		"",
-		"Sent:",
-		"```json",
-		JSON.stringify(JSON.parse(c.sent), null, 1),
-		"```",
-		"Reply:",
-		"```",
-		c.reply || c.error,
-		"```",
-		"",
-	]),
+	"```",
+	widgetSnapshots.join("\n\n"),
+	"```",
 ].join("\n");
 writeFileSync(join(evidence, "summary.md"), md);
 console.log(`\nEvidence: ${evidence}`);

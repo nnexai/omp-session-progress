@@ -1,7 +1,8 @@
 node_modules/
-# Raw smoke-test output (frames, session copies, stderr); summaries and observer-call logs are kept.
+# Raw check output (frames, session copies, stderr); summaries, screen captures and observer-call logs are kept.
 evidence/**/frames.jsonl
 evidence/**/messages.json
-evidence/**/session-file-copy.jsonl
+evidence/**/session-*.jsonl
+evidence/**/20*.jsonl
 evidence/**/state.json
 evidence/**/stderr.log
