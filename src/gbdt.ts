@@ -210,7 +210,9 @@ function buildHistTree(
 	}
 	return [
 		bestF,
-		round4(thresholds[bestF]![bestBin]!),
+		// Equality belongs to the left bin. Rounding a log-valued cut down sends
+		// every training observation at the boundary to the opposite leaf at runtime.
+		thresholds[bestF]![bestBin]!,
 		buildHistTree(thresholds, binned, grad, resid, wt, leftIdx, depth + 1, maxDepth, minLeaf, l2, feats, quantile),
 		buildHistTree(thresholds, binned, grad, resid, wt, rightIdx, depth + 1, maxDepth, minLeaf, l2, feats, quantile),
 	];
