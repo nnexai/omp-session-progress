@@ -2,13 +2,12 @@
 // index.ts draws these lines in a native TUI widget above the editor
 // (ctx.ui.setWidget); RPC hosts get the same lines unstyled.
 //
-// Layout (2-4 rows, borderless, like OMP's TODO block):
-//    PROGRESS  prompt · est: middle · 8s ago                    @widget
+// Layout (2-3 rows, borderless, like OMP's TODO block):
+//    PROGRESS  ~40% · ~25 more tool calls · 8s ago               @widget
 //     ├─ observed: todos 2/5 · 6 tools · now: bash: Running sum script
-//     ├─ estimate: 2 of 5 requested steps done; sum.sh running
 //     └─ next? (pred): Note the sum, then run the missing-file check
-// "observed" is counted from events; "estimate" and "next?" come from the
-// @widget model and are labeled as such. No pips or bars: stages are words.
+// "observed" is counted from events; the "~" guess and "next?" come from the
+// @widget model and are labeled as such.
 
 import type { Report } from "./observer";
 
@@ -70,14 +69,17 @@ export function widgetLines(report: Report, now: number, width: number, paint: P
 	const stale = !!r && (report.phase !== "on" || (f.running && now - r.at > STALE_MS));
 	const predicted: Tone = stale ? "dim" : "muted";
 
-	// Header: scope, stage or abstention, freshness.
-	const header: Segment[] = [["accent", "PROGRESS"]];
-	const scope = r?.estimate.scope === "session" ? "session" : narrow ? null : "prompt";
-	header.push([null, scope ? `  ${scope} · ` : " · "]);
+	// Header: the guess (share done, tool calls expected to remain), freshness.
+	const header: Segment[] = [["accent", "PROGRESS"], [null, narrow ? " " : "  "]];
 	if (!r) header.push(["muted", report.inFlight ? "estimating…" : "watching"]);
 	else {
 		if (!f.running) header.push([null, "turn ended · "]);
-		header.push(r.estimate.stage ? ["accent", `est: ${r.estimate.stage}`] : ["muted", "no estimate"]);
+		const { progress, remaining } = r.estimate;
+		header.push(
+			progress === null || remaining === null
+				? ["muted", "no request seen yet"]
+				: ["accent", `~${Math.round(progress * 100)}% · ~${remaining} more tool call${remaining === 1 ? "" : "s"}${narrow ? "" : " expected"}`],
+		);
 		if (r.blocker) header.push(["warning", " · ⚠ blocked"]);
 		header.push([stale ? "warning" : "muted", ` · ${stale && report.phase === "on" ? `stale ${age(now - r.at).replace(" ago", "")}` : age(now - r.at)}`]);
 		if (report.inFlight) header.push(["muted", " · updating…"]);
@@ -85,23 +87,11 @@ export function widgetLines(report: Report, now: number, width: number, paint: P
 	if (report.phase === "paused") header.push(["warning", ` · paused after ${report.failures} errors, /progress on retries`]);
 	if (report.phase === "capped") header.push(["warning", " · call cap reached"]);
 
-	// Body: observed facts, then the model's estimate or blocker, then its next-step guess.
+	// Body: observed facts, then a blocker if any, then the next-step guess.
 	const label = (wide: string, short: string) => (narrow ? short : wide);
 	const body: Segment[][] = [[["dim", label("observed: ", "obs: ")], [null, observed(report)]]];
-	if (r) {
-		const estimate: Segment[] = r.estimate.stage
-			? [["dim", label("estimate: ", "est: ")], [predicted, r.estimate.basis]]
-			: [["dim", label("estimate: ", "est: ")], [predicted, `not enough evidence to estimate — ${r.estimate.basis}`]];
-		const next: Segment[] | null =
-			r.next === "unknown" ? null : [["dim", label("next? (pred): ", "next?: ")], [predicted, r.next]];
-		if (r.blocker) {
-			body.push([["warning", label("blocker (est): ", "blocker?: ")], [stale ? "dim" : "warning", r.blocker]]);
-			body.push(next ?? estimate);
-		} else {
-			body.push(estimate);
-			if (next) body.push(next);
-		}
-	}
+	if (r?.blocker) body.push([["warning", label("blocker (est): ", "blocker?: ")], [stale ? "dim" : "warning", r.blocker]]);
+	if (r && r.next !== "unknown") body.push([["dim", label("next? (pred): ", "next?: ")], [predicted, r.next]]);
 
 	const max = Math.max(10, width - 1);
 	const lines: Segment[][] = [[[null, " "], ...header]];

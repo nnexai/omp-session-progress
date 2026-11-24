@@ -4,10 +4,10 @@
 // context files, memory, autolearn or advisor. It drives `omp --mode rpc`,
 // whose extension UI carries the widget as plain lines, so every widget update
 // is recorded with its time. Two prompts:
-//   1. a constrained five-phase task with a todo list (the estimate should move
-//      through intermediate stages before the run ends), and
+//   1. a constrained five-phase task with a todo list (the share done should
+//      rise and the calls expected to remain should fall during the run), and
 //   2. after /new and a fresh opt-in, an underspecified request (the observer
-//      should abstain: "not enough evidence to estimate").
+//      still guesses; nothing is withheld once a request is seen).
 // Every observer call (what was sent to @widget and what it answered) is logged.
 //
 // Usage: bun scripts/live-smoke.ts [--primary @tiny]
@@ -224,8 +224,8 @@ function callRows(run: Run) {
 			reply = JSON.parse(c.reply.slice(c.reply.indexOf("{"), c.reply.lastIndexOf("}") + 1));
 		} catch {}
 		const todo = sent.todo_list ? `${sent.todo_list.done}/${sent.todo_list.total}` : "none";
-		const stage = reply.estimate?.stage ?? "**not enough evidence**";
-		return `| ${i + 1} | ${sec(Date.parse(c.at) - t0 - run.start)} | ${sent.current_prompt.turn} | ${todo} | ${sent.current_prompt.tool_calls.finished} (${sent.current_prompt.tool_calls.failed} failed) | ${stage} (${reply.estimate?.scope ?? "?"}) | ${reply.estimate?.basis ?? ""} | ${reply.next ?? c.error ?? ""} |`;
+		const guess = reply.progress_pct === undefined ? "**unparsable**" : `${reply.progress_pct}% · ${reply.remaining_tool_calls} left`;
+		return `| ${i + 1} | ${sec(Date.parse(c.at) - t0 - run.start)} | ${sent.current_prompt.turn} | ${todo} | ${sent.current_prompt.tool_calls.finished} (${sent.current_prompt.tool_calls.failed} failed) | ${guess} | ${reply.basis ?? ""} | ${reply.next ?? c.error ?? ""} |`;
 	});
 }
 
@@ -250,14 +250,14 @@ const md = [
 	"",
 	...runs.flatMap(run => {
 		const sessionText = existsSync(join(evidence, `session-${run.name}.jsonl`)) ? readFileSync(join(evidence, `session-${run.name}.jsonl`), "utf8") : "";
-		const markers = ["observed session data", "how far along", "session-progress", '"estimate"'].filter(m => sessionText.includes(m));
+		const markers = ["observed session data", "how far along", "session-progress", '"progress_pct"'].filter(m => sessionText.includes(m));
 		const last = [...run.messages].reverse().map(assistantText).find(Boolean) ?? "";
 		return [
 			`## Prompt "${run.name}": agent ran ${sec(run.end - run.start)} s`,
 			"",
 			"Observer readings (t = seconds from agent_start; observed columns are what was sent):",
 			"",
-			"| # | t | turn | todos done | tool calls | estimate (scope) | basis | likely next |",
+			"| # | t | turn | todos done | tool calls | model guess (before calibration) | basis | likely next |",
 			"|---|---|---|---|---|---|---|---|",
 			...callRows(run),
 			"",

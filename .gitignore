@@ -6,3 +6,6 @@ evidence/**/session-*.jsonl
 evidence/**/20*.jsonl
 evidence/**/state.json
 evidence/**/stderr.log
+
+# Ratchet eval transcripts (real session text); never committed.
+.omp/ratchet/**/traces/

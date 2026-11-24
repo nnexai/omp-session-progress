@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { applyEvent, buildPayload, emptyFacts, LIMITS } from "../src/facts";
-import { type Clock, type Estimate, Observer, type Report, type Transport, type TransportResult, parseReading } from "../src/observer";
+import { type Clock, type Estimate, Observer, type Report, type Transport, type TransportResult, parseReading, readingFor } from "../src/observer";
 import { widgetLines } from "../src/widget";
 
 class FakeClock implements Clock {
@@ -38,7 +38,7 @@ const flush = async () => {
 	for (let i = 0; i < 10; i++) await Promise.resolve();
 };
 
-const REPLY = '{"summary":"tests written, running suite","blocker":null,"next":"fix failing test"}';
+const REPLY = '{"basis":"tests written, running suite","progress_pct":40,"remaining_tool_calls":6,"blocker":null,"next":"fix failing test"}';
 
 function harness(transport: Transport, options = {}) {
 	const clock = new FakeClock();
@@ -182,7 +182,7 @@ describe("stale replies, switch and disable", () => {
 		await clock.advance(1_000);
 		// Switch: the old session's observer is replaced by an opt-in on s2.
 		const s2: Report[] = [];
-		observer.enable("s2", async () => ({ text: '{"summary":"s2","blocker":null,"next":"unknown"}' }), r => s2.push(r));
+		observer.enable("s2", async () => ({ text: '{"basis":"s2","progress_pct":10,"remaining_tool_calls":3,"blocker":null,"next":"unknown"}' }), r => s2.push(r));
 		expect(held.signal()?.aborted).toBe(true);
 		held.release(); // late s1 reply
 		tool("s1"); // late s1 event
@@ -221,7 +221,7 @@ describe("provider failures", () => {
 		tool();
 		await clock.advance(11_000);
 		expect(observer.report().failures).toBe(1);
-		expect(observer.report().reading?.summary).toBe("tests written, running suite");
+		expect(observer.report().reading?.next).toBe("fix failing test");
 	});
 });
 
@@ -280,44 +280,45 @@ describe("privacy boundary", () => {
 		expect(buildPayload(facts).length).toBeLessThanOrEqual(LIMITS.payloadChars);
 	});
 
-	test("model output is sanitized and cannot claim percentages or ETAs", () => {
-		const r = parseReading('{"summary":"\\u001b[31m80% done, ETA 5 minutes left","blocker":"none","next":"unknown"}', 0);
-		expect(r.summary).not.toContain("80%");
-		expect(r.summary).not.toContain("ETA");
-		expect(r.summary).not.toContain("\u001b");
+	test("model output is sanitized and cannot claim ETAs", () => {
+		const r = parseReading('{"basis":"\\u001b[31mhalf done, ETA 5 minutes left","progress_pct":50,"remaining_tool_calls":4,"blocker":"none","next":"unknown"}', 0);
+		expect(r.estimate.basis).not.toContain("ETA");
+		expect(r.estimate.basis).not.toContain("5 minutes left");
+		expect(r.estimate.basis).not.toContain("\u001b");
 		expect(r.blocker).toBeNull();
 		expect(r.next).toBe("unknown");
 	});
 });
 
 describe("progress estimate", () => {
-	test("a staged estimate keeps its scope and basis; percentages in the basis are removed", () => {
-		const r = parseReading(
-			'{"summary":"s","estimate":{"scope":"current prompt","stage":"Middle","basis":"2 of 5 steps done, about 40% through"},"blocker":null,"next":"step 3"}',
-			0,
-		);
-		expect(r.estimate.stage).toBe("middle");
-		expect(r.estimate.scope).toBe("current prompt");
-		expect(r.estimate.basis).toContain("2 of 5 steps done");
-		expect(r.estimate.basis).not.toContain("40%");
+	test("share done and remaining tool calls are read as numbers; a reply without them is malformed", () => {
+		const r = parseReading('{"basis":"2 of 5 steps done","progress_pct":"40","remaining_tool_calls":7.6,"blocker":null,"next":"step 3"}', 0);
+		expect(r.estimate).toEqual({ progress: 0.4, remaining: 8, basis: "2 of 5 steps done" });
+		expect(parseReading('{"basis":"b","progress_pct":250,"remaining_tool_calls":1,"next":"x"}', 0).estimate.progress).toBe(1);
+		expect(() => parseReading('{"basis":"b","progress_pct":null,"remaining_tool_calls":3,"next":"x"}', 0)).toThrow();
+		expect(() => parseReading('{"basis":"b","progress_pct":30,"remaining_tool_calls":-2,"next":"x"}', 0)).toThrow();
 	});
 
-	test("null, missing or invented stages are abstentions with a reason, never a guess", () => {
-		const abstain = parseReading('{"summary":"s","estimate":{"stage":null,"basis":"request names no deliverable"},"next":"unknown"}', 0);
-		expect(abstain.estimate).toEqual({ scope: "current prompt", stage: null, basis: "request names no deliverable" });
-		const invented = parseReading('{"summary":"s","estimate":{"stage":"75% done","basis":"3 of 4 files"},"next":"x"}', 0);
-		expect(invented.estimate.stage).toBeNull();
-		expect(invented.estimate.basis).toContain("unrecognized stage");
-		expect(parseReading('{"summary":"s","next":"x"}', 0).estimate).toEqual({ scope: "current prompt", stage: null, basis: "no reason given" });
+	test("while the agent works, the shown share and remaining calls agree with the calls already started", () => {
+		const facts = emptyFacts();
+		applyEvent(facts, { type: "before_agent_start", prompt: "Refactor the parser" });
+		for (let i = 0; i < 30; i++) {
+			applyEvent(facts, { type: "tool_execution_start", toolCallId: `${i}`, toolName: "read" });
+			applyEvent(facts, { type: "tool_execution_end", toolCallId: `${i}`, toolName: "read", isError: false });
+		}
+		// After 30 calls the model says halfway with only 2 calls left; the reading leans toward more work.
+		const { estimate } = readingFor(facts, '{"basis":"b","progress_pct":50,"remaining_tool_calls":2,"next":"x"}', 0);
+		expect(estimate.remaining).toBeGreaterThan(2);
+		expect(estimate.progress).toBeCloseTo(30 / (30 + (estimate.remaining as number)), 5);
 	});
 
 	test("without an observed request or plan the estimate is withheld whatever the model says", async () => {
 		const { clock, observer, tool } = harness(async () => ({
-			text: '{"summary":"s","estimate":{"scope":"current prompt","stage":"late","basis":"many tools ran"},"next":"x"}',
+			text: '{"basis":"many tools ran","progress_pct":80,"remaining_tool_calls":2,"next":"x"}',
 		}));
 		tool();
 		await clock.advance(1_000);
-		expect(observer.report().reading?.estimate).toEqual({ scope: "current prompt", stage: null, basis: "no request or plan seen since opt-in" });
+		expect(observer.report().reading?.estimate).toEqual({ progress: null, remaining: null, basis: "no request or plan seen since opt-in" });
 	});
 
 	test("a new prompt restarts per-prompt counts, keeps the todo list and names the earlier request", () => {
@@ -345,7 +346,7 @@ describe("widget content", () => {
 			phase: "on",
 			sessionId: "s1",
 			facts,
-			reading: estimate ? { summary: "steps 1-2 done", estimate, blocker: null, next: "step 4", at: 0 } : null,
+			reading: estimate ? { estimate, blocker: null, next: "step 4", at: 0 } : null,
 			calls: 1,
 			skippedUnchanged: 0,
 			staleDropped: 0,
@@ -358,34 +359,33 @@ describe("widget content", () => {
 	};
 	const plain = (_tone: string, text: string) => text;
 
-	test("2-4 rows: stage up front, observed facts, labeled estimate and prediction; fits narrow widths", () => {
-		const r = report({ scope: "current prompt", stage: "middle", basis: "2 of 5 steps done" });
+	test("2-3 rows: share done and calls expected up front, observed facts, labeled prediction; fits narrow widths", () => {
+		const r = report({ progress: 0.4, remaining: 25, basis: "2 of 5 steps done" });
 		const wide = widgetLines(r, 5_000, 100, plain);
-		expect(wide).toHaveLength(4);
-		expect(wide[0]).toMatch(/^ PROGRESS {2}prompt · est: middle · 5s ago +@widget$/);
+		expect(wide).toHaveLength(3);
+		expect(wide[0]).toMatch(/^ PROGRESS {2}~40% · ~25 more tool calls expected · 5s ago +@widget$/);
 		expect(wide[1]).toBe("  ├─ observed: 0 tools · now: bash: Running step 3");
-		expect(wide[2]).toBe("  ├─ estimate: 2 of 5 steps done");
-		expect(wide[3]).toBe("  └─ next? (pred): step 4");
+		expect(wide[2]).toBe("  └─ next? (pred): step 4");
 		for (const width of [40, 54, 80, 100]) {
 			for (const line of widgetLines(r, 5_000, width, plain)) expect(line.length).toBeLessThan(width);
 		}
 		const narrow = widgetLines(r, 5_000, 54, plain).join("\n");
 		expect(narrow).not.toContain("@widget");
+		expect(narrow).toContain("~25 more tool calls ·");
 		expect(narrow).toContain("├─ obs: ");
 	});
 
-	test("an abstention says so with its reason; an unknown next step is left out; off draws nothing", () => {
-		const r = report({ scope: "current prompt", stage: null, basis: "no deliverable named" });
+	test("a withheld estimate says why; an unknown next step is left out; off draws nothing", () => {
+		const r = report({ progress: null, remaining: null, basis: "no request or plan seen since opt-in" });
 		const lines = widgetLines({ ...r, reading: { ...r.reading!, next: "unknown" } }, 0, 100, plain);
-		expect(lines).toHaveLength(3);
-		expect(lines[0]).toContain("no estimate");
-		expect(lines[2]).toBe("  └─ estimate: not enough evidence to estimate — no deliverable named");
+		expect(lines).toHaveLength(2);
+		expect(lines[0]).toContain("no request seen yet");
 		expect(widgetLines({ ...r, phase: "off" }, 0, 100, plain)).toEqual([]);
 	});
 
 	test("a reading older than 30 s while the agent works is marked stale; before any reading only facts show", () => {
-		const r = report({ scope: "current prompt", stage: "early", basis: "1 of 5" });
-		expect(widgetLines(r, 45_000, 100, plain)[0]).toContain("est: early · stale 45s");
+		const r = report({ progress: 0.2, remaining: 1, basis: "1 of 5" });
+		expect(widgetLines(r, 45_000, 100, plain)[0]).toContain("~20% · ~1 more tool call expected · stale 45s");
 		const pending = widgetLines(report(null), 0, 100, plain);
 		expect(pending).toHaveLength(2);
 		expect(pending[0]).toContain("watching");

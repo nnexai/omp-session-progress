@@ -59,7 +59,8 @@ export function makeTransport(credentials: Credentials, model: Model, sessionId:
 		onCall?.({
 			startedAt: started,
 			ms: Date.now() - started,
-			model: `${model.provider}/${model.id}`,
+			// The model the provider reports serving, else the one requested.
+			model: `${model.provider}/${reply.model || model.id}`,
 			sent: user,
 			stopReason: reply.stopReason,
 			error: reply.errorMessage,
