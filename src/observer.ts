@@ -11,6 +11,13 @@ export interface ObserverOptions {
 	maxWaitMs: number;
 	/** Minimum time between two calls to the auxiliary model. */
 	minIntervalMs: number;
+	/**
+	 * While the agent works on one prompt, each further call for it waits this
+	 * factor longer than the previous one (up to maxIntervalMs); a new prompt or
+	 * the end of the turn is read after minIntervalMs again.
+	 */
+	intervalGrowth: number;
+	maxIntervalMs: number;
 	/** Calls allowed per opt-in; then the observer stops calling. */
 	maxCalls: number;
 	/** Consecutive provider failures before the observer pauses. */
@@ -23,6 +30,8 @@ export const DEFAULT_OPTIONS: ObserverOptions = {
 	debounceMs: 2_500,
 	maxWaitMs: 12_000,
 	minIntervalMs: 15_000,
+	intervalGrowth: 1.5,
+	maxIntervalMs: 300_000,
 	maxCalls: 30,
 	maxFailures: 3,
 	timeoutMs: 20_000,
@@ -87,12 +96,14 @@ export const SYSTEM_PROMPT = [
 	'"summary": at most 100 characters on what is done and what is underway, grounded only in the data.',
 	'"estimate": how far along the current prompt is.',
 	"- Find the denominator first: the deliverables or steps the request names, and the agent's todo list. Then place observed activity against it.",
+	"- A todo list with updated_this_prompt false was not touched during this prompt and may be left over from an earlier request: its done items are not progress on this one.",
 	`- "stage" is one of: ${STAGES.map(s => `"${s}"`).join(", ")}. "verifying" means the work is done and being checked; "appears done" is a guess, not a confirmation.`,
+	'- While the agent is working, use "verifying", "wrapping up" or "appears done" only when every step the request names and every todo item for it is done.',
 	'- "basis": at most 90 characters naming the evidence, e.g. "3 of 5 requested steps done; step 4 running".',
 	'- If the request names no concrete deliverable or finite plan and there is no todo list, or the evidence is missing or contradictory, set "stage" to null and give the reason in "basis". This holds after the turn ends too: the agent stopping does not show an open-ended request is complete.',
 	'- "scope" is "current prompt" unless earlier_request and the todo list clearly define a larger goal this prompt belongs to; then "session".',
 	'"blocker": at most 80 characters, only when the data shows failures, retries or errors that stop progress; otherwise null.',
-	'"next": at most 80 characters, the most likely next step; exactly "unknown" when the data does not support a guess.',
+	'"next": at most 80 characters, the most likely next step: its kind first (inspect, edit, run, test, plan, delegate, ask the user, reply), then its object; exactly "unknown" when the data does not support a guess.',
 	"Never give percentages, ETAs, durations or time estimates.",
 ].join("\n");
 
@@ -152,6 +163,9 @@ export class Observer {
 	#backoffUntil = 0;
 	#lastSent: string | null = null;
 	#calls = 0;
+	// Calls for prompt number #callPrompt, which set the spacing of the next one.
+	#callPrompt = -1;
+	#promptCalls = 0;
 	#skippedUnchanged = 0;
 	#staleDropped = 0;
 	#failures = 0;
@@ -184,6 +198,8 @@ export class Observer {
 		this.#lastCallAt = Number.NEGATIVE_INFINITY;
 		this.#backoffUntil = 0;
 		this.#calls = 0;
+		this.#callPrompt = -1;
+		this.#promptCalls = 0;
 		this.#skippedUnchanged = 0;
 		this.#staleDropped = 0;
 		this.#failures = 0;
@@ -271,11 +287,16 @@ export class Observer {
 	#schedule(): void {
 		if (this.#phase !== "on" || !this.#dirty || this.#abort !== null) return;
 		// Quiet for debounceMs (but never longer than maxWaitMs while events keep coming),
-		// at least minIntervalMs after the previous call, and after any failure backoff.
-		const { debounceMs, maxWaitMs, minIntervalMs } = this.options;
+		// spaced from the previous call, and after any failure backoff.
+		const { debounceMs, maxWaitMs, minIntervalMs, intervalGrowth, maxIntervalMs } = this.options;
+		// Calls already made while the agent works on this prompt; a new prompt or an ended turn starts over.
+		const sameRun = this.#facts.running && this.#facts.requests === this.#callPrompt;
+		const spacing = sameRun
+			? Math.min(Math.max(minIntervalMs, maxIntervalMs), minIntervalMs * intervalGrowth ** Math.max(0, this.#promptCalls - 1))
+			: minIntervalMs;
 		const due = Math.max(
 			Math.min(this.#lastEventAt + debounceMs, this.#firstDirtyAt + maxWaitMs),
-			this.#lastCallAt + minIntervalMs,
+			this.#lastCallAt + spacing,
 			this.#backoffUntil,
 		);
 		if (this.#timer !== null) this.#clock.clearTimeout(this.#timer);
@@ -311,6 +332,11 @@ export class Observer {
 		const abort = new AbortController();
 		this.#abort = abort;
 		this.#calls += 1;
+		if (this.#facts.requests !== this.#callPrompt) {
+			this.#callPrompt = this.#facts.requests;
+			this.#promptCalls = 0;
+		}
+		this.#promptCalls += 1;
 		this.#lastCallAt = now;
 		this.#lastSent = payload;
 		const timeout = this.#clock.setTimeout(() => abort.abort(new Error("observer call timed out")), this.options.timeoutMs);

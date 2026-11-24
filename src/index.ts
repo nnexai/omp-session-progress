@@ -5,23 +5,17 @@
 // observed session.
 
 import { appendFileSync } from "node:fs";
-import { completeSimple } from "@oh-my-pi/pi-ai";
 import { truncateToWidth } from "@oh-my-pi/pi-tui";
 import type { ObservedEvent } from "./facts";
-import { Observer, type Report, type Transport } from "./observer";
+import { Observer, type Report } from "./observer";
+import { type CallRecord, type Credentials, makeTransport, type Model, ROLE } from "./transport";
 import { type Tone, widgetLines } from "./widget";
 
 const WIDGET_KEY = "session-progress";
-const ROLE = "@widget";
-const MAX_OUTPUT_TOKENS = 240;
 // Width used for the plain string-array widget of RPC hosts, which have no TUI width.
 const RPC_WIDTH = 78;
 
 // The slice of the OMP extension API this file uses (19.1.x).
-interface Model {
-	provider: string;
-	id: string;
-}
 interface Component {
 	render(width: number): string[];
 	invalidate(): void;
@@ -38,7 +32,7 @@ interface Ctx {
 	ui: Ui;
 	agent?: { kind: "main" | "sub" };
 	sessionManager: { getSessionId(): string; getBranch(): Array<{ type: string; message?: { role?: string; content?: unknown } }> };
-	modelRegistry: { getApiKey(model: Model, sessionId?: string, options?: { signal?: AbortSignal }): Promise<string | undefined> };
+	modelRegistry: Credentials;
 	models: { resolve(spec: string): Model | undefined };
 	isIdle(): boolean;
 	setTimeout(fn: () => void, ms: number): unknown;
@@ -47,36 +41,6 @@ interface Ctx {
 interface Api {
 	on(event: string, handler: (event: ObservedEvent, ctx: Ctx) => unknown): void;
 	registerCommand(name: string, options: { description: string; handler: (args: string, ctx: Ctx) => Promise<void> | void }): void;
-}
-
-function makeTransport(ctx: Ctx, model: Model, sessionId: string): Transport {
-	// A key of its own, so the observer never shares a provider cache lineage with the session.
-	const key = `${sessionId}:session-progress`;
-	const logPath = process.env.OMP_SESSION_PROGRESS_LOG;
-	return async ({ system, user, signal }) => {
-		const started = Date.now();
-		const apiKey = await ctx.modelRegistry.getApiKey(model, key, { signal });
-		if (!apiKey) throw new Error(`no credentials for ${model.provider}`);
-		const reply = await completeSimple(
-			model,
-			{ systemPrompt: [system], messages: [{ role: "user", content: user, timestamp: started }] },
-			{ apiKey, sessionId: key, maxTokens: MAX_OUTPUT_TOKENS, disableReasoning: true, signal },
-		);
-		const text = reply.content
-			.filter((block: { type: string }) => block.type === "text")
-			.map((block: { text: string }) => block.text)
-			.join("");
-		if (logPath) {
-			appendFileSync(
-				logPath,
-				`${JSON.stringify({ at: new Date(started).toISOString(), ms: Date.now() - started, role: ROLE, model: `${model.provider}/${model.id}`, sent: user, stopReason: reply.stopReason, error: reply.errorMessage, reply: text, usage: reply.usage })}\n`,
-			);
-		}
-		if (reply.stopReason === "error" || reply.stopReason === "aborted") throw new Error(reply.errorMessage || reply.stopReason);
-		// Anthropic reports cached prompt tokens separately from `input`.
-		const usage = reply.usage;
-		return { text, inputTokens: (usage?.input ?? 0) + (usage?.cacheRead ?? 0) + (usage?.cacheWrite ?? 0), outputTokens: usage?.output };
-	};
 }
 
 // The request the session is currently working on, so an opt-in mid-task has context.
@@ -203,7 +167,15 @@ export default function sessionProgress(pi: Api) {
 			// RPC hosts take plain string-array widgets.
 			else target.setWidget(WIDGET_KEY, widgetLines(report, Date.now(), RPC_WIDTH, (_tone, text) => text), { placement: "aboveEditor" });
 		};
-		observer.enable(sessionId, makeTransport(ctx, model, sessionId), sink);
+		const logPath = process.env.OMP_SESSION_PROGRESS_LOG;
+		const log = logPath
+			? (call: CallRecord) =>
+					appendFileSync(
+						logPath,
+						`${JSON.stringify({ at: new Date(call.startedAt).toISOString(), ms: call.ms, role: ROLE, model: call.model, sent: call.sent, stopReason: call.stopReason, error: call.error, reply: call.reply, usage: call.usage })}\n`,
+					)
+			: undefined;
+		observer.enable(sessionId, makeTransport(ctx.modelRegistry, model, sessionId, log), sink);
 		// Context from before the opt-in is recorded but triggers no call; the next event does.
 		const request = latestRequest(ctx);
 		if (request) observer.seed(sessionId, { type: "before_agent_start", prompt: request });

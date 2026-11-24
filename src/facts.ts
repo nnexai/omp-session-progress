@@ -36,6 +36,8 @@ export interface Facts {
 	todos: TodoItem[];
 	/** Counts and labels below are for the current prompt only. */
 	toolCalls: number;
+	/** The agent changed its todo list during this prompt; an untouched list may belong to an earlier request. */
+	todoUpdated: boolean;
 	failedCalls: number;
 	underway: Map<string, string>; // toolCallId -> label, tools started and not ended
 	recent: string[]; // labels of finished tool calls, newest last
@@ -52,6 +54,7 @@ export function emptyFacts(): Facts {
 		previousGoal: null,
 		todos: [],
 		toolCalls: 0,
+		todoUpdated: false,
 		failedCalls: 0,
 		underway: new Map(),
 		recent: [],
@@ -163,6 +166,7 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 			facts.goal = goal;
 			facts.requests += 1;
 			facts.toolCalls = 0;
+			facts.todoUpdated = false;
 			facts.failedCalls = 0;
 			facts.recent = [];
 			facts.failures = [];
@@ -181,7 +185,10 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 		case "tool_execution_start": {
 			const args = record(event.args);
 			facts.underway.set(String(event.toolCallId), toolLabel(event.toolName, event.intent, args));
-			if (event.toolName === "todo" && args) applyTodo(facts, args);
+			if (event.toolName === "todo" && args) {
+				applyTodo(facts, args);
+				if (args.op !== "view") facts.todoUpdated = true;
+			}
 			return true;
 		}
 		case "tool_execution_end": {
@@ -245,6 +252,7 @@ export function buildPayload(facts: Facts): string {
 		todo_list: live.length
 			? {
 					note: "the agent's own plan; it may span several prompts",
+					updated_this_prompt: facts.todoUpdated,
 					done: live.filter(t => t.status === "done").length,
 					total: live.length,
 					items: facts.todos.slice(-LIMITS.todoItems).map(t => `[${t.status}] ${t.text}`),

@@ -87,6 +87,35 @@ describe("coalescing and caps", () => {
 		expect(observer.report().reading?.next).toBe("fix failing test");
 	});
 
+	test("calls for one long prompt are spaced further and further apart; turn end and a new prompt are read promptly", async () => {
+		const at: number[] = [];
+		const { clock, observer, tool } = harness(
+			async () => {
+				at.push(clock.now());
+				return { text: REPLY };
+			},
+			{ maxCalls: 20, intervalGrowth: 2, maxIntervalMs: 40_000 },
+		);
+		observer.observe("s1", { type: "before_agent_start", prompt: "1. build\n2. test" });
+		for (let t = 0; t < 240; t++) {
+			tool();
+			await clock.advance(500);
+		}
+		// Spacing 10 s, 20 s, 40 s, then capped at 40 s.
+		const gaps = at.slice(1).map((t, i) => t - (at[i] as number));
+		expect(gaps).toEqual([10_000, 20_000, 40_000, 40_000]);
+		const ended = at.length;
+		observer.observe("s1", { type: "agent_end" });
+		await clock.advance(12_000);
+		expect(at.length).toBe(ended + 1);
+		observer.observe("s1", { type: "before_agent_start", prompt: "next" });
+		for (let t = 0; t < 30; t++) {
+			tool();
+			await clock.advance(500);
+		}
+		expect((at.at(-1) as number) - (at.at(-2) as number)).toBe(10_000);
+	});
+
 	test("no call while idle or when nothing changed", async () => {
 		let calls = 0;
 		const { clock, observer } = harness(async () => {
