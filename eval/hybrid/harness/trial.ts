@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { homedir } from 'node:os';
+import { EVAL_DIR } from '../../paths';
 import { join } from 'node:path';
 import { activeSegments, extractSession, GAP_CAP_MS, type Trace } from '../../extract';
 import { Observer, type Clock } from '../../../src/observer';
@@ -43,7 +43,7 @@ export async function trial(c:Case, ask:Ask, mode:'policy'|'pilot', signal:Abort
   const manifest:Case[] = JSON.parse(readFileSync(join(import.meta.dir, '..', 'manifest.json'), 'utf8'));
   const declared = manifest.find(x => x.id === c.id);
   if (!declared || declared.tag !== c.tag || declared.short !== c.short || declared.commitment !== c.commitment) throw Error();
-  const map:Record<string,Mapping> = JSON.parse(readFileSync(join(homedir(), '.cache', 'omp-session-progress-eval', 'hybrid-v1', 'map.json'), 'utf8'));
+  const map:Record<string,Mapping> = JSON.parse(readFileSync(join(EVAL_DIR, 'hybrid-v1', 'map.json'), 'utf8'));
   row = map[c.id]!;
   if (!row || !Array.isArray(row.short) || row.short.length !== c.short || new Set([row.primary, ...row.short]).size !== 1 + row.short.length ||
       hash(JSON.stringify([row.sha, row.primary, row.short])) !== c.commitment || hash(readFileSync(row.path)) !== row.sha) throw Error();
@@ -91,7 +91,7 @@ export async function trial(c:Case, ask:Ask, mode:'policy'|'pilot', signal:Abort
     const truth = (totalMs - target) / 60_000;
     observe(result, prediction, e.localMin, truth);
     if (isPrimary && e.slowTool) observe(slow, prediction, e.localMin, truth);
-    if (isPrimary && mode === 'pilot' && !preview) preview = {elapsed_s: target/1000, expected_min: Math.round(truth), local_min: Math.round(e.localMin), hybrid_min: Math.round(prediction)};
+    if (isPrimary && mode === 'pilot' && target === 90_000) preview = {elapsed_s: target/1000, expected_min: Math.round(truth), local_min: Math.round(e.localMin), hybrid_min: Math.round(prediction)};
     if (isPrimary && onTrainSample && [5_000,60_000,300_000,900_000].includes(target)) {
      onTrainSample(JSON.stringify(e), JSON.stringify({local_min:Math.round(e.localMin), hybrid_min:Math.round(prediction), true_min:Math.round(truth)}));
     }

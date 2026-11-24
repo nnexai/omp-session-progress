@@ -9,3 +9,6 @@ evidence/**/stderr.log
 
 # Ratchet eval transcripts (real session text); never committed.
 .omp/ratchet/**/traces/
+# Per-case checkpoint counts reveal approximate durations; publish aggregate grades only.
+.omp/ratchet/progress-hybrid-horizon/*/results.jsonl
+.omp/ratchet/progress-hybrid-horizon/*/.run-identity.json
