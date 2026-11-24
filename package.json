@@ -1,14 +1,16 @@
 {
 	"name": "omp-session-progress",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"private": true,
-	"description": "Opt-in OMP extension: the @widget role model follows the current session and shows a guess of how far into the current prompt the agent is and how much working time is still expected, next to what was observed.",
+	"description": "Opt-in, zero-LLM OMP extension: a compact local GBDT model estimates progress and remaining working time in real time from session events and renders a native progress widget above the editor.",
 	"type": "module",
 	"omp": {
 		"extensions": ["./src/index.ts"]
 	},
 	"scripts": {
 		"test": "bun test",
+		"eval": "bun eval/run.ts",
+		"train": "bun eval/train.ts",
 		"smoke": "bun scripts/live-smoke.ts"
 	}
 }

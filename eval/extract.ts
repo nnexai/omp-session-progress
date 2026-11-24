@@ -43,7 +43,18 @@ interface Entry {
 	customType?: string;
 	data?: Record<string, unknown>;
 	cwd?: string;
-	message?: { role?: string; content?: unknown; stopReason?: string; toolCallId?: string; toolName?: string; isError?: boolean };
+	message?: {
+		role?: string;
+		content?: unknown;
+		stopReason?: string;
+		errorMessage?: string;
+		toolCallId?: string;
+		toolName?: string;
+		isError?: boolean;
+		model?: string;
+		usage?: Record<string, unknown>;
+		details?: Record<string, unknown>;
+	};
 }
 
 const textOf = (content: unknown): string =>
@@ -70,9 +81,10 @@ function mainPath(entries: Entry[]): Entry[] {
 	return path.reverse();
 }
 
-/** The tool arguments the extension's event handler reads: a target path and the todo tool's own arguments. */
+/** The tool arguments the extension's event handler reads: target path, todo arguments, and task subtask list length. */
 function eventArgs(name: string, args: Record<string, unknown>): Record<string, unknown> | undefined {
 	if (name === "todo") return { op: args.op, list: args.list, items: args.items, task: args.task };
+	if (name === "task" && Array.isArray(args.tasks)) return { tasks: args.tasks.map(() => null) };
 	return typeof args.path === "string" ? { path: args.path } : undefined;
 }
 
@@ -109,8 +121,14 @@ export function extractSession(path: string): Trace {
 		} else if (m.role === "assistant") {
 			const blocks = Array.isArray(m.content) ? (m.content as Array<Record<string, unknown>>) : [];
 			const text = textOf(blocks);
-			const message: Record<string, unknown> = { role: "assistant", stopReason: m.stopReason, content: text.trim() ? [{ type: "text", text }] : [] };
-			if (m.stopReason === "error") message.errorMessage = "provider error";
+			const message: Record<string, unknown> = {
+				role: "assistant",
+				stopReason: m.stopReason,
+				model: m.model,
+				usage: m.usage,
+				content: text.trim() ? [{ type: "text", text }] : [],
+			};
+			if (m.stopReason === "error") message.errorMessage = m.errorMessage ?? "provider error";
 			push(t, { type: "message_end", message });
 			const calls = blocks.filter(b => b.type === "toolCall");
 			if (m.stopReason !== "aborted") {
@@ -127,7 +145,7 @@ export function extractSession(path: string): Trace {
 				push(t + 1, { type: "agent_end", stopReason: m.stopReason });
 			}
 		} else if (m.role === "toolResult") {
-			push(t, { type: "tool_execution_end", toolCallId: String(m.toolCallId), toolName: m.toolName, isError: m.isError === true });
+			push(t, { type: "tool_execution_end", toolCallId: String(m.toolCallId), toolName: m.toolName, isError: m.isError === true, details: m.details });
 		}
 	}
 	// Stable: events of one message keep their order.
