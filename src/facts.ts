@@ -11,7 +11,6 @@
 
 export const LIMITS = {
 	goal: 500,
-	previousGoal: 160,
 	note: 160,
 	intent: 90,
 	todoText: 80,
@@ -31,7 +30,6 @@ export interface Facts {
 	/** Requests seen since opt-in; the current prompt is number `requests`. */
 	requests: number;
 	goal: string | null;
-	previousGoal: string | null;
 	/** The agent's todo list; it can outlive one prompt. */
 	todos: TodoItem[];
 	/** Counts and labels below are for the current prompt only. */
@@ -44,14 +42,21 @@ export interface Facts {
 	failures: string[]; // labels of failed tool calls, newest last
 	retry: string | null;
 	agentNote: string | null;
+	/** Active time of the current prompt up to `lastAt`: time waiting on the user (an open `ask`) is left out, and a silent gap counts at most IDLE_GAP_MS. */
+	activeMs: number;
+	lastAt: number | null;
+	/** Open `ask` calls: the agent is waiting on the user. */
+	asking: Set<string>;
 }
+
+/** A silent stretch longer than this (a sleeping laptop, an unattended prompt) counts only this long. */
+export const IDLE_GAP_MS = 10 * 60_000;
 
 export function emptyFacts(): Facts {
 	return {
 		running: false,
 		requests: 0,
 		goal: null,
-		previousGoal: null,
 		todos: [],
 		toolCalls: 0,
 		todoUpdated: false,
@@ -61,6 +66,9 @@ export function emptyFacts(): Facts {
 		failures: [],
 		retry: null,
 		agentNote: null,
+		activeMs: 0,
+		lastAt: null,
+		asking: new Set(),
 	};
 }
 
@@ -152,17 +160,24 @@ export type ObservedEvent = { type: string; [key: string]: unknown };
 const record = (value: unknown): Record<string, unknown> | undefined =>
 	value && typeof value === "object" ? (value as Record<string, unknown>) : undefined;
 
+/** Active time of the current prompt at `now` (ms). */
+export function activeMs(facts: Facts, now: number): number {
+	if (facts.lastAt === null || !facts.running || facts.asking.size) return facts.activeMs;
+	return facts.activeMs + Math.min(Math.max(0, now - facts.lastAt), IDLE_GAP_MS);
+}
+
 /**
- * Fold one OMP extension event into the facts. Returns true when the event is
- * meaningful progress (worth a refresh), false when it was ignored.
+ * Fold one OMP extension event, observed at `at` (ms), into the facts. Returns
+ * true when the event is meaningful progress (worth a refresh), false when it was ignored.
  */
-export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
+export function applyEvent(facts: Facts, event: ObservedEvent, at: number): boolean {
+	facts.activeMs = activeMs(facts, at);
+	facts.lastAt = at;
 	switch (event.type) {
 		case "before_agent_start": {
 			const goal = clean(event.prompt, LIMITS.goal);
 			if (!goal) return false;
 			// A new prompt: the per-prompt record starts over, the todo list carries on.
-			facts.previousGoal = facts.goal ? clean(facts.goal, LIMITS.previousGoal) : null;
 			facts.goal = goal;
 			facts.requests += 1;
 			facts.toolCalls = 0;
@@ -173,6 +188,8 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 			facts.agentNote = null;
 			facts.running = true;
 			facts.retry = null;
+			facts.activeMs = 0;
+			facts.asking.clear();
 			return true;
 		}
 		case "agent_start":
@@ -181,10 +198,14 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 		case "agent_end":
 			facts.running = false;
 			facts.underway.clear();
+			facts.asking.clear();
 			return true;
 		case "tool_execution_start": {
 			const args = record(event.args);
+			// A tool running means the agent works, also when the opt-in came after the turn started.
+			facts.running = true;
 			facts.underway.set(String(event.toolCallId), toolLabel(event.toolName, event.intent, args));
+			if (event.toolName === "ask") facts.asking.add(String(event.toolCallId));
 			if (event.toolName === "todo" && args) {
 				applyTodo(facts, args);
 				if (args.op !== "view") facts.todoUpdated = true;
@@ -195,6 +216,7 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 			const id = String(event.toolCallId);
 			const label = facts.underway.get(id) ?? toolLabel(event.toolName, undefined, undefined);
 			facts.underway.delete(id);
+			facts.asking.delete(id);
 			facts.toolCalls += 1;
 			if (event.isError) {
 				facts.failedCalls += 1;
@@ -234,14 +256,15 @@ export function applyEvent(facts: Facts, event: ObservedEvent): boolean {
 	}
 }
 
-/** The bounded JSON document sent to the auxiliary model. */
-export function buildPayload(facts: Facts): string {
+/** The bounded JSON document sent to the auxiliary model, as of `now`. */
+export function buildPayload(facts: Facts, now: number): string {
 	const live = facts.todos.filter(t => t.status !== "dropped");
 	const doc = {
 		current_prompt: {
 			number_since_opt_in: facts.requests,
 			request: facts.goal,
-			turn: facts.running ? "agent working" : "turn ended (agent idle)",
+			turn: facts.running ? (facts.asking.size ? "agent waiting for the user's answer" : "agent working") : "turn ended (agent idle)",
+			active_seconds: Math.round(activeMs(facts, now) / 1000),
 			tool_calls: { finished: facts.toolCalls, failed: facts.failedCalls },
 			running_now: [...facts.underway.values()].slice(-3),
 			recent_actions: [...facts.recent],
@@ -251,14 +274,12 @@ export function buildPayload(facts: Facts): string {
 		},
 		todo_list: live.length
 			? {
-					note: "the agent's own plan; it may span several prompts",
 					updated_this_prompt: facts.todoUpdated,
 					done: live.filter(t => t.status === "done").length,
 					total: live.length,
 					items: facts.todos.slice(-LIMITS.todoItems).map(t => `[${t.status}] ${t.text}`),
 				}
 			: null,
-		earlier_request: facts.previousGoal,
 	};
 	let json = JSON.stringify(doc);
 	const recent = doc.current_prompt.recent_actions;

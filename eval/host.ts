@@ -23,6 +23,7 @@ export interface Case {
 	session: string;
 	prompt: number;
 	tools: number;
+	activeS: number;
 	tags: string[];
 	probes: Probe[];
 }
@@ -63,7 +64,9 @@ export default function progressEval(pi: Api) {
 			}
 			const index: Record<string, string> = JSON.parse(readFileSync(join(EVAL_DIR, "index.json"), "utf8"));
 			const train = new Set(job.train);
-			const runTag = crypto.randomUUID().slice(0, 8);
+			// Six spaced digits: unique per run, and the same token count every run, so the tag
+			// itself never moves cost between variants.
+			const runTag = Array.from({ length: 6 }, () => Math.floor(Math.random() * 10)).join(" ");
 			mkdirSync(join(job.out, "traces"), { recursive: true });
 			const resultsPath = join(job.out, "results.jsonl");
 			const done = new Set(
@@ -101,8 +104,8 @@ export default function progressEval(pi: Api) {
 				const notes: string[] = [];
 				for (const probe of c.probes) {
 					const facts = emptyFacts();
-					for (const { event } of trace.events.slice(0, probe.cut)) applyEvent(facts, event);
-					const payload = buildPayload(facts);
+					for (const { t, event } of trace.events.slice(0, probe.cut)) applyEvent(facts, event, t);
+					const payload = buildPayload(facts, probe.at);
 					let record: CallRecord | undefined;
 					const transport = makeTransport(ctx.modelRegistry, model, `eval-${c.id}-rep${rep}`, call => {
 						record = call;
@@ -113,7 +116,7 @@ export default function progressEval(pi: Api) {
 						try {
 							// The trailing run tag keeps a rep from reading the cache entry an identical earlier call wrote:
 							// live payloads never repeat (the observer skips unchanged ones), so neither may the eval's.
-							const user = `${payload}\n(replay ${runTag}-${rep})`;
+							const user = `${payload}\n(replay ${runTag} ${rep % 10})`;
 							text = (await transport({ system: SYSTEM_PROMPT, user, signal: AbortSignal.any([deadline, AbortSignal.timeout(CALL_DEADLINE_MS)]) })).text;
 						} catch (error) {
 							if (attempt >= ATTEMPTS) throw new ProviderError(error instanceof Error ? error.message : String(error));
@@ -128,20 +131,22 @@ export default function progressEval(pi: Api) {
 					usage.cacheRead += record?.usage?.cacheRead ?? 0;
 					usage.cacheWrite += record?.usage?.cacheWrite ?? 0;
 					transcript.push({ role: "user", content: payload }, { role: "assistant", content: text });
-					let prediction: Prediction = { progress: null, remaining: null };
+					let prediction: Prediction = { progress: null, remainingMinutes: null };
+					const label = `${Math.round(probe.elapsedS)}s/${Math.round(probe.elapsedS + probe.remainingS)}s`;
 					try {
-						prediction = readingFor(facts, text, 0).estimate;
+						prediction = readingFor(facts, text, probe.at).estimate;
 					} catch (error) {
-						notes.push(`probe ${probe.done}/${probe.done + probe.remaining}: unparsable reply (${error instanceof Error ? error.message : String(error)})`);
+						notes.push(`probe ${label}: unparsable reply (${error instanceof Error ? error.message : String(error)})`);
 					}
 					predictions.push(prediction);
 				}
 				const grade = gradeCase(c.probes, predictions);
+				const minutes = (s: number) => `${(s / 60).toFixed(1)}m`;
 				const explanation = c.probes
 					.map((p, i) => {
 						const pred = predictions[i];
-						const shown = pred?.progress == null ? "none" : `${Math.round(pred.progress * 100)}%/${pred.remaining} left`;
-						return `${p.done}/${p.done + p.remaining}: ${shown} vs ${Math.round((100 * p.done) / (p.done + p.remaining))}%/${p.remaining} left`;
+						const shown = pred?.progress == null || pred.remainingMinutes == null ? "none" : `${Math.round(pred.progress * 100)}%/${minutes(pred.remainingMinutes * 60)} left`;
+						return `${minutes(p.elapsedS)} of ${minutes(p.elapsedS + p.remainingS)}: ${shown} vs ${Math.round((100 * p.elapsedS) / (p.elapsedS + p.remainingS))}%/${minutes(p.remainingS)} left`;
 					})
 					.concat(notes)
 					.join("; ");
@@ -149,7 +154,7 @@ export default function progressEval(pi: Api) {
 				const row = {
 					prompt_id: c.id,
 					rep,
-					prompt: `${c.id}: historic prompt with ${c.tools} tool calls, ${c.probes.length} probes`,
+					prompt: `${c.id}: historic prompt, ${Math.round(c.activeS / 60)} active min, ${c.tools} tool calls, ${c.probes.length} probes`,
 					tags: c.tags,
 					grade,
 					explanation,

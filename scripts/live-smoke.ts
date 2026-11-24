@@ -224,8 +224,8 @@ function callRows(run: Run) {
 			reply = JSON.parse(c.reply.slice(c.reply.indexOf("{"), c.reply.lastIndexOf("}") + 1));
 		} catch {}
 		const todo = sent.todo_list ? `${sent.todo_list.done}/${sent.todo_list.total}` : "none";
-		const guess = reply.progress_pct === undefined ? "**unparsable**" : `${reply.progress_pct}% · ${reply.remaining_tool_calls} left`;
-		return `| ${i + 1} | ${sec(Date.parse(c.at) - t0 - run.start)} | ${sent.current_prompt.turn} | ${todo} | ${sent.current_prompt.tool_calls.finished} (${sent.current_prompt.tool_calls.failed} failed) | ${guess} | ${reply.basis ?? ""} | ${reply.next ?? c.error ?? ""} |`;
+		const guess = reply.progress_pct === undefined ? "**unparsable**" : `${reply.progress_pct}% · ${reply.remaining_minutes} min left`;
+		return `| ${i + 1} | ${sec(Date.parse(c.at) - t0 - run.start)} | ${sent.current_prompt.turn} | ${sent.current_prompt.active_seconds} | ${todo} | ${sent.current_prompt.tool_calls.finished} (${sent.current_prompt.tool_calls.failed} failed) | ${guess} | ${reply.next ?? c.error ?? ""} |`;
 	});
 }
 
@@ -257,7 +257,7 @@ const md = [
 			"",
 			"Observer readings (t = seconds from agent_start; observed columns are what was sent):",
 			"",
-			"| # | t | turn | todos done | tool calls | model guess (before calibration) | basis | likely next |",
+			"| # | t | turn | active s | todos done | tool calls | model guess (before calibration) | likely next |",
 			"|---|---|---|---|---|---|---|---|",
 			...callRows(run),
 			"",

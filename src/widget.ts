@@ -3,7 +3,7 @@
 // (ctx.ui.setWidget); RPC hosts get the same lines unstyled.
 //
 // Layout (2-3 rows, borderless, like OMP's TODO block):
-//    PROGRESS  ~40% · ~25 more tool calls · 8s ago               @widget
+//    PROGRESS  ~40% · ~6 min more expected · 8s ago              @widget
 //     ├─ observed: todos 2/5 · 6 tools · now: bash: Running sum script
 //     └─ next? (pred): Note the sum, then run the missing-file check
 // "observed" is counted from events; the "~" guess and "next?" come from the
@@ -25,6 +25,11 @@ export const STALE_MS = 30_000;
 function age(ms: number): string {
 	const s = Math.max(0, Math.round(ms / 1000));
 	return s < 5 ? "just now" : s < 90 ? `${s}s ago` : `${Math.round(s / 60)}m ago`;
+}
+
+/** Expected remaining working time, coarse: "<1 min", "6 min", "2 h". */
+function minutes(m: number): string {
+	return m < 1 ? "<1 min" : m < 90 ? `${Math.round(m)} min` : `${Math.round(m / 60)} h`;
 }
 
 /** Cut segments to `max` visible characters, ending in "…" when cut. */
@@ -69,17 +74,21 @@ export function widgetLines(report: Report, now: number, width: number, paint: P
 	const stale = !!r && (report.phase !== "on" || (f.running && now - r.at > STALE_MS));
 	const predicted: Tone = stale ? "dim" : "muted";
 
-	// Header: the guess (share done, tool calls expected to remain), freshness.
+	// Header: the guess (share of working time spent, working time expected to remain), freshness.
 	const header: Segment[] = [["accent", "PROGRESS"], [null, narrow ? " " : "  "]];
 	if (!r) header.push(["muted", report.inFlight ? "estimating…" : "watching"]);
 	else {
-		if (!f.running) header.push([null, "turn ended · "]);
-		const { progress, remaining } = r.estimate;
-		header.push(
-			progress === null || remaining === null
-				? ["muted", "no request seen yet"]
-				: ["accent", `~${Math.round(progress * 100)}% · ~${remaining} more tool call${remaining === 1 ? "" : "s"}${narrow ? "" : " expected"}`],
-		);
+		const { progress, remainingMinutes } = r.estimate;
+		// Once the agent has replied there is nothing left to estimate.
+		if (!f.running) header.push([null, "turn ended"]);
+		else {
+			if (f.asking.size) header.push(["warning", "waiting for you · "]);
+			header.push(
+				progress === null || remainingMinutes === null
+					? ["muted", "no request seen yet"]
+					: ["accent", `~${Math.round(progress * 100)}% · ~${minutes(remainingMinutes)} more${narrow ? "" : " expected"}`],
+			);
+		}
 		if (r.blocker) header.push(["warning", " · ⚠ blocked"]);
 		header.push([stale ? "warning" : "muted", ` · ${stale && report.phase === "on" ? `stale ${age(now - r.at).replace(" ago", "")}` : age(now - r.at)}`]);
 		if (report.inFlight) header.push(["muted", " · updating…"]);

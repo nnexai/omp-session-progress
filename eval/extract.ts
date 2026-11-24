@@ -18,13 +18,14 @@ export type Outcome = "completed" | "aborted" | "error" | "superseded" | "unfini
 export interface PromptLabel {
 	/** Index of the prompt's `before_agent_start` event. */
 	startIndex: number;
+	/** Index of its `agent_end` event (completed prompts), else of its last event. */
+	endIndex: number;
 	outcome: Outcome;
 	/** Event indices of the prompt's tool starts, in order. */
 	toolStartIndices: number[];
 	/** The agent called the todo tool during this prompt. */
 	todoActive: boolean;
 }
-
 export interface Trace {
 	id: string;
 	project: string;
@@ -141,10 +142,11 @@ export function label(events: TraceEvent[]): PromptLabel[] {
 	events.forEach(({ event }, index) => {
 		if (event.type === "before_agent_start") {
 			if (cur) cur.outcome = "superseded";
-			cur = { startIndex: index, outcome: "unfinished", toolStartIndices: [], todoActive: false };
+			cur = { startIndex: index, endIndex: index, outcome: "unfinished", toolStartIndices: [], todoActive: false };
 			prompts.push(cur);
 		}
 		if (!cur) return;
+		cur.endIndex = index;
 		if (event.type === "tool_execution_start") {
 			cur.toolStartIndices.push(index);
 			if (event.toolName === "todo") cur.todoActive = true;
@@ -155,4 +157,25 @@ export function label(events: TraceEvent[]): PromptLabel[] {
 		}
 	});
 	return prompts;
+}
+
+/** Truth definition (independent of src/): silent gaps count at most this long. */
+export const GAP_CAP_MS = 10 * 60_000;
+
+/**
+ * Active-time segments of one prompt: from its request to its end, leaving out
+ * time inside open `ask` calls (waiting on the user) and capping each silent gap.
+ * Each segment starts at event `index` (time `t`) and adds `ms` of active time.
+ */
+export function activeSegments(events: TraceEvent[], p: PromptLabel): Array<{ index: number; t: number; ms: number }> {
+	const asking = new Set<string>();
+	const out: Array<{ index: number; t: number; ms: number }> = [];
+	for (let i = p.startIndex; i < p.endIndex; i++) {
+		const { t, event } = events[i] as TraceEvent;
+		if (event.type === "tool_execution_start" && event.toolName === "ask") asking.add(String(event.toolCallId));
+		if (event.type === "tool_execution_end") asking.delete(String(event.toolCallId));
+		const next = (events[i + 1] as TraceEvent).t;
+		out.push({ index: i, t, ms: asking.size ? 0 : Math.min(Math.max(0, next - t), GAP_CAP_MS) });
+	}
+	return out;
 }

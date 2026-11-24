@@ -49,7 +49,7 @@ export function makeTransport(credentials: Credentials, model: Model, sessionId:
 		const reply = await completeSimple(
 			model,
 			{ systemPrompt: [system], messages: [{ role: "user", content: user, timestamp: started }] },
-			{ apiKey, sessionId: key, maxTokens: MAX_OUTPUT_TOKENS, disableReasoning: true, signal },
+			{ apiKey, sessionId: key, maxTokens: MAX_OUTPUT_TOKENS, disableReasoning: true, cacheRetention: "none", signal },
 		);
 		const text = reply.content
 			.filter((block: { type: string }) => block.type === "text")

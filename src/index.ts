@@ -64,7 +64,7 @@ function latestRequest(ctx: Ctx): string | undefined {
 
 const PRIVACY = [
 	"Sent to the observer model on each refresh (at most 3.5 KB, at most every 15 s while work happens, at most 30 calls):",
-	"• your current request (first 500 chars) and the previous one (160), todo titles, tool names with the agent's one-line intent",
+	"• your current request (first 500 chars), how long the agent has been working on it, todo titles, tool names with the agent's one-line intent",
 	"  (or just the target file name), per-prompt success/failure counts, provider retry/error notes, and the first sentence of the agent's latest reply.",
 	"Never sent: commands, other tool arguments, tool output, file contents, thinking, other sessions. Code spans and credential-like tokens are redacted.",
 	"The widget only displays the observer's reading; nothing is sent into this session. /progress off removes it; it never persists.",
