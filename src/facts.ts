@@ -207,6 +207,22 @@ export interface Facts {
 	priorPromptDurationsS: number[];
 	priorMaxDurS: number;
 	sessionActiveS: number;
+
+	/** Markov tool-transition & debug-loop counters. */
+	lastStepKind: number;
+	writeToErrCount: number;
+	errToWriteCount: number;
+	okToTodoDoneCount: number;
+	okToGitCount: number;
+	debugLoops: number;
+	sawErrSinceWrite: boolean;
+
+	/** Local text buffers for public-concept Ridge scoring (never transmitted). */
+	promptText: string;
+	isApprovalPrompt: boolean;
+	prevAssistText: string;
+	recentIntents: string[];
+	recentProse: string[];
 }
 
 export const EXPLORE_TOOLS = new Set(["read", "grep", "glob", "find", "web_search", "fetch", "lsp", "search"]);
@@ -325,6 +341,18 @@ export function emptyFacts(): Facts {
 		priorPromptDurationsS: [],
 		priorMaxDurS: 0,
 		sessionActiveS: 0,
+		lastStepKind: 0,
+		writeToErrCount: 0,
+		errToWriteCount: 0,
+		okToTodoDoneCount: 0,
+		okToGitCount: 0,
+		debugLoops: 0,
+		sawErrSinceWrite: false,
+		promptText: "",
+		isApprovalPrompt: false,
+		prevAssistText: "",
+		recentIntents: [],
+		recentProse: [],
 	};
 }
 
@@ -569,6 +597,7 @@ const RE_TEST_PATH = /(?:^|\/)(?:tests?|__tests__|specs?)\/|\.(?:test|spec)\.[a-
 const RE_DOC_PATH = /\.(?:md|mdx|rst|txt)$|readme|changelog/i;
 const RE_PROSE_REM = /\b(next i|now let|still need|remaining|left to|moving on to|let me also|after that)\b/i;
 const RE_PROSE_DEBUG = /\b(failed|failing|error|bug|mismatch|unexpected|investigat|let me fix|let's fix|broken)\b/i;
+const RE_APPROVAL = /\b(continue|proceed|go ahead|yes|do it|looks good|lgtm|approved|next|ok|sounds good|ship it)\b/i;
 
 function recordEditedFile(facts: Facts, path: string): void {
 	if (!path) return;
@@ -705,6 +734,17 @@ function startPrompt(facts: Facts, rawPrompt: string, at: number): boolean {
 	facts.proseHasRemaining = false;
 	facts.proseHasDebug = false;
 	facts.retry = null;
+	facts.lastStepKind = 0;
+	facts.writeToErrCount = 0;
+	facts.errToWriteCount = 0;
+	facts.okToTodoDoneCount = 0;
+	facts.okToGitCount = 0;
+	facts.debugLoops = 0;
+	facts.sawErrSinceWrite = false;
+	facts.promptText = trimmed.slice(0, 3000);
+	facts.isApprovalPrompt = facts.promptText.length < 180 && RE_APPROVAL.test(facts.promptText);
+	facts.recentIntents = [];
+	facts.recentProse = [];
 	return true;
 }
 
@@ -767,6 +807,7 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 			}
 
 			// Intent semantics & workflow stage progression
+			if (rawIntent.trim()) pushBounded(facts.recentIntents, rawIntent.trim(), 10);
 			const isTest = RE_INTENT_TEST.test(rawIntent);
 			const isE2e = RE_INTENT_E2E.test(rawIntent);
 			const isBuild = RE_INTENT_BUILD.test(rawIntent);
@@ -958,6 +999,24 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 				const liveCount = facts.todos.filter(t => t.status !== "dropped").length;
 				if (facts.todoInitTotal === 0 && liveCount > 0) facts.todoInitTotal = liveCount;
 			}
+
+			// Markov tool-transition & debug-loop counters (strictly causal)
+			let stepKind = 0;
+			if (WRITE_TOOLS.has(name)) stepKind = 2;
+			else if (EXEC_TOOLS.has(name)) stepKind = isError ? 4 : facts.lastIntentGitAtS === curS ? 7 : 3;
+			else if (EXPLORE_TOOLS.has(name)) stepKind = 1;
+			else if (DELEGATE_TOOLS.has(name)) stepKind = 5;
+			else if (name === "todo" && !isError) stepKind = 6;
+			if (facts.lastStepKind === 2 && stepKind === 4) facts.writeToErrCount += 1;
+			if (facts.lastStepKind === 4 && stepKind === 2) facts.errToWriteCount += 1;
+			if (facts.lastStepKind === 3 && stepKind === 6) facts.okToTodoDoneCount += 1;
+			if (facts.lastStepKind === 3 && stepKind === 7) facts.okToGitCount += 1;
+			if (stepKind === 4) facts.sawErrSinceWrite = true;
+			if (stepKind === 2 && facts.sawErrSinceWrite) {
+				facts.debugLoops += 1;
+				facts.sawErrSinceWrite = false;
+			}
+			if (stepKind > 0) facts.lastStepKind = stepKind;
 			return true;
 		}
 		case "message_end": {
@@ -1003,6 +1062,11 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 						.join(" ")
 				: "";
 			if (text) {
+				const trimmedText = text.trim();
+				if (trimmedText) {
+					pushBounded(facts.recentProse, trimmedText.slice(0, 1200), 2);
+					if (message.stopReason === "stop") facts.prevAssistText = trimmedText.slice(-2500);
+				}
 				const head = text.slice(0, 1500);
 				facts.agentWrapUp = KW_WRAPUP.test(text.slice(0, 2000));
 				facts.proseHasRemaining = RE_PROSE_REM.test(head);

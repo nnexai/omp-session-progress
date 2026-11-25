@@ -4,7 +4,9 @@
 // Zero OMP imports, so it runs deterministically under `bun test` with a FakeClock.
 
 import { estimateProgress, type Reading } from "./estimator";
-import { applyEvent, type BranchEntry, emptyFacts, type Facts, type ObservedEvent, seedFromBranch } from "./facts";
+import { activeMs, applyEvent, type BranchEntry, emptyFacts, type Facts, type ObservedEvent, seedFromBranch } from "./facts";
+import { SMOOTH_S } from "./features";
+import { MODEL_DATA } from "./model-data";
 
 export interface ObserverOptions {
 	/** Live UI refresh interval while the agent is working (ms). Set 0 to disable ticking. */
@@ -55,6 +57,12 @@ export class Observer {
 	#smoothAt = 0;
 	#smoothTodoDone = 0;
 
+	// Strictly causal online calibration state:
+	// - `#sessionBiases`: recency-weighted mean log residuals of prior completed prompts in this session.
+	// - `#promptSamples`: active-time forecast milestones within the current prompt for centered slippage.
+	#sessionBiases: number[] = [];
+	#promptSamples: Array<{ e: number; zBase: number; totS: number }> = [];
+
 	constructor(clock: Clock, options: Partial<ObserverOptions> = {}) {
 		this.#clock = clock;
 		this.options = { ...DEFAULT_OPTIONS, ...options };
@@ -76,6 +84,7 @@ export class Observer {
 		this.#facts = emptyFacts();
 		this.#reading = null;
 		this.#resetSmoothing();
+		this.#resetCalibration(true);
 		this.#refresh();
 	}
 
@@ -89,6 +98,7 @@ export class Observer {
 		this.#facts = emptyFacts();
 		this.#reading = null;
 		this.#resetSmoothing();
+		this.#resetCalibration(true);
 	}
 
 	/** Forget the observed history (branch/tree/clear) without leaving the session. */
@@ -98,6 +108,7 @@ export class Observer {
 		this.#facts = emptyFacts();
 		this.#reading = null;
 		this.#resetSmoothing();
+		this.#resetCalibration(true);
 		this.#refresh();
 	}
 
@@ -105,11 +116,17 @@ export class Observer {
 	observe(sessionId: string, event: ObservedEvent): void {
 		if (this.#phase === "off" || sessionId !== this.#sessionId) return;
 		const prevPrompt = this.#facts.requests;
+		const prevPriorCount = this.#facts.priorPromptDurationsS.length;
 		if (!applyEvent(this.#facts, event, this.#clock.now())) return;
+		if (this.#facts.priorPromptDurationsS.length > prevPriorCount) {
+			const totalS = this.#facts.priorPromptDurationsS[this.#facts.priorPromptDurationsS.length - 1]!;
+			this.#recordCompletedPromptBias(totalS);
+		}
 		if (this.#facts.requests !== prevPrompt) {
-			// Prompt changed: immediately clear any prior prompt's reading and smoothing.
+			// Prompt changed: immediately clear any prior prompt's reading, smoothing, and slippage landmarks.
 			this.#reading = null;
 			this.#resetSmoothing();
+			this.#resetCalibration(false);
 		}
 		this.#refresh();
 	}
@@ -119,6 +136,7 @@ export class Observer {
 		if (this.#phase === "off" || sessionId !== this.#sessionId) return;
 		applyEvent(this.#facts, event, this.#clock.now());
 		this.#resetSmoothing();
+		this.#resetCalibration(false);
 		this.#refresh();
 	}
 
@@ -127,6 +145,7 @@ export class Observer {
 		if (this.#phase === "off" || sessionId !== this.#sessionId) return;
 		seedFromBranch(this.#facts, branch, this.#clock.now(), isIdle);
 		this.#resetSmoothing();
+		this.#resetCalibration(true);
 		this.#refresh();
 	}
 
@@ -146,6 +165,60 @@ export class Observer {
 		this.#smoothTodoDone = 0;
 	}
 
+	#resetCalibration(clearSession: boolean): void {
+		this.#promptSamples = [];
+		if (clearSession) this.#sessionBiases = [];
+	}
+
+	#recordCompletedPromptBias(totalS: number): void {
+		if (totalS > 5 && this.#promptSamples.length > 0) {
+			let sum = 0;
+			let count = 0;
+			for (let i = 0; i < this.#promptSamples.length; i++) {
+				const s = this.#promptSamples[i]!;
+				if (s.e < totalS) {
+					sum += Math.log(totalS - s.e + SMOOTH_S) - s.zBase;
+					count++;
+				}
+			}
+			if (count > 0) {
+				const bias = Math.max(-2, Math.min(2, sum / count));
+				this.#sessionBiases.push(bias);
+				if (this.#sessionBiases.length > 8) this.#sessionBiases.shift();
+			}
+		}
+		this.#promptSamples = [];
+	}
+
+	#sessionBias(): number {
+		const n = this.#sessionBiases.length;
+		if (n === 0) return 0;
+		let sum = 0;
+		let wt = 0;
+		for (let i = 0; i < n; i++) {
+			const w = Math.pow(0.8, n - 1 - i);
+			sum += w * this.#sessionBiases[i]!;
+			wt += w;
+		}
+		return sum / (wt + 2.5);
+	}
+
+	#centeredSlippage(elapsedS: number, curTotS: number): number {
+		if (elapsedS < 60 || this.#promptSamples.length === 0) return 0;
+		let prevRef: { e: number; totS: number } | null = null;
+		const cutoff = elapsedS * 0.55;
+		for (let i = 0; i < this.#promptSamples.length; i++) {
+			const lm = this.#promptSamples[i]!;
+			if (lm.e <= cutoff) prevRef = lm;
+			else break;
+		}
+		if (!prevRef) return 0;
+		const rawSlip = Math.max(-2, Math.min(2, Math.log((curTotS + SMOOTH_S) / (prevRef.totS + SMOOTH_S))));
+		const eBin = Math.min(7, Math.max(0, Math.floor(Math.log2(Math.max(1, elapsedS / 30)))));
+		const center = MODEL_DATA.slipCenter?.[eBin] ?? 0;
+		return rawSlip - center;
+	}
+
 	#stop(): void {
 		this.#epoch += 1;
 		if (this.#timer !== null) this.#clock.clearTimeout(this.#timer);
@@ -159,27 +232,43 @@ export class Observer {
 			allowEarlyAbstain: this.options.allowEarlyAbstain,
 		});
 
-		if (this.options.smoothDisplay && this.#facts.running && reading.estimate.logRemZ !== null) {
-			const rawZ = reading.estimate.logRemZ;
-			const todoDone = this.#facts.todoDoneEventsS.length;
-			const samePrompt = this.#smoothPromptId === reading.promptId && this.#smoothZ !== null;
-			const milestoneChanged = todoDone !== this.#smoothTodoDone;
-			const dtMs = now - this.#smoothAt;
-			if (samePrompt && !milestoneChanged && dtMs >= 0 && dtMs < 15_000) {
-				// Gentle EMA prevents visual jitter during fast tool bursts while still tracking trend smoothly.
-				const alpha = dtMs < 2_000 ? 0.35 : 0.6;
-				const blendedZ = alpha * rawZ + (1 - alpha) * this.#smoothZ!;
-				this.#smoothZ = blendedZ;
+		if (this.#facts.running && reading.estimate.logRemZ !== null) {
+			const baseZ = reading.estimate.logRemZ;
+			const elapsedS = activeMs(this.#facts, now) / 1000;
+			const baseRemS = Math.max(0, Math.exp(Math.min(10.5, Math.max(0, baseZ))) - SMOOTH_S);
+			const curTotS = elapsedS + baseRemS;
+
+			// Strictly causal online calibration (prior-prompt Empirical Bayes + centered forecast slippage).
+			const onlineZ = baseZ + 0.6 * this.#sessionBias() + 0.25 * this.#centeredSlippage(elapsedS, curTotS);
+
+			// Record milestone at >=14s active spacing for future slippage & post-prompt residual calibration.
+			const lastSample = this.#promptSamples[this.#promptSamples.length - 1];
+			if (elapsedS >= 5 && (!lastSample || elapsedS - lastSample.e >= 14)) {
+				this.#promptSamples.push({ e: elapsedS, zBase: baseZ, totS: curTotS });
+			}
+
+			let targetZ = onlineZ;
+			if (this.options.smoothDisplay) {
+				const todoDone = this.#facts.todoDoneEventsS.length;
+				const samePrompt = this.#smoothPromptId === reading.promptId && this.#smoothZ !== null;
+				const milestoneChanged = todoDone !== this.#smoothTodoDone;
+				const dtMs = now - this.#smoothAt;
+				if (samePrompt && !milestoneChanged && dtMs >= 0 && dtMs < 15_000) {
+					// Gentle EMA prevents visual jitter during fast tool bursts while still tracking trend smoothly.
+					const alpha = dtMs < 2_000 ? 0.35 : 0.6;
+					targetZ = alpha * onlineZ + (1 - alpha) * this.#smoothZ!;
+				}
+				this.#smoothZ = targetZ;
+				this.#smoothPromptId = reading.promptId;
+				this.#smoothAt = now;
+				this.#smoothTodoDone = todoDone;
+			}
+			if (Math.abs(targetZ - baseZ) > 1e-6) {
 				reading = estimateProgress(this.#facts, now, {
 					allowEarlyAbstain: this.options.allowEarlyAbstain,
-					overrideZ: blendedZ,
+					overrideZ: targetZ,
 				});
-			} else {
-				this.#smoothZ = rawZ;
 			}
-			this.#smoothPromptId = reading.promptId;
-			this.#smoothAt = now;
-			this.#smoothTodoDone = todoDone;
 		} else if (!this.#facts.running) {
 			this.#resetSmoothing();
 		}

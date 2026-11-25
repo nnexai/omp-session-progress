@@ -3,9 +3,10 @@
 // to guarantee zero train/serve skew.
 
 import { activeMs, EXPLORE_TOOLS, EXEC_TOOLS, type Facts, WRITE_TOOLS } from "./facts";
+import { conceptCounts, conceptVec, evalRidge, type TextRidgeModel } from "./text-concepts";
 
 export interface ExtractedFeatures {
-	/** 140 general, tool-agnostic causal numeric features fed into the local GBDT ensemble. */
+	/** 150 general, tool-agnostic causal numeric features fed into the local GBDT + SurvivalNet ensemble. */
 	x: number[];
 	/** Active elapsed seconds of the current prompt. */
 	elapsedS: number;
@@ -25,7 +26,7 @@ export const SMOOTH_S = 30;
 
 const RE_TODO_VERIFY = /\b(test|verify|check|commit|doc|readme|summary|reply)\b/i;
 
-export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
+export function extractFeatures(facts: Facts, now: number, textModel?: TextRidgeModel): ExtractedFeatures {
 	const elapsedS = activeMs(facts, now) / 1000;
 	const logElapsed = Math.log(elapsedS + SMOOTH_S);
 
@@ -244,6 +245,21 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 	}
 	const toolHalfRatio = facts.toolTimesS.length > 0 ? toolsSecondHalf / facts.toolTimesS.length : 0.5;
 
+	// 4-channel public-concept Ridge duration priors (strictly local, zero private tokens stored)
+	let zp = logElapsed;
+	let zt = logElapsed;
+	let zi = logElapsed;
+	let zr = logElapsed;
+	if (textModel) {
+		const effPrompt =
+			facts.isApprovalPrompt && facts.prevAssistText ? `${facts.promptText}\n${facts.prevAssistText}` : facts.promptText;
+		const remTodoTexts = hasActiveTodo ? remTodoItems.map(t => t.text) : [];
+		zp = evalRidge(textModel.bP, conceptVec(effPrompt));
+		zt = evalRidge(textModel.bT, conceptCounts(remTodoTexts));
+		zi = evalRidge(textModel.bI, conceptCounts(facts.recentIntents));
+		zr = evalRidge(textModel.bR, conceptCounts(facts.recentProse));
+	}
+
 	const x = [
 		// Original 78 general causal features
 		logElapsed,
@@ -399,6 +415,20 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 		Math.log1p(facts.carryoverOpenTodos),
 		Math.log(facts.priorMaxDurS + SMOOTH_S),
 		toolHalfRatio,
+
+		// Markov tool-transition & debug-loop features (5)
+		Math.log1p(facts.writeToErrCount),
+		Math.log1p(facts.errToWriteCount),
+		Math.log1p(facts.okToTodoDoneCount),
+		Math.log1p(facts.okToGitCount),
+		Math.log1p(facts.debugLoops),
+
+		// 4-channel 40-concept Ridge duration priors (5)
+		zp,
+		zp - logElapsed,
+		zt,
+		zi,
+		zr,
 	];
 
 	return { x, elapsedS, logElapsed, anchorZ, hasActiveTodo, todoDoneThisPrompt, toolCalls: tools };

@@ -1,7 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import { estimateProgress } from "../src/estimator";
 import { applyEvent, type BranchEntry, clean, emptyFacts, IDLE_GAP_MS, inferBlocker, inferNextHint, inferPhase, seedFromBranch } from "../src/facts";
+import { extractFeatures } from "../src/features";
+import { MODEL_DATA } from "../src/model-data";
 import { type Clock, Observer, type Report } from "../src/observer";
+import { truncLogNormMedZ } from "../src/survival-net";
 import { formatElapsed, formatRemaining, widgetLines } from "../src/widget";
 
 class FakeClock implements Clock {
@@ -285,6 +288,89 @@ describe("observer lifecycle, prompt attribution and live ticking", () => {
 		const { observer } = harness();
 		observer.observe("other-session", { type: "before_agent_start", prompt: "Wrong session" });
 		expect(observer.report().facts.requests).toBe(0);
+	});
+
+	test("tracks Markov debug loops, approval plan inheritance, survival median monotonicity, and 150 features", () => {
+		const facts = emptyFacts();
+		applyEvent(facts, { type: "before_agent_start", prompt: "Plan the migration" }, 0);
+		applyEvent(
+			facts,
+			{
+				type: "message_end",
+				message: {
+					role: "assistant",
+					stopReason: "stop",
+					content: [{ type: "text", text: "Plan: implement full end-to-end refactor and benchmark suite." }],
+				},
+			},
+			10_000,
+		);
+		applyEvent(facts, { type: "agent_end" }, 10_001);
+
+		// Brief approval inherits previous assistant plan text
+		applyEvent(facts, { type: "before_agent_start", prompt: "go ahead" }, 20_000);
+		expect(facts.isApprovalPrompt).toBe(true);
+		expect(facts.prevAssistText).toContain("end-to-end refactor");
+
+		// Write -> failing bash -> edit (1 write->err, 1 err->write, 1 debugLoop) -> passing bash -> todo ok
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "w1", toolName: "edit", intent: "Patch parser" }, 25_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "w1", toolName: "edit", isError: false }, 26_000);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "b1", toolName: "bash", intent: "Run tests" }, 30_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "b1", toolName: "bash", isError: true }, 32_000);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "w2", toolName: "edit", intent: "Fix failing test" }, 35_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "w2", toolName: "edit", isError: false }, 36_000);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "b2", toolName: "bash", intent: "Verify tests pass" }, 40_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "b2", toolName: "bash", isError: false }, 42_000);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "td1", toolName: "todo", args: { op: "done" } }, 45_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "td1", toolName: "todo", isError: false }, 46_000);
+
+		expect(facts.writeToErrCount).toBe(1);
+		expect(facts.errToWriteCount).toBe(1);
+		expect(facts.debugLoops).toBe(1);
+		expect(facts.okToTodoDoneCount).toBe(1);
+		expect(facts.recentIntents.length).toBeGreaterThanOrEqual(4);
+
+		const feat = extractFeatures(facts, 50_000, MODEL_DATA.textModel);
+		expect(feat.x.length).toBe(150);
+		expect(feat.x.every(Number.isFinite)).toBe(true);
+
+		// Conditional truncated log-normal median increases with prior mean mu and stays finite
+		const zLow = truncLogNormMedZ(4.5, 0.7, 60);
+		const zHigh = truncLogNormMedZ(6.5, 0.7, 60);
+		expect(Number.isFinite(zLow) && Number.isFinite(zHigh)).toBe(true);
+		expect(zHigh).toBeGreaterThan(zLow);
+	});
+
+	test("online session calibration adapts upward after a prompt runs much longer than predicted and resets cleanly", () => {
+		const runSecondPrompt = (withLongPriorPrompt: boolean, resetBetween: boolean) => {
+			const { clock, observer, tool } = harness({ smoothDisplay: false, allowEarlyAbstain: false });
+			if (withLongPriorPrompt) {
+				observer.observe("s1", { type: "before_agent_start", prompt: "Quick check" });
+				clock.advance(10_000);
+				tool("read", "Inspect file", false, "s1", 2_000);
+				// Runs 25 minutes active time — far longer than a quick read predicted!
+				for (let k = 0; k < 25; k++) {
+					clock.advance(58_000);
+					tool("bash", "Long running check", false, "s1", 2_000);
+				}
+				observer.observe("s1", { type: "agent_end" });
+				if (resetBetween) observer.reset();
+				clock.advance(10_000);
+			}
+			observer.observe("s1", { type: "before_agent_start", prompt: "Check another file" });
+			clock.advance(10_000);
+			tool("read", "Inspect file", false, "s1", 2_000);
+			clock.advance(18_000);
+			const rem = observer.report().reading?.estimate.remainingMinutes ?? 0;
+			observer.disable();
+			return rem;
+		};
+
+		const cold = runSecondPrompt(false, false);
+		const adapted = runSecondPrompt(true, false);
+		const afterReset = runSecondPrompt(true, true);
+		expect(adapted).toBeGreaterThan(cold);
+		expect(Math.abs(afterReset - cold)).toBeLessThan(1e-6);
 	});
 });
 

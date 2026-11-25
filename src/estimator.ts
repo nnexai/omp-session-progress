@@ -8,6 +8,7 @@ import { type EnsembleModel, evalEnsembleZ, evalQuantileRangeZ } from "./gbdt";
 import { MODEL_DATA } from "./model-data";
 import { calibratedRange } from "./range-calibration";
 import { handoffMinutes } from "./handoff";
+import { evalSurvivalNetZ } from "./survival-net";
 import RANGE_DATA from "./range-data.json";
 
 export type Confidence = "low" | "medium" | "high";
@@ -79,7 +80,7 @@ export function estimateProgress(facts: Facts, now: number, opts: EstimateOption
 		};
 	}
 
-	const feat = extractFeatures(facts, now);
+	const feat = extractFeatures(facts, now, model.textModel);
 
 	// In live interactive use, briefly show "starting…" before the first tool/plan arrives.
 	if (opts.allowEarlyAbstain && facts.running && feat.elapsedS < 3 && facts.toolCalls === 0 && !feat.hasActiveTodo) {
@@ -101,11 +102,22 @@ export function estimateProgress(facts: Facts, now: number, opts: EstimateOption
 		};
 	}
 
-	const rawZ = evalEnsembleZ(model, feat.x, feat.logElapsed, feat.anchorZ, {
+	const gbdtZ = evalEnsembleZ(model, feat.x, feat.logElapsed, feat.anchorZ, {
 		elapsedS: feat.elapsedS,
 		toolCalls: feat.toolCalls,
 		hasActiveTodo: feat.hasActiveTodo,
 	});
+	let rawZ = gbdtZ;
+	if (model.survivalNets && model.survivalNets.length > 0) {
+		let sum = 0;
+		for (let i = 0; i < model.survivalNets.length; i++) {
+			sum += evalSurvivalNetZ(model.survivalNets[i]!, feat.x, feat.elapsedS);
+		}
+		const mlpZ = sum / model.survivalNets.length;
+		// Smooth cross-family ramp: 0 weight on very short prompts (<30s), up to 15% past ~60s.
+		const wMlp = 0.15 / (1 + Math.exp(-(feat.elapsedS - 45) / 15));
+		rawZ = (1 - wMlp) * gbdtZ + wMlp * mlpZ;
+	}
 	const z = opts.overrideZ ?? rawZ;
 	let remMinutes = zToMinutes(z);
 	const remS = remMinutes * 60;

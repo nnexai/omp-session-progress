@@ -6,6 +6,9 @@
 //   - Split node: `[featureIndex, threshold, leftChild, rightChild]`
 // Inference runs in < 0.1 ms per call with zero allocations.
 
+import type { SurvivalNetModel } from "./survival-net";
+import type { TextRidgeModel } from "./text-concepts";
+
 export type CompactNode = number | [number, number, CompactNode, CompactNode];
 
 export type AnchorKind = "zero" | "elapsed" | "anchor";
@@ -28,6 +31,12 @@ export interface EnsembleModel {
 	/** Optional calibrated lower/upper quantile heads (25th / 75th percentile of z = ln(remS + 30)). */
 	qLow?: GBDTHead;
 	qHigh?: GBDTHead;
+	/** Optional 4-channel 40-concept Ridge duration priors. */
+	textModel?: TextRidgeModel;
+	/** Optional Truncated Log-Normal Survival ResMLP heads blended smoothly as elapsed grows. */
+	survivalNets?: SurvivalNetModel[];
+	/** Optional 8-octave empirical mean forecast slippage for causal online centering. */
+	slipCenter?: number[];
 }
 
 export interface EvalContext {
