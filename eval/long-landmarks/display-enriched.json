@@ -1,0 +1,1027 @@
+{
+  "population": "Frozen duration-enriched holdout, 42 sessions. Both recipes refitted on protected development histories; these are not the shipped weights.",
+  "endpoint": "Total completed active time >= 1800 seconds. Risk sets include prompts still running strictly past the landmark; ask waits excluded and silent gaps capped at 600 seconds.",
+  "scores": "Production Observer smoothed remaining estimate rendered with the frozen widget narrow point formatter, converted back to minutes for ranking; <30s is one tied bucket. Wide layouts may instead show a range and are not ranked here. Independent revision clocks use established timer and checkpoint cadence; prefix evidence only. Higher ranks as more likely long.",
+  "method": "Prompt-weighted AUC with half credit for ties; top ceil(forecast count/4) with uniformly shared cutoff ties. Matched comparisons use the same complete-case prompts within each arm.",
+  "caveat": "Observational rankings, not calibrated probabilities or causal effects. Intervals resample contributing sessions (2000 draws), not individual checkpoints. Correlated prompts and tiny late risk sets make estimates uncertain. No held-out tuning.",
+  "revisions": {
+    "v3": "41a40bf",
+    "v4": "0bada07"
+  },
+  "agesSeconds": [
+    5,
+    60,
+    180,
+    300,
+    600,
+    900,
+    1200,
+    1500
+  ],
+  "byAge": {
+    "5": {
+      "v3": {
+        "riskSet": 176,
+        "long": 17,
+        "shorter": 159,
+        "forecast": 176,
+        "forecastLong": 17,
+        "forecastShorter": 159,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6046984831668516,
+          "ci95": [
+            0.524186188013386,
+            0.7022994129158513
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 0.6666666666666666,
+          "actual": 50.170966666666665
+        },
+        "pointImpliesHalfHour": {
+          "long": 0,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 44,
+          "cutoffMinutes": 0.6666666666666666,
+          "expectedLongCaptured": 5.483870967741936,
+          "captureAmongForecastLong": 0.32258064516129037,
+          "captureAmongAllLong": 0.32258064516129037,
+          "precision": 0.124633431085044
+        }
+      },
+      "v4": {
+        "riskSet": 176,
+        "long": 17,
+        "shorter": 159,
+        "forecast": 176,
+        "forecastLong": 17,
+        "forecastShorter": 159,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.5504994450610433,
+          "ci95": [
+            0.4257447754557581,
+            0.6845714285714286
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 0.5,
+          "actual": 50.170966666666665
+        },
+        "pointImpliesHalfHour": {
+          "long": 0,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 44,
+          "cutoffMinutes": 0.6666666666666666,
+          "expectedLongCaptured": 5.513513513513513,
+          "captureAmongForecastLong": 0.3243243243243243,
+          "captureAmongAllLong": 0.3243243243243243,
+          "precision": 0.1253071253071253
+        }
+      }
+    },
+    "60": {
+      "v3": {
+        "riskSet": 127,
+        "long": 17,
+        "shorter": 110,
+        "forecast": 127,
+        "forecastLong": 17,
+        "forecastShorter": 110,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6580213903743316,
+          "ci95": [
+            0.5307459677419355,
+            0.7995049504950495
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 4,
+          "actual": 49.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 0,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 32,
+          "cutoffMinutes": 5,
+          "expectedLongCaptured": 7.714285714285714,
+          "captureAmongForecastLong": 0.453781512605042,
+          "captureAmongAllLong": 0.453781512605042,
+          "precision": 0.24107142857142858
+        }
+      },
+      "v4": {
+        "riskSet": 127,
+        "long": 17,
+        "shorter": 110,
+        "forecast": 127,
+        "forecastLong": 17,
+        "forecastShorter": 110,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6406417112299465,
+          "ci95": [
+            0.513903743315508,
+            0.7888888888888889
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 4,
+          "actual": 49.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 0,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 32,
+          "cutoffMinutes": 5,
+          "expectedLongCaptured": 6,
+          "captureAmongForecastLong": 0.35294117647058826,
+          "captureAmongAllLong": 0.35294117647058826,
+          "precision": 0.1875
+        }
+      }
+    },
+    "180": {
+      "v3": {
+        "riskSet": 98,
+        "long": 17,
+        "shorter": 81,
+        "forecast": 98,
+        "forecastLong": 17,
+        "forecastShorter": 81,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6336238198983297,
+          "ci95": [
+            0.5019700551615445,
+            0.7999316005471956
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 5,
+          "actual": 47.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 0,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 25,
+          "cutoffMinutes": 7,
+          "expectedLongCaptured": 6.75,
+          "captureAmongForecastLong": 0.39705882352941174,
+          "captureAmongAllLong": 0.39705882352941174,
+          "precision": 0.27
+        }
+      },
+      "v4": {
+        "riskSet": 98,
+        "long": 17,
+        "shorter": 81,
+        "forecast": 98,
+        "forecastLong": 17,
+        "forecastShorter": 81,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.5962236746550472,
+          "ci95": [
+            0.4523809523809524,
+            0.7666666666666667
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 5,
+          "actual": 47.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 0,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 25,
+          "cutoffMinutes": 7,
+          "expectedLongCaptured": 6,
+          "captureAmongForecastLong": 0.35294117647058826,
+          "captureAmongAllLong": 0.35294117647058826,
+          "precision": 0.24
+        }
+      }
+    },
+    "300": {
+      "v3": {
+        "riskSet": 81,
+        "long": 17,
+        "shorter": 64,
+        "forecast": 81,
+        "forecastLong": 17,
+        "forecastShorter": 64,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.5896139705882353,
+          "ci95": [
+            0.4270833333333333,
+            0.7866666666666666
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 7,
+          "actual": 45.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 1,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 21,
+          "cutoffMinutes": 9,
+          "expectedLongCaptured": 6.4,
+          "captureAmongForecastLong": 0.3764705882352941,
+          "captureAmongAllLong": 0.3764705882352941,
+          "precision": 0.3047619047619048
+        }
+      },
+      "v4": {
+        "riskSet": 81,
+        "long": 17,
+        "shorter": 64,
+        "forecast": 81,
+        "forecastLong": 17,
+        "forecastShorter": 64,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.5877757352941176,
+          "ci95": [
+            0.42410714285714285,
+            0.7783751493428913
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 6,
+          "actual": 45.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 1,
+          "shorter": 0
+        },
+        "topQuartile": {
+          "slots": 21,
+          "cutoffMinutes": 8,
+          "expectedLongCaptured": 5.25,
+          "captureAmongForecastLong": 0.3088235294117647,
+          "captureAmongAllLong": 0.3088235294117647,
+          "precision": 0.25
+        }
+      }
+    },
+    "600": {
+      "v3": {
+        "riskSet": 59,
+        "long": 17,
+        "shorter": 42,
+        "forecast": 59,
+        "forecastLong": 17,
+        "forecastShorter": 42,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6687675070028011,
+          "ci95": [
+            0.4954954954954955,
+            0.8557142857142858
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 8,
+          "actual": 40.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 5,
+          "shorter": 1
+        },
+        "topQuartile": {
+          "slots": 15,
+          "cutoffMinutes": 11,
+          "expectedLongCaptured": 7,
+          "captureAmongForecastLong": 0.4117647058823529,
+          "captureAmongAllLong": 0.4117647058823529,
+          "precision": 0.4666666666666667
+        }
+      },
+      "v4": {
+        "riskSet": 59,
+        "long": 17,
+        "shorter": 42,
+        "forecast": 59,
+        "forecastLong": 17,
+        "forecastShorter": 42,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6414565826330533,
+          "ci95": [
+            0.4757834757834758,
+            0.8252551020408163
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 7,
+          "actual": 40.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 4,
+          "shorter": 1
+        },
+        "topQuartile": {
+          "slots": 15,
+          "cutoffMinutes": 9,
+          "expectedLongCaptured": 5.5,
+          "captureAmongForecastLong": 0.3235294117647059,
+          "captureAmongAllLong": 0.3235294117647059,
+          "precision": 0.36666666666666664
+        }
+      }
+    },
+    "900": {
+      "v3": {
+        "riskSet": 37,
+        "long": 17,
+        "shorter": 20,
+        "forecast": 37,
+        "forecastLong": 17,
+        "forecastShorter": 20,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.7264705882352941,
+          "ci95": [
+            0.5488782051282052,
+            0.8970588235294118
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 12,
+          "actual": 35.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 7,
+          "shorter": 3
+        },
+        "topQuartile": {
+          "slots": 10,
+          "cutoffMinutes": 15,
+          "expectedLongCaptured": 7,
+          "captureAmongForecastLong": 0.4117647058823529,
+          "captureAmongAllLong": 0.4117647058823529,
+          "precision": 0.7
+        }
+      },
+      "v4": {
+        "riskSet": 37,
+        "long": 17,
+        "shorter": 20,
+        "forecast": 37,
+        "forecastLong": 17,
+        "forecastShorter": 20,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.7147058823529412,
+          "ci95": [
+            0.5361990950226244,
+            0.881074168797954
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 9,
+          "actual": 35.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 6,
+          "shorter": 3
+        },
+        "topQuartile": {
+          "slots": 10,
+          "cutoffMinutes": 14,
+          "expectedLongCaptured": 7,
+          "captureAmongForecastLong": 0.4117647058823529,
+          "captureAmongAllLong": 0.4117647058823529,
+          "precision": 0.7
+        }
+      }
+    },
+    "1200": {
+      "v3": {
+        "riskSet": 26,
+        "long": 17,
+        "shorter": 9,
+        "forecast": 26,
+        "forecastLong": 17,
+        "forecastShorter": 9,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6928104575163399,
+          "ci95": [
+            0.3984375,
+            0.9015151515151515
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 13,
+          "actual": 30.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 11,
+          "shorter": 4
+        },
+        "topQuartile": {
+          "slots": 7,
+          "cutoffMinutes": 16,
+          "expectedLongCaptured": 5.5,
+          "captureAmongForecastLong": 0.3235294117647059,
+          "captureAmongAllLong": 0.3235294117647059,
+          "precision": 0.7857142857142857
+        }
+      },
+      "v4": {
+        "riskSet": 26,
+        "long": 17,
+        "shorter": 9,
+        "forecast": 26,
+        "forecastLong": 17,
+        "forecastShorter": 9,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.6699346405228758,
+          "ci95": [
+            0.37058823529411766,
+            0.8875
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 10,
+          "actual": 30.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 9,
+          "shorter": 4
+        },
+        "topQuartile": {
+          "slots": 7,
+          "cutoffMinutes": 14,
+          "expectedLongCaptured": 6,
+          "captureAmongForecastLong": 0.35294117647058826,
+          "captureAmongAllLong": 0.35294117647058826,
+          "precision": 0.8571428571428571
+        }
+      }
+    },
+    "1500": {
+      "v3": {
+        "riskSet": 23,
+        "long": 17,
+        "shorter": 6,
+        "forecast": 23,
+        "forecastLong": 17,
+        "forecastShorter": 6,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.7696078431372549,
+          "ci95": [
+            0.4777777777777778,
+            0.9823529411764705
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 13,
+          "actual": 25.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 16,
+          "shorter": 4
+        },
+        "topQuartile": {
+          "slots": 6,
+          "cutoffMinutes": 21,
+          "expectedLongCaptured": 5,
+          "captureAmongForecastLong": 0.29411764705882354,
+          "captureAmongAllLong": 0.29411764705882354,
+          "precision": 0.8333333333333334
+        }
+      },
+      "v4": {
+        "riskSet": 23,
+        "long": 17,
+        "shorter": 6,
+        "forecast": 23,
+        "forecastLong": 17,
+        "forecastShorter": 6,
+        "noForecastLong": 0,
+        "noForecastShorter": 0,
+        "auc": {
+          "value": 0.7647058823529411,
+          "ci95": [
+            0.5555555555555556,
+            0.9553571428571429
+          ],
+          "validDraws": 2000
+        },
+        "medianLongMinutesLeft": {
+          "predicted": 10,
+          "actual": 25.2543
+        },
+        "pointImpliesHalfHour": {
+          "long": 16,
+          "shorter": 4
+        },
+        "topQuartile": {
+          "slots": 6,
+          "cutoffMinutes": 17,
+          "expectedLongCaptured": 5,
+          "captureAmongForecastLong": 0.29411764705882354,
+          "captureAmongAllLong": 0.29411764705882354,
+          "precision": 0.8333333333333334
+        }
+      }
+    }
+  },
+  "matched": [
+    {
+      "survivorAge": 600,
+      "arms": {
+        "v3": {
+          "survivors": 59,
+          "survivorLong": 17,
+          "survivorShorter": 42,
+          "excludedForMissingAny": 0,
+          "excludedLong": 0,
+          "scores": {
+            "300": {
+              "riskSet": 59,
+              "long": 17,
+              "shorter": 42,
+              "forecast": 59,
+              "forecastLong": 17,
+              "forecastShorter": 42,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.5343137254901961,
+                "ci95": [
+                  0.3430735930735931,
+                  0.7447115384615385
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 7,
+                "actual": 45.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 1,
+                "shorter": 0
+              },
+              "topQuartile": {
+                "slots": 15,
+                "cutoffMinutes": 10,
+                "expectedLongCaptured": 5.75,
+                "captureAmongForecastLong": 0.3382352941176471,
+                "captureAmongAllLong": 0.3382352941176471,
+                "precision": 0.38333333333333336
+              }
+            },
+            "600": {
+              "riskSet": 59,
+              "long": 17,
+              "shorter": 42,
+              "forecast": 59,
+              "forecastLong": 17,
+              "forecastShorter": 42,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.6687675070028011,
+                "ci95": [
+                  0.4954954954954955,
+                  0.8557142857142858
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 8,
+                "actual": 40.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 5,
+                "shorter": 1
+              },
+              "topQuartile": {
+                "slots": 15,
+                "cutoffMinutes": 11,
+                "expectedLongCaptured": 7,
+                "captureAmongForecastLong": 0.4117647058823529,
+                "captureAmongAllLong": 0.4117647058823529,
+                "precision": 0.4666666666666667
+              }
+            }
+          },
+          "changesFromFirstScore": {
+            "600": {
+              "value": 0.13445378151260504,
+              "ci95": [
+                0.06209150326797386,
+                0.2509469696969697
+              ],
+              "validDraws": 2000
+            }
+          }
+        },
+        "v4": {
+          "survivors": 59,
+          "survivorLong": 17,
+          "survivorShorter": 42,
+          "excludedForMissingAny": 0,
+          "excludedLong": 0,
+          "scores": {
+            "300": {
+              "riskSet": 59,
+              "long": 17,
+              "shorter": 42,
+              "forecast": 59,
+              "forecastLong": 17,
+              "forecastShorter": 42,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.5182072829131653,
+                "ci95": [
+                  0.3203463203463203,
+                  0.7240641711229947
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 6,
+                "actual": 45.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 1,
+                "shorter": 0
+              },
+              "topQuartile": {
+                "slots": 15,
+                "cutoffMinutes": 10,
+                "expectedLongCaptured": 5,
+                "captureAmongForecastLong": 0.29411764705882354,
+                "captureAmongAllLong": 0.29411764705882354,
+                "precision": 0.3333333333333333
+              }
+            },
+            "600": {
+              "riskSet": 59,
+              "long": 17,
+              "shorter": 42,
+              "forecast": 59,
+              "forecastLong": 17,
+              "forecastShorter": 42,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.6414565826330533,
+                "ci95": [
+                  0.4757834757834758,
+                  0.8252551020408163
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 7,
+                "actual": 40.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 4,
+                "shorter": 1
+              },
+              "topQuartile": {
+                "slots": 15,
+                "cutoffMinutes": 9,
+                "expectedLongCaptured": 5.5,
+                "captureAmongForecastLong": 0.3235294117647059,
+                "captureAmongAllLong": 0.3235294117647059,
+                "precision": 0.36666666666666664
+              }
+            }
+          },
+          "changesFromFirstScore": {
+            "600": {
+              "value": 0.12324929971988796,
+              "ci95": [
+                0.051470588235294115,
+                0.2336734693877551
+              ],
+              "validDraws": 2000
+            }
+          }
+        }
+      }
+    },
+    {
+      "survivorAge": 900,
+      "arms": {
+        "v3": {
+          "survivors": 37,
+          "survivorLong": 17,
+          "survivorShorter": 20,
+          "excludedForMissingAny": 0,
+          "excludedLong": 0,
+          "scores": {
+            "300": {
+              "riskSet": 37,
+              "long": 17,
+              "shorter": 20,
+              "forecast": 37,
+              "forecastLong": 17,
+              "forecastShorter": 20,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.47794117647058826,
+                "ci95": [
+                  0.26666666666666666,
+                  0.6845238095238095
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 7,
+                "actual": 45.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 1,
+                "shorter": 0
+              },
+              "topQuartile": {
+                "slots": 10,
+                "cutoffMinutes": 14,
+                "expectedLongCaptured": 5,
+                "captureAmongForecastLong": 0.29411764705882354,
+                "captureAmongAllLong": 0.29411764705882354,
+                "precision": 0.5
+              }
+            },
+            "600": {
+              "riskSet": 37,
+              "long": 17,
+              "shorter": 20,
+              "forecast": 37,
+              "forecastLong": 17,
+              "forecastShorter": 20,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.5823529411764706,
+                "ci95": [
+                  0.35833333333333334,
+                  0.7986425339366516
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 8,
+                "actual": 40.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 5,
+                "shorter": 1
+              },
+              "topQuartile": {
+                "slots": 10,
+                "cutoffMinutes": 13,
+                "expectedLongCaptured": 6,
+                "captureAmongForecastLong": 0.35294117647058826,
+                "captureAmongAllLong": 0.35294117647058826,
+                "precision": 0.6
+              }
+            },
+            "900": {
+              "riskSet": 37,
+              "long": 17,
+              "shorter": 20,
+              "forecast": 37,
+              "forecastLong": 17,
+              "forecastShorter": 20,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.7264705882352941,
+                "ci95": [
+                  0.5488782051282052,
+                  0.8970588235294118
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 12,
+                "actual": 35.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 7,
+                "shorter": 3
+              },
+              "topQuartile": {
+                "slots": 10,
+                "cutoffMinutes": 15,
+                "expectedLongCaptured": 7,
+                "captureAmongForecastLong": 0.4117647058823529,
+                "captureAmongAllLong": 0.4117647058823529,
+                "precision": 0.7
+              }
+            }
+          },
+          "changesFromFirstScore": {
+            "600": {
+              "value": 0.10441176470588236,
+              "ci95": [
+                0.00644122383252818,
+                0.2408906882591093
+              ],
+              "validDraws": 2000
+            },
+            "900": {
+              "value": 0.2485294117647059,
+              "ci95": [
+                0.11805555555555555,
+                0.43137254901960786
+              ],
+              "validDraws": 2000
+            }
+          }
+        },
+        "v4": {
+          "survivors": 37,
+          "survivorLong": 17,
+          "survivorShorter": 20,
+          "excludedForMissingAny": 0,
+          "excludedLong": 0,
+          "scores": {
+            "300": {
+              "riskSet": 37,
+              "long": 17,
+              "shorter": 20,
+              "forecast": 37,
+              "forecastLong": 17,
+              "forecastShorter": 20,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.4411764705882353,
+                "ci95": [
+                  0.225,
+                  0.6447368421052632
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 6,
+                "actual": 45.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 1,
+                "shorter": 0
+              },
+              "topQuartile": {
+                "slots": 10,
+                "cutoffMinutes": 11,
+                "expectedLongCaptured": 5,
+                "captureAmongForecastLong": 0.29411764705882354,
+                "captureAmongAllLong": 0.29411764705882354,
+                "precision": 0.5
+              }
+            },
+            "600": {
+              "riskSet": 37,
+              "long": 17,
+              "shorter": 20,
+              "forecast": 37,
+              "forecastLong": 17,
+              "forecastShorter": 20,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.5117647058823529,
+                "ci95": [
+                  0.2797101449275362,
+                  0.7424242424242424
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 7,
+                "actual": 40.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 4,
+                "shorter": 1
+              },
+              "topQuartile": {
+                "slots": 10,
+                "cutoffMinutes": 13,
+                "expectedLongCaptured": 5,
+                "captureAmongForecastLong": 0.29411764705882354,
+                "captureAmongAllLong": 0.29411764705882354,
+                "precision": 0.5
+              }
+            },
+            "900": {
+              "riskSet": 37,
+              "long": 17,
+              "shorter": 20,
+              "forecast": 37,
+              "forecastLong": 17,
+              "forecastShorter": 20,
+              "noForecastLong": 0,
+              "noForecastShorter": 0,
+              "auc": {
+                "value": 0.7147058823529412,
+                "ci95": [
+                  0.5361990950226244,
+                  0.881074168797954
+                ],
+                "validDraws": 2000
+              },
+              "medianLongMinutesLeft": {
+                "predicted": 9,
+                "actual": 35.2543
+              },
+              "pointImpliesHalfHour": {
+                "long": 6,
+                "shorter": 3
+              },
+              "topQuartile": {
+                "slots": 10,
+                "cutoffMinutes": 14,
+                "expectedLongCaptured": 7,
+                "captureAmongForecastLong": 0.4117647058823529,
+                "captureAmongAllLong": 0.4117647058823529,
+                "precision": 0.7
+              }
+            }
+          },
+          "changesFromFirstScore": {
+            "600": {
+              "value": 0.07058823529411765,
+              "ci95": [
+                -0.034545454545454546,
+                0.205
+              ],
+              "validDraws": 2000
+            },
+            "900": {
+              "value": 0.2735294117647059,
+              "ci95": [
+                0.14705882352941177,
+                0.4444444444444444
+              ],
+              "validDraws": 2000
+            }
+          }
+        }
+      }
+    }
+  ]
+}

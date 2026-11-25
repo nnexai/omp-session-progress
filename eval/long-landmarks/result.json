@@ -1,0 +1,1357 @@
+{
+  "target": "total active duration >= 1800s; completed prompts still running at fixed active age",
+  "devPromptCountsByAge": [
+    779,
+    433,
+    258,
+    188,
+    119,
+    80,
+    62,
+    48
+  ],
+  "thresholds": {
+    "5": 0.0937,
+    "60": 0.1894,
+    "180": 0.2896,
+    "300": 0.4144,
+    "600": 0.6192,
+    "900": 0.8512,
+    "1200": 0.779,
+    "1500": 0.9051
+  },
+  "landmarks": {
+    "official": {
+      "5": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 1,
+        "shorterFlagged": 38,
+        "contributingSessions": 40,
+        "actualMinutesLeftQuartiles": [
+          0.3141,
+          1.6666,
+          5.7042
+        ],
+        "auc": {
+          "value": 0.3899,
+          "ci95": [
+            0.2203,
+            0.5807
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.4138,
+          "ci95": [
+            0.2423,
+            0.6061
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": -0.0239,
+          "ci95": [
+            -0.0624,
+            0.0137
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.3619,
+          "ci95": [
+            0.1889,
+            0.5661
+          ],
+          "validDraws": 2000
+        }
+      },
+      "60": {
+        "long": 10,
+        "shorter": 143,
+        "longFlagged": 4,
+        "shorterFlagged": 27,
+        "contributingSessions": 40,
+        "actualMinutesLeftQuartiles": [
+          1.0557,
+          3.5842,
+          12.7354
+        ],
+        "auc": {
+          "value": 0.6168,
+          "ci95": [
+            0.3822,
+            0.8133
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.335,
+          "ci95": [
+            0.1625,
+            0.5317
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.2818,
+          "ci95": [
+            0.112,
+            0.423
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5381,
+          "ci95": [
+            0.2917,
+            0.7556
+          ],
+          "validDraws": 2000
+        }
+      },
+      "180": {
+        "long": 10,
+        "shorter": 83,
+        "longFlagged": 2,
+        "shorterFlagged": 7,
+        "contributingSessions": 34,
+        "actualMinutesLeftQuartiles": [
+          2.2265,
+          8.3987,
+          14.0585
+        ],
+        "auc": {
+          "value": 0.5795,
+          "ci95": [
+            0.3495,
+            0.7973
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.3759,
+          "ci95": [
+            0.2152,
+            0.5582
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.2036,
+          "ci95": [
+            0.0101,
+            0.3874
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5429,
+          "ci95": [
+            0.2916,
+            0.7639
+          ],
+          "validDraws": 2000
+        }
+      },
+      "300": {
+        "long": 10,
+        "shorter": 60,
+        "longFlagged": 1,
+        "shorterFlagged": 3,
+        "contributingSessions": 30,
+        "actualMinutesLeftQuartiles": [
+          4.2523,
+          9.3473,
+          17.0783
+        ],
+        "auc": {
+          "value": 0.6183,
+          "ci95": [
+            0.3285,
+            0.8387
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.3717,
+          "ci95": [
+            0.1917,
+            0.5572
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.2467,
+          "ci95": [
+            0.0185,
+            0.4545
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.581,
+          "ci95": [
+            0.3317,
+            0.7938
+          ],
+          "validDraws": 2000
+        }
+      },
+      "600": {
+        "long": 10,
+        "shorter": 42,
+        "longFlagged": 1,
+        "shorterFlagged": 3,
+        "contributingSessions": 28,
+        "actualMinutesLeftQuartiles": [
+          3.7118,
+          6.5062,
+          13.6958
+        ],
+        "auc": {
+          "value": 0.4833,
+          "ci95": [
+            0.232,
+            0.7048
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.3714,
+          "ci95": [
+            0.2083,
+            0.5638
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.1119,
+          "ci95": [
+            -0.1452,
+            0.3223
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.4714,
+          "ci95": [
+            0.2448,
+            0.6846
+          ],
+          "validDraws": 2000
+        }
+      },
+      "900": {
+        "long": 10,
+        "shorter": 21,
+        "longFlagged": 1,
+        "shorterFlagged": 1,
+        "contributingSessions": 22,
+        "actualMinutesLeftQuartiles": [
+          2.7121,
+          7.6665,
+          27.6859
+        ],
+        "auc": {
+          "value": 0.5429,
+          "ci95": [
+            0.2934,
+            0.747
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.3714,
+          "ci95": [
+            0.1818,
+            0.5589
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.1714,
+          "ci95": [
+            -0.0952,
+            0.3962
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5429,
+          "ci95": [
+            0.2934,
+            0.747
+          ],
+          "validDraws": 2000
+        }
+      },
+      "1200": {
+        "long": 10,
+        "shorter": 11,
+        "longFlagged": 4,
+        "shorterFlagged": 2,
+        "contributingSessions": 16,
+        "actualMinutesLeftQuartiles": [
+          2.6665,
+          6.8295,
+          26.6819
+        ],
+        "auc": {
+          "value": 0.4909,
+          "ci95": [
+            0.2159,
+            0.76
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.4545,
+          "ci95": [
+            0.2378,
+            0.7182
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.0364,
+          "ci95": [
+            -0.3,
+            0.359
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.4909,
+          "ci95": [
+            0.2159,
+            0.76
+          ],
+          "validDraws": 2000
+        }
+      },
+      "1500": {
+        "long": 10,
+        "shorter": 1,
+        "longFlagged": 2,
+        "shorterFlagged": 0,
+        "contributingSessions": 10,
+        "actualMinutesLeftQuartiles": [
+          17.6859,
+          21.6819,
+          33.2199
+        ],
+        "auc": {
+          "value": 0.4,
+          "ci95": [
+            0.1111,
+            0.7
+          ],
+          "validDraws": 1294
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.3,
+          "ci95": [
+            0.0,
+            0.6667
+          ],
+          "validDraws": 1294
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.1,
+          "ci95": [
+            -0.2857,
+            0.4167
+          ],
+          "validDraws": 1294
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.4,
+          "ci95": [
+            0.1111,
+            0.7
+          ],
+          "validDraws": 1294
+        }
+      }
+    },
+    "enriched": {
+      "5": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 5,
+        "shorterFlagged": 27,
+        "contributingSessions": 42,
+        "actualMinutesLeftQuartiles": [
+          0.8108,
+          4.1044,
+          13.0017
+        ],
+        "auc": {
+          "value": 0.6178,
+          "ci95": [
+            0.4901,
+            0.7484
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.6112,
+          "ci95": [
+            0.4667,
+            0.7591
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.0067,
+          "ci95": [
+            -0.027,
+            0.052
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.4941,
+          "ci95": [
+            0.3043,
+            0.6927
+          ],
+          "validDraws": 2000
+        }
+      },
+      "60": {
+        "long": 17,
+        "shorter": 110,
+        "longFlagged": 6,
+        "shorterFlagged": 25,
+        "contributingSessions": 38,
+        "actualMinutesLeftQuartiles": [
+          2.1912,
+          7.7665,
+          16.4833
+        ],
+        "auc": {
+          "value": 0.6888,
+          "ci95": [
+            0.5868,
+            0.8121
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.6241,
+          "ci95": [
+            0.5026,
+            0.7624
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.0647,
+          "ci95": [
+            -0.0359,
+            0.1715
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5618,
+          "ci95": [
+            0.3646,
+            0.746
+          ],
+          "validDraws": 2000
+        }
+      },
+      "180": {
+        "long": 17,
+        "shorter": 81,
+        "longFlagged": 7,
+        "shorterFlagged": 15,
+        "contributingSessions": 37,
+        "actualMinutesLeftQuartiles": [
+          4.6936,
+          9.3772,
+          18.1506
+        ],
+        "auc": {
+          "value": 0.6013,
+          "ci95": [
+            0.4523,
+            0.7486
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.626,
+          "ci95": [
+            0.4831,
+            0.7702
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": -0.0247,
+          "ci95": [
+            -0.2024,
+            0.1523
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5118,
+          "ci95": [
+            0.3374,
+            0.6921
+          ],
+          "validDraws": 2000
+        }
+      },
+      "300": {
+        "long": 17,
+        "shorter": 64,
+        "longFlagged": 3,
+        "shorterFlagged": 10,
+        "contributingSessions": 33,
+        "actualMinutesLeftQuartiles": [
+          4.2169,
+          8.4687,
+          21.9447
+        ],
+        "auc": {
+          "value": 0.5597,
+          "ci95": [
+            0.4133,
+            0.7246
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.5947,
+          "ci95": [
+            0.4576,
+            0.7373
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": -0.0349,
+          "ci95": [
+            -0.1969,
+            0.1615
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.4559,
+          "ci95": [
+            0.2989,
+            0.641
+          ],
+          "validDraws": 2000
+        }
+      },
+      "600": {
+        "long": 17,
+        "shorter": 42,
+        "longFlagged": 3,
+        "shorterFlagged": 1,
+        "contributingSessions": 29,
+        "actualMinutesLeftQuartiles": [
+          3.0866,
+          9.0038,
+          23.0538
+        ],
+        "auc": {
+          "value": 0.6106,
+          "ci95": [
+            0.4724,
+            0.7766
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.5868,
+          "ci95": [
+            0.439,
+            0.7572
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.0238,
+          "ci95": [
+            -0.189,
+            0.2313
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5412,
+          "ci95": [
+            0.3518,
+            0.7445
+          ],
+          "validDraws": 2000
+        }
+      },
+      "900": {
+        "long": 17,
+        "shorter": 20,
+        "longFlagged": 2,
+        "shorterFlagged": 0,
+        "contributingSessions": 21,
+        "actualMinutesLeftQuartiles": [
+          4.1852,
+          13.3026,
+          33.2592
+        ],
+        "auc": {
+          "value": 0.5559,
+          "ci95": [
+            0.3807,
+            0.7633
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.4706,
+          "ci95": [
+            0.2715,
+            0.6603
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.0853,
+          "ci95": [
+            -0.1459,
+            0.3274
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.5559,
+          "ci95": [
+            0.3807,
+            0.7633
+          ],
+          "validDraws": 2000
+        }
+      },
+      "1200": {
+        "long": 17,
+        "shorter": 9,
+        "longFlagged": 5,
+        "shorterFlagged": 0,
+        "contributingSessions": 16,
+        "actualMinutesLeftQuartiles": [
+          7.9737,
+          16.7783,
+          36.9721
+        ],
+        "auc": {
+          "value": 0.6863,
+          "ci95": [
+            0.5061,
+            0.8667
+          ],
+          "validDraws": 2000
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.5163,
+          "ci95": [
+            0.2708,
+            0.7563
+          ],
+          "validDraws": 2000
+        },
+        "gainOverPromptAndHistory": {
+          "value": 0.1699,
+          "ci95": [
+            -0.0286,
+            0.4
+          ],
+          "validDraws": 2000
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.6863,
+          "ci95": [
+            0.5061,
+            0.8667
+          ],
+          "validDraws": 2000
+        }
+      },
+      "1500": {
+        "long": 17,
+        "shorter": 6,
+        "longFlagged": 3,
+        "shorterFlagged": 2,
+        "contributingSessions": 14,
+        "actualMinutesLeftQuartiles": [
+          5.1883,
+          15.9805,
+          33.2963
+        ],
+        "auc": {
+          "value": 0.4608,
+          "ci95": [
+            0.1999,
+            0.7444
+          ],
+          "validDraws": 1999
+        },
+        "promptAndHistoryAuc": {
+          "value": 0.5392,
+          "ci95": [
+            0.1904,
+            0.9125
+          ],
+          "validDraws": 1999
+        },
+        "gainOverPromptAndHistory": {
+          "value": -0.0784,
+          "ci95": [
+            -0.2721,
+            0.1429
+          ],
+          "validDraws": 1999
+        },
+        "aucExcludingUnder15min": {
+          "value": 0.4608,
+          "ci95": [
+            0.1999,
+            0.7444
+          ],
+          "validDraws": 1999
+        }
+      }
+    }
+  },
+  "sameLaterSurvivors": {
+    "official": {
+      "300": {
+        "5": {
+          "earlierAuc": 0.3667,
+          "delta": {
+            "value": 0.2517,
+            "ci95": [
+              -0.0074,
+              0.4675
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "600": {
+        "5": {
+          "earlierAuc": 0.3738,
+          "delta": {
+            "value": 0.1095,
+            "ci95": [
+              -0.1693,
+              0.337
+            ],
+            "validDraws": 2000
+          }
+        },
+        "300": {
+          "earlierAuc": 0.581,
+          "delta": {
+            "value": -0.0976,
+            "ci95": [
+              -0.3007,
+              0.1
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "900": {
+        "5": {
+          "earlierAuc": 0.3619,
+          "delta": {
+            "value": 0.181,
+            "ci95": [
+              -0.0973,
+              0.4188
+            ],
+            "validDraws": 2000
+          }
+        },
+        "300": {
+          "earlierAuc": 0.581,
+          "delta": {
+            "value": -0.0381,
+            "ci95": [
+              -0.2208,
+              0.1204
+            ],
+            "validDraws": 2000
+          }
+        },
+        "600": {
+          "earlierAuc": 0.4714,
+          "delta": {
+            "value": 0.0714,
+            "ci95": [
+              -0.0263,
+              0.1842
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "1200": {
+        "5": {
+          "earlierAuc": 0.4455,
+          "delta": {
+            "value": 0.0455,
+            "ci95": [
+              -0.2648,
+              0.3453
+            ],
+            "validDraws": 2000
+          }
+        },
+        "300": {
+          "earlierAuc": 0.6909,
+          "delta": {
+            "value": -0.2,
+            "ci95": [
+              -0.4167,
+              0.0618
+            ],
+            "validDraws": 2000
+          }
+        },
+        "600": {
+          "earlierAuc": 0.5273,
+          "delta": {
+            "value": -0.0364,
+            "ci95": [
+              -0.2657,
+              0.2019
+            ],
+            "validDraws": 2000
+          }
+        },
+        "900": {
+          "earlierAuc": 0.5727,
+          "delta": {
+            "value": -0.0818,
+            "ci95": [
+              -0.2906,
+              0.1346
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "1500": {
+        "5": {
+          "earlierAuc": 0.1,
+          "delta": {
+            "value": 0.3,
+            "ci95": [
+              0.0,
+              0.5556
+            ],
+            "validDraws": 1294
+          }
+        },
+        "300": {
+          "earlierAuc": 0.8,
+          "delta": {
+            "value": -0.4,
+            "ci95": [
+              -0.7,
+              -0.1111
+            ],
+            "validDraws": 1294
+          }
+        },
+        "600": {
+          "earlierAuc": 0.5,
+          "delta": {
+            "value": -0.1,
+            "ci95": [
+              -0.2727,
+              0.0
+            ],
+            "validDraws": 1294
+          }
+        },
+        "900": {
+          "earlierAuc": 0.9,
+          "delta": {
+            "value": -0.5,
+            "ci95": [
+              -0.7778,
+              -0.2
+            ],
+            "validDraws": 1294
+          }
+        },
+        "1200": {
+          "earlierAuc": 0.7,
+          "delta": {
+            "value": -0.3,
+            "ci95": [
+              -0.5556,
+              0.0
+            ],
+            "validDraws": 1294
+          }
+        }
+      }
+    },
+    "enriched": {
+      "300": {
+        "5": {
+          "earlierAuc": 0.591,
+          "delta": {
+            "value": -0.0312,
+            "ci95": [
+              -0.1989,
+              0.1866
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "600": {
+        "5": {
+          "earlierAuc": 0.5952,
+          "delta": {
+            "value": 0.0154,
+            "ci95": [
+              -0.1941,
+              0.2301
+            ],
+            "validDraws": 2000
+          }
+        },
+        "300": {
+          "earlierAuc": 0.5504,
+          "delta": {
+            "value": 0.0602,
+            "ci95": [
+              -0.0701,
+              0.1778
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "900": {
+        "5": {
+          "earlierAuc": 0.4941,
+          "delta": {
+            "value": 0.0618,
+            "ci95": [
+              -0.1463,
+              0.2914
+            ],
+            "validDraws": 2000
+          }
+        },
+        "300": {
+          "earlierAuc": 0.4559,
+          "delta": {
+            "value": 0.1,
+            "ci95": [
+              -0.0686,
+              0.2752
+            ],
+            "validDraws": 2000
+          }
+        },
+        "600": {
+          "earlierAuc": 0.5412,
+          "delta": {
+            "value": 0.0147,
+            "ci95": [
+              -0.1056,
+              0.1702
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "1200": {
+        "5": {
+          "earlierAuc": 0.5033,
+          "delta": {
+            "value": 0.183,
+            "ci95": [
+              -0.0397,
+              0.4243
+            ],
+            "validDraws": 2000
+          }
+        },
+        "300": {
+          "earlierAuc": 0.3856,
+          "delta": {
+            "value": 0.3007,
+            "ci95": [
+              0.0437,
+              0.5215
+            ],
+            "validDraws": 2000
+          }
+        },
+        "600": {
+          "earlierAuc": 0.5033,
+          "delta": {
+            "value": 0.183,
+            "ci95": [
+              -0.0209,
+              0.4135
+            ],
+            "validDraws": 2000
+          }
+        },
+        "900": {
+          "earlierAuc": 0.4641,
+          "delta": {
+            "value": 0.2222,
+            "ci95": [
+              0.04,
+              0.4034
+            ],
+            "validDraws": 2000
+          }
+        }
+      },
+      "1500": {
+        "5": {
+          "earlierAuc": 0.4902,
+          "delta": {
+            "value": -0.0294,
+            "ci95": [
+              -0.1765,
+              0.1579
+            ],
+            "validDraws": 1999
+          }
+        },
+        "300": {
+          "earlierAuc": 0.3922,
+          "delta": {
+            "value": 0.0686,
+            "ci95": [
+              -0.2539,
+              0.3479
+            ],
+            "validDraws": 1999
+          }
+        },
+        "600": {
+          "earlierAuc": 0.4902,
+          "delta": {
+            "value": -0.0294,
+            "ci95": [
+              -0.3835,
+              0.3286
+            ],
+            "validDraws": 1999
+          }
+        },
+        "900": {
+          "earlierAuc": 0.4608,
+          "delta": {
+            "value": 0.0,
+            "ci95": [
+              -0.2361,
+              0.2222
+            ],
+            "validDraws": 1999
+          }
+        },
+        "1200": {
+          "earlierAuc": 0.6471,
+          "delta": {
+            "value": -0.1863,
+            "ci95": [
+              -0.4167,
+              0.0294
+            ],
+            "validDraws": 1999
+          }
+        }
+      }
+    }
+  },
+  "everFlaggedByAge": {
+    "official": {
+      "5": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 1,
+        "shorterFlagged": 38,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "60": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 4,
+        "shorterFlagged": 55,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "180": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 5,
+        "shorterFlagged": 57,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "300": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 5,
+        "shorterFlagged": 57,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "600": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 5,
+        "shorterFlagged": 58,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "900": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 5,
+        "shorterFlagged": 58,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "1200": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 6,
+        "shorterFlagged": 60,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      },
+      "1500": {
+        "long": 10,
+        "shorter": 247,
+        "longFlagged": 6,
+        "shorterFlagged": 60,
+        "subMinuteFlagged": 14,
+        "subMinuteScored": 104
+      }
+    },
+    "enriched": {
+      "5": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 5,
+        "shorterFlagged": 27,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "60": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 9,
+        "shorterFlagged": 43,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "180": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 11,
+        "shorterFlagged": 48,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "300": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 11,
+        "shorterFlagged": 51,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "600": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 11,
+        "shorterFlagged": 52,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "900": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 11,
+        "shorterFlagged": 52,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "1200": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 11,
+        "shorterFlagged": 52,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      },
+      "1500": {
+        "long": 17,
+        "shorter": 159,
+        "longFlagged": 12,
+        "shorterFlagged": 52,
+        "subMinuteFlagged": 6,
+        "subMinuteScored": 49
+      }
+    }
+  },
+  "descriptiveEvidence": {
+    "official": {
+      "300": {
+        "threeOpenTodos": {
+          "long": 10,
+          "shorter": 60,
+          "longFlagged": 5,
+          "shorterFlagged": 19
+        },
+        "anyDispatch": {
+          "long": 10,
+          "shorter": 60,
+          "longFlagged": 8,
+          "shorterFlagged": 30
+        },
+        "toolOpen60s": {
+          "long": 10,
+          "shorter": 60,
+          "longFlagged": 4,
+          "shorterFlagged": 21
+        },
+        "anyError": {
+          "long": 10,
+          "shorter": 60,
+          "longFlagged": 7,
+          "shorterFlagged": 34
+        },
+        "debugLoop": {
+          "long": 10,
+          "shorter": 60,
+          "longFlagged": 3,
+          "shorterFlagged": 13
+        }
+      },
+      "600": {
+        "threeOpenTodos": {
+          "long": 10,
+          "shorter": 42,
+          "longFlagged": 5,
+          "shorterFlagged": 10
+        },
+        "anyDispatch": {
+          "long": 10,
+          "shorter": 42,
+          "longFlagged": 9,
+          "shorterFlagged": 27
+        },
+        "toolOpen60s": {
+          "long": 10,
+          "shorter": 42,
+          "longFlagged": 3,
+          "shorterFlagged": 15
+        },
+        "anyError": {
+          "long": 10,
+          "shorter": 42,
+          "longFlagged": 7,
+          "shorterFlagged": 27
+        },
+        "debugLoop": {
+          "long": 10,
+          "shorter": 42,
+          "longFlagged": 5,
+          "shorterFlagged": 16
+        }
+      }
+    },
+    "enriched": {
+      "300": {
+        "threeOpenTodos": {
+          "long": 17,
+          "shorter": 64,
+          "longFlagged": 10,
+          "shorterFlagged": 32
+        },
+        "anyDispatch": {
+          "long": 17,
+          "shorter": 64,
+          "longFlagged": 9,
+          "shorterFlagged": 41
+        },
+        "toolOpen60s": {
+          "long": 17,
+          "shorter": 64,
+          "longFlagged": 5,
+          "shorterFlagged": 22
+        },
+        "anyError": {
+          "long": 17,
+          "shorter": 64,
+          "longFlagged": 9,
+          "shorterFlagged": 27
+        },
+        "debugLoop": {
+          "long": 17,
+          "shorter": 64,
+          "longFlagged": 5,
+          "shorterFlagged": 17
+        }
+      },
+      "600": {
+        "threeOpenTodos": {
+          "long": 17,
+          "shorter": 42,
+          "longFlagged": 8,
+          "shorterFlagged": 14
+        },
+        "anyDispatch": {
+          "long": 17,
+          "shorter": 42,
+          "longFlagged": 10,
+          "shorterFlagged": 29
+        },
+        "toolOpen60s": {
+          "long": 17,
+          "shorter": 42,
+          "longFlagged": 6,
+          "shorterFlagged": 8
+        },
+        "anyError": {
+          "long": 17,
+          "shorter": 42,
+          "longFlagged": 10,
+          "shorterFlagged": 22
+        },
+        "debugLoop": {
+          "long": 17,
+          "shorter": 42,
+          "longFlagged": 6,
+          "shorterFlagged": 13
+        }
+      }
+    }
+  }
+}
