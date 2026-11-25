@@ -3,7 +3,7 @@ import { join, resolve } from 'node:path';
 import { activeSegments, type Trace } from '../extract';
 import { frozenText, sha } from '../frozen-session';
 import type { Entry } from '../tool-timing/cohort';
-import reference from '../milestones/result.json';
+import { privateProvenance } from '../provenance';
 import { verificationHandoff, verificationIdentity, verificationNotices, verificationReceipt, verificationReceiptCount, verificationTrace } from '../repeat-verification/identity';
 
 type Interval = [number, number];
@@ -140,10 +140,11 @@ if(import.meta.main){
   const entries=['fold0','fold1','fold2','test'].map(n=>JSON.parse(readFileSync(join(root,n,'entries.json'),'utf8')) as Entry[]);
   const dev=entries.slice(0,3).flat(), test=entries[3]!;
   const setHash=(es:Entry[])=>sha(es.map(e=>e.digest).sort().join('\n'));
-  if(setHash(dev)!==reference.provenance.developmentContentSetSha256 || setHash(test)!==reference.provenance.holdoutContentSetSha256 || new Set(entries.flat().map(e=>e.id)).size!==entries.flat().length)throw Error('Unexpected frozen split');
+  const expected=privateProvenance();
+  if(setHash(dev)!==expected.developmentContentSetSha256 || setHash(test)!==expected.holdoutContentSetSha256 || new Set(entries.flat().map(e=>e.id)).size!==entries.flat().length)throw Error('Unexpected frozen split');
   function* load(es:Entry[]) {for(const e of es){const trace=verificationTrace(frozenText(e),e.path);if(trace.id!==e.id)throw Error('Unexpected session identity');yield trace;}}
   const method='Exact/family selected at dispatch by a prior successful measured slow foreground invocation in this session. ObservedSlow groups are hindsight denominators, not predictors. Time follows the capped active replay clock. Foreground invocation does not prove exclusive waiting. A background end is a notification, not proof of process exit or success. A wait dispatch returning one native job receipt with no known competing job is attributable to that receipt, not necessarily to that process for the entire interval. Concurrent non-wait and ambiguous intervals can overlap; silence is unknown. Seconds sum per call, not per session.';
-  const cohort=(es:Entry[])=>({sessions:es.length,contentSetSha256:setHash(es),thresholds:aggregate(load(es))});
+  const cohort=(es:Entry[])=>({sessions:es.length,thresholds:aggregate(load(es))});
   const result={method,development:cohort(dev),test:cohort(test)};
   writeFileSync(out,JSON.stringify(result,null,2)+'\n',{flag:'wx',mode:0o600});
 }

@@ -15,7 +15,7 @@ if(split==='enriched'){
   writeFileSync(join(dir,'src/model-data.ts'),`export const MODEL_DATA=${JSON.stringify(model)};`);
 }else{
   const index=json(join(officialDir,'index.json')) as Record<string,string>;
-  const ids=(json(join(source,'.omp/ratchet/progress-time/_state.json')).test_ids as string[]).map(s=>s.replace(/-p\d+$/,''));if(new Set(ids).size!==40)throw Error('Official split mismatch');
+  const ids=(json(resolve(import.meta.dir,'../../.omp/ratchet/progress-time/_state.json')).test_ids as string[]).map(s=>s.replace(/-p\d+$/,''));if(new Set(ids).size!==40)throw Error('Official split mismatch');
   n=ids.length;load=i=>{const id=ids[i]!,path=index[id]!;const trace=extractSessionText(readFileSync(path,'utf8'),path);if(trace.id!==id)throw Error('Session mismatch');return trace;};
 }
 const {Observer}=await import(join(source,'src/observer.ts')) as {Observer:typeof LiveObserver};

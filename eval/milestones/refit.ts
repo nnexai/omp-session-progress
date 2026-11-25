@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { cpSync, existsSync, mkdirSync, readFileSync, statSync, symlinkSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { verifyEntry, type Cohort, type Entry } from '../tool-timing/cohort';
-import reference from '../tool-timing/result.json';
+import { privateProvenance } from '../provenance';
 
 const [priorArg, rootArg] = process.argv.slice(2);
 if (!priorArg || !rootArg) throw Error('Expected frozen tool-timing directory and fresh private workspace');
@@ -13,7 +13,7 @@ if (prior===root || (statSync(root).mode&0o077)!==0 || existsSync(join(root,'tes
 const sha=(data:string|Buffer)=>createHash('sha256').update(data).digest('hex');
 const setHash=(es:Entry[])=>sha(es.map(e=>e.digest).sort().join('\n'));
 const data:Cohort=JSON.parse(readFileSync(join(prior,'cohort.json'),'utf8'));
-const expected=reference.provenance;
+const expected=privateProvenance();
 const baseSrc=join(prior,'source','src'),weightFile=join(baseSrc,'model-data.ts');
 if (setHash(data.train)!==expected.developmentContentSetSha256 || setHash(data.test)!==expected.holdoutContentSetSha256 || sha(readFileSync(weightFile))!==expected.refitWeightsSha256) throw Error('Cohort or control does not match the recorded comparison');
 const all=[...data.train,...data.test];

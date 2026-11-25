@@ -30,7 +30,7 @@ for (const [arm, revision] of Object.entries(arms) as [Arm, string][]) {
     if (!cohort.enriched.every(e => excluded.includes(e.id))) throw Error('Refit did not protect the enriched holdout');
   } else {
     dest = mkdtempSync(join(root, `display-${arm}-${revision}-`));
-    const archive = spawnSync('git', ['archive', revision, 'src'], { maxBuffer: 100 * 1024 * 1024 });
+    const archive = spawnSync('git', ['archive', `refs/tags/replay/${revision}`, 'src'], { maxBuffer: 100 * 1024 * 1024 });
     if (archive.status !== 0) throw Error(`Unable to archive ${revision}`);
     const unpack = spawnSync('tar', ['-x', '-C', dest], { input: archive.stdout });
     if (unpack.status !== 0) throw Error(`Unable to extract ${revision}`);

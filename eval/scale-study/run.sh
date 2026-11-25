@@ -7,7 +7,7 @@ umask 077
 [[ $# == 3 || $# == 4 ]] || { echo 'Expected new private root, frozen folds, official index directory, optional Python' >&2; exit 2; }
 mkdir -m 700 -- "$1"; root=$(cd "$1" && pwd); folds=$(cd "$2" && pwd); official=$(cd "$3" && pwd)
 cd "$(dirname "$0")/../.."
-s=eval/scale-study; mkdir "$root/base"; git archive 0053259a7d | tar -x -C "$root/base"
+s=eval/scale-study; mkdir "$root/base"; git archive refs/tags/replay/0053259a7d | tar -x -C "$root/base"
 bun "$s/corpus.ts" "$root" "$folds" "$official"
 bun "$s/fresh-extract.ts" "$root"
 bun "$s/handoff-fit.ts" "$root"

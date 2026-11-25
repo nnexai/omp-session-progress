@@ -24,7 +24,7 @@ for (const e of c.dev.flat()) {
 await Promise.all(['41a40bf', '0bada07'].map(async rev => {
   const folder = join(dest, rev);
   mkdirSync(folder, {mode: 0o700});
-  const archive = spawnSync('git', ['archive', rev, 'src', 'eval'], {maxBuffer: 32 * 1024 * 1024});
+  const archive = spawnSync('git', ['archive', `refs/tags/replay/${rev}`, 'src', 'eval'], {maxBuffer: 32 * 1024 * 1024});
   if (archive.status !== 0 || spawnSync('tar', ['-x', '-C', folder], {input: archive.stdout}).status !== 0) throw Error('Cannot unpack frozen recipe');
   const state = join(folder, '.omp/ratchet/progress-time');
   mkdirSync(state, {recursive: true, mode: 0o700});

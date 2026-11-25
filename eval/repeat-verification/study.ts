@@ -4,6 +4,7 @@ import { frozenText, sha } from '../frozen-session';
 import type { Entry } from '../tool-timing/cohort';
 import type { Trial } from '../milestones/types';
 import reference from '../milestones/result.json';
+import { privateProvenance } from '../provenance';
 import { verificationTrace, replayVerifications } from './replay';
 import { fit, predict, type Model } from './model';
 import { dispatchReport } from './dispatch';
@@ -17,7 +18,7 @@ const names=['fold0','fold1','fold2','test'];
 const entries=names.map(n=>JSON.parse(readFileSync(join(root,n,'entries.json'),'utf8')) as Entry[]);
 const development=entries.slice(0,3).flat(),testEntries=entries[3]!;
 const setHash=(es:Entry[])=>sha(es.map(e=>e.digest).sort().join('\n'));
-const {provenance}=reference;
+const provenance=privateProvenance();
 if(setHash(development)!==provenance.developmentContentSetSha256 || setHash(testEntries)!==provenance.holdoutContentSetSha256 ||
     sha(readFileSync(join(root,'test/src/model-data.ts')))!==provenance.refitWeightsSha256 ||
     new Set(entries.flat().map(e=>e.id)).size!==entries.flat().length)throw Error('Unexpected session split or refit control');
@@ -60,7 +61,7 @@ if(report.completedPrompts!==reference.completed||report.slices.all.readings!==r
     Math.abs(report.balancedMediumLong.mae.local!-reference.stage.balanced.local)>1e-8||
     Math.abs(report.slices.slow.mae.local!-reference.stage.slices.slow.mae.local)>1e-8)throw Error('Displayed control differs from frozen reference');
 const devSpans=spans(dev.flat()).flat();
-const result={provenance,development:{sessions:development.length,trainingCalls:devSpans.length,completed:devSpans.filter(s=>s.completed).length,background:devSpans.filter(s=>s.background).length,
+const result={provenance:{refitWeightsSha256:provenance.refitWeightsSha256},development:{sessions:development.length,trainingCalls:devSpans.length,completed:devSpans.filter(s=>s.completed).length,background:devSpans.filter(s=>s.background).length,
   terminalNotices:devSpans.filter(s=>s.noticeOnly).length,
   crossValidated:{balancedMediumLong:cv.balancedMediumLong,halfHour:cv.slices['30+'],coverage:cv.coverage,exactTool:cv.tool.exactSupport.callWeighted,anyTool:cv.tool.anySupport.callWeighted}},
   heldoutSessions:held.length,atDispatch:dispatchReport(model,spans(held)),...report,

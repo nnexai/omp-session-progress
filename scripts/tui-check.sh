@@ -1,23 +1,25 @@
 #!/usr/bin/env bash
 # Interactive-TUI check on the installed omp, in a disposable session on a
-# private tmux server (-L omp-progress-check; your tmux is not touched).
+# private per-run tmux server (your tmux is not touched).
 # Captures the screen as text at 100 and 54 columns while:
 #   1. /progress on (instant local opt-in, no dialog) and a constrained five-phase prompt run,
 #   2. /new removes the widget; /progress on again and an underspecified prompt runs at 54 columns,
 #   3. /progress off removes it.
-# Usage: scripts/tui-check.sh   Evidence: evidence/tui-<time>/
+# Usage: scripts/tui-check.sh   Evidence: private temporary directory printed at exit.
 set -u
+umask 077
 P=$(cd "$(dirname "$0")/.." && pwd)
-OUT="$P/evidence/tui-$(date -u +%Y-%m-%dT%H-%M-%SZ)"
-S=$(mktemp -d /tmp/omp-progress-tui-XXXX)
+S=$(mktemp -d /tmp/omp-progress-tui-XXXXXXXX)
+OUT="$S/evidence"
 mkdir -p "$OUT" "$S/work" "$S/sessions"
 printf 'memory:\n  backend: off\nautolearn:\n  enabled: false\nadvisor:\n  enabled: false\n' > "$S/overlay.yml"
-T="tmux -L omp-progress-check"
+T="tmux -S $S/tmux.sock"
+trap '$T kill-server 2>/dev/null || true' EXIT
 n=0
 cap() { n=$((n + 1)); $T capture-pane -p -t check > "$OUT/$(printf %02d $n)-$1.txt"; }
 keys() { $T send-keys -t check -l "$1"; sleep 1; $T send-keys -t check Enter; }
 
-$T kill-server 2>/dev/null
+# The socket is unique to this run.
 env -u HC_TERMINAL_ID -u HERDR_PANE_ID -u HERDR_WORKSPACE_ID -u TMUX \
 	$T -f /dev/null new-session -d -s check -x 100 -y 42 -c "$S/work" \
 	"omp --no-extensions -e $P/src/index.ts --session-dir $S/sessions --cwd $S/work --model @tiny --config $S/overlay.yml --no-skills --no-rules --no-context-files --no-title --no-lsp --auto-approve --max-cost 1"
@@ -40,5 +42,5 @@ keys "/progress off"; sleep 2; cap after-off
 cp "$S"/sessions/*.jsonl "$OUT/" 2>/dev/null
 keys "/exit"; sleep 3
 $T kill-server 2>/dev/null
-rm -rf "$S"
+trap - EXIT
 echo "$OUT"

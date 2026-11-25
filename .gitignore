@@ -1,14 +1,9 @@
 node_modules/
-# Raw check output (frames, session copies, stderr); summaries, screen captures and observer-call logs are kept.
-evidence/**/frames.jsonl
-evidence/**/messages.json
-evidence/**/session-*.jsonl
-evidence/**/20*.jsonl
-evidence/**/state.json
-evidence/**/stderr.log
-
-# Ratchet eval transcripts (real session text); never committed.
-.omp/ratchet/**/traces/
-# Per-case checkpoint counts reveal approximate durations; publish aggregate grades only.
-.omp/ratchet/progress-hybrid-horizon/*/results.jsonl
-.omp/ratchet/progress-hybrid-horizon/*/.run-identity.json
+# Local evaluation inputs and captures can identify prompts, sessions, and providers.
+/evidence
+/.omp/ratchet
+/eval/cases.jsonl
+/eval/hybrid/manifest.json
+/eval/wait-gate/captured-result.json
+/eval/wait-gate/live-result.json
+/eval/slow-checks/prospective-result.json

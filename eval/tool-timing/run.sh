@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
-# Explicit opt-in: the final step calls the configured pinned research model @widget role
-# using allowlisted workload categories and counts. No raw historical text is sent.
+# Explicit opt-in: the final step calls the pinned @widget role using
+# allowlisted workload categories and counts. No raw historical text is sent.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 if [[ "${1:-}" != --with-luna || $# != 1 ]]; then
   echo 'Usage: bash eval/tool-timing/run.sh --with-luna' >&2
   exit 2
 fi
+if [[ -z "${OMP_TOOL_TIMING_EXPECTED_MODEL:-}" || "$OMP_TOOL_TIMING_EXPECTED_MODEL" =~ ^[[:space:]] || "$OMP_TOOL_TIMING_EXPECTED_MODEL" =~ [[:space:]]$ ]]; then
+  echo 'Set OMP_TOOL_TIMING_EXPECTED_MODEL to the exact expected model identifier.' >&2
+  exit 2
+fi
+export OMP_TOOL_TIMING_EXPECTED_MODEL
 umask 077
 root=$(mktemp -d "${TMPDIR:-/tmp}/omp-tool-timing-XXXXXXXX")
 printf 'Private study directory: %s\n' "$root"

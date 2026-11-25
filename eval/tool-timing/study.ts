@@ -1,5 +1,6 @@
 #!/usr/bin/env bun
 // Run inside the private refit source snapshot, not against the shipped weights.
+import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { verifyEntry, type Cohort, type Entry } from './cohort';
@@ -10,6 +11,8 @@ import { report, type ScoredPrompt, type ScoredPoint } from './summary';
 
 const root=realpathSync(process.argv[2]??'');
 if ((statSync(root).mode&0o077)!==0 || realpathSync(resolve(import.meta.dir,'../..'))!==join(root,'source')) throw Error('Use the private refit snapshot');
+const expectedModel=process.env.OMP_TOOL_TIMING_EXPECTED_MODEL;
+if(!expectedModel||expectedModel.trim()!==expectedModel)throw Error('Set OMP_TOOL_TIMING_EXPECTED_MODEL to the exact expected model identifier');
 const split:Cohort=JSON.parse(readFileSync(join(root,'cohort.json'),'utf8'));
 const ids=new Set(split.train.map(s=>s.id));
 if(split.test.some(s=>ids.has(s.id))||new Set([...split.train,...split.test].map(s=>s.id)).size!==split.train.length+split.test.length)throw Error('Session overlap');
@@ -61,7 +64,10 @@ if(packets.length===0)throw Error('No eligible Luna comparisons');
 const proc=Bun.spawn([process.execPath,join(import.meta.dir,'luna.ts'),req,res],{stdout:'inherit',stderr:'inherit'});
 if(await proc.exited!==0)throw Error('Incomplete Luna run; no comparison published');
 const ans:LunaAnswer[]=JSON.parse(readFileSync(res,'utf8'));
-if(ans.length!==packets.length||ans.some(a=>a.model!==(process.env.OMP_TOOL_TIMING_EXPECTED_MODEL || undefined)||!Number.isFinite(a.latencyMs)||a.latencyMs<0||a.postMin!==null&&(!Number.isFinite(a.postMin)||a.postMin<0||a.postMin>240)))throw Error('Invalid model reply/provenance');
+if(ans.length!==packets.length||ans.some(a=>a.model!==expectedModel||!Number.isFinite(a.latencyMs)||a.latencyMs<0||a.postMin!==null&&(!Number.isFinite(a.postMin)||a.postMin<0||a.postMin>240)))throw Error('Invalid model reply/provenance');
 const aggregate=report(prompts,ans);
-const result={developmentSessions:split.train.length,holdoutSessions:split.test.length,trainingCalls:calls,censoredCalls:censored,model:(process.env.OMP_TOOL_TIMING_EXPECTED_MODEL || undefined),queries:ans.length,abstentions:ans.filter(a=>a.postMin===null).length,reportedCost:ans.reduce((n,a)=>n+a.cost,0),...aggregate};
+const result={developmentSessions:split.train.length,holdoutSessions:split.test.length,trainingCalls:calls,censoredCalls:censored,queries:ans.length,abstentions:ans.filter(a=>a.postMin===null).length,reportedCost:ans.reduce((n,a)=>n+a.cost,0),...aggregate};
+const sha=(data:string|Buffer)=>createHash('sha256').update(data).digest('hex');
+const provenance={expectedModel,developmentContentSetSha256:sha(split.train.map(e=>e.digest).sort().join('\n')),holdoutContentSetSha256:sha(split.test.map(e=>e.digest).sort().join('\n')),refitWeightsSha256:sha(readFileSync(join(root,'source','src','model-data.ts')))};
+writeFileSync(join(root,'provenance.json'),JSON.stringify(provenance,null,2)+'\n',{mode:0o600});
 writeFileSync(join(root,'aggregate.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});console.log(JSON.stringify(result,null,2));

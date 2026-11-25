@@ -4,6 +4,7 @@ import { fit } from '../milestones/model';
 import type { Band, Example, Trial } from '../milestones/types';
 import type { Entry } from '../tool-timing/cohort';
 import reference from '../milestones/result.json';
+import { privateProvenance } from '../provenance';
 import { frozenPlans } from './ingress';
 import { sha } from '../frozen-session';
 import { fitAdjustment,inputs,type FitRow } from './adjust';
@@ -17,7 +18,8 @@ function files<T>(g:string,f:string):T{return JSON.parse(readFileSync(join(root,
 const foldNames=['fold0','fold1','fold2'];const entries=(g:string)=>files<Entry[]>(g,'entries.json');
 const dev=foldNames.flatMap(entries),held=entries('test');
 const setHash=(es:Entry[])=>sha(es.map(e=>e.digest).sort().join('\n'));
-if(setHash(dev)!==reference.provenance.developmentContentSetSha256||setHash(held)!==reference.provenance.holdoutContentSetSha256||sha(readFileSync(join(root,'test/src/model-data.ts')))!==reference.provenance.refitWeightsSha256||new Set([...dev,...held].map(e=>e.id)).size!==dev.length+held.length)throw Error('Unexpected cohort or local control');
+const expected=privateProvenance();
+if(setHash(dev)!==expected.developmentContentSetSha256||setHash(held)!==expected.holdoutContentSetSha256||sha(readFileSync(join(root,'test/src/model-data.ts')))!==expected.refitWeightsSha256||new Set([...dev,...held].map(e=>e.id)).size!==dev.length+held.length)throw Error('Unexpected cohort or local control');
 function load(name:string):RouteTrial[]{
   const cached:Trial[]=readFileSync(join(root,name,'milestones.jsonl'),'utf8').trim().split('\n').map(l=>JSON.parse(l));
   let i=0;const trials:RouteTrial[]=[];

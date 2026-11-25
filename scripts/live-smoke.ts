@@ -12,7 +12,6 @@
 // Usage: bun scripts/live-smoke.ts [--primary @tiny]
 
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
 const argv = process.argv.slice(2);
@@ -20,10 +19,10 @@ const primaryIndex = argv.indexOf("--primary");
 const primary = primaryIndex >= 0 && argv[primaryIndex + 1] ? argv[primaryIndex + 1]! : "@tiny";
 
 const project = resolve(import.meta.dir, "..");
-const stamp = new Date().toISOString().replace(/[:.]/g, "-");
-const evidence = join(project, "evidence", `live-${stamp}`);
-mkdirSync(evidence, { recursive: true });
-const scratch = mkdtempSync(join(tmpdir(), "omp-progress-smoke-"));
+process.umask(0o077);
+const scratch = mkdtempSync("/tmp/omp-progress-smoke-");
+const evidence = join(scratch, "evidence");
+mkdirSync(evidence, { mode: 0o700 });
 const work = join(scratch, "work");
 const sessions = join(scratch, "sessions");
 mkdirSync(work);

@@ -5,6 +5,7 @@ import { frozenText, sha } from '../frozen-session';
 import type { Entry } from '../tool-timing/cohort';
 import type { Trial } from '../milestones/types';
 import reference from '../milestones/result.json';
+import { privateProvenance } from '../provenance';
 import { verificationTrace, verificationIdentity, verificationHandoff, verificationNotices, verificationReceipt } from '../repeat-verification/identity';
 import { forecast } from './forecast';
 
@@ -119,7 +120,7 @@ export function run(root:string,out:string){
   const entries=names.map(n=>JSON.parse(readFileSync(join(root,n,'entries.json'),'utf8')) as Entry[]);
   const dev=entries.slice(0,3).flat(),held=entries[3]!;
   const setHash=(es:Entry[])=>sha(es.map(e=>e.digest).sort().join('\n'));
-  const provenance=reference.provenance;
+  const provenance=privateProvenance();
   if(setHash(dev)!==provenance.developmentContentSetSha256||setHash(held)!==provenance.holdoutContentSetSha256||sha(readFileSync(join(root,'test/src/model-data.ts')))!==provenance.refitWeightsSha256||new Set(entries.flat().map(e=>e.id)).size!==entries.flat().length)throw Error('Unexpected frozen split or refit');
   let promptId=0;
   const load=(index:number)=>{
@@ -152,6 +153,6 @@ export function run(root:string,out:string){
       actual.forecast900.local===null||Math.abs(actual.forecast900.local-expected.forecast15.local)>1e-8)throw Error('Frozen slice control mismatch');
   }
   const report=(points:Point[])=>({anyPrior:summarize(points,0),priorAtLeast60Seconds:summarize(points,60)});
-  writeFileSync(out,JSON.stringify({method:'Seconds; prompt-weighted matched whole-prompt errors. Prior is last successful measured foreground exact command and cwd frozen at launch. Strict targeting is unavailable: ordinary wait is untargeted. Optimistic sole-known-pending wait is not proof of targeting. Handoffs/notices never supply durations. Unknown competitors persist conservatively. All checkpoint evidence is prefix-only.',provenance,development:report(development.flatMap(x=>x.points)),holdout:report(test.points)},null,2)+'\n',{flag:'wx',mode:0o600});
+  writeFileSync(out,JSON.stringify({method:'Seconds; prompt-weighted matched whole-prompt errors. Prior is last successful measured foreground exact command and cwd frozen at launch. Strict targeting is unavailable: ordinary wait is untargeted. Optimistic sole-known-pending wait is not proof of targeting. Handoffs/notices never supply durations. Unknown competitors persist conservatively. All checkpoint evidence is prefix-only.',provenance:{refitWeightsSha256:provenance.refitWeightsSha256},development:report(development.flatMap(x=>x.points)),holdout:report(test.points)},null,2)+'\n',{flag:'wx',mode:0o600});
 }
 if(import.meta.main){if(process.argv.length!==4)throw Error('Usage: bun eval/wait-gate/organic.ts FROZEN_MILESTONE_DIR NEW_AGGREGATE');run(resolve(process.argv[2]!),resolve(process.argv[3]!));}

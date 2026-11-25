@@ -44,8 +44,10 @@ export default function toolTiming(api: Api) {
    resultPath = job.result;
    if (!Array.isArray(job.items) || job.items.length > 500 || typeof resultPath !== 'string') throw new Failure('job_schema');
    const inputs = job.items.map(packet);
+   const expectedModel = process.env.OMP_TOOL_TIMING_EXPECTED_MODEL;
+   if (!expectedModel || expectedModel.trim() !== expectedModel) throw new Failure('expected_model_missing');
    const model = ctx.models.resolve('@widget');
-   if (!model || model.id !== (process.env.OMP_TOOL_TIMING_EXPECTED_MODEL || undefined)) throw new Failure('requested_model_mismatch');
+   if (!model || model.id !== expectedModel) throw new Failure('requested_model_mismatch');
    const answers: Array<LunaAnswer | null> = Array(inputs.length).fill(null);
    let next = 0;
    const worker = async () => {
@@ -58,7 +60,7 @@ export default function toolTiming(api: Api) {
       if (!apiKey) throw new Failure('credentials');
       const reply = await withAbort(completeSimple(model, { systemPrompt: [system], messages: [{ role: 'user', content: JSON.stringify(inputs[i]), timestamp: start }] }, { apiKey, sessionId: key, maxTokens: 80, disableReasoning: true, cacheRetention: 'none', signal }), signal);
       const latencyMs = Date.now() - start;
-      if (reply.model !== (process.env.OMP_TOOL_TIMING_EXPECTED_MODEL || undefined)) throw new Failure('served_model_mismatch');
+      if (reply.model !== expectedModel) throw new Failure('served_model_mismatch');
       if (reply.stopReason === 'error' || reply.stopReason === 'aborted') throw new Failure('provider_error');
       if (reply.stopReason !== 'stop') throw new Failure('incomplete_response');
       const cost = reply.usage?.cost?.total;
