@@ -6,6 +6,8 @@ import { type Facts, inferBlocker, inferNextHint, inferPhase, type WorkPhase } f
 import { extractFeatures, SMOOTH_S } from "./features";
 import { type EnsembleModel, evalEnsembleZ, evalQuantileRangeZ } from "./gbdt";
 import { MODEL_DATA } from "./model-data";
+import { calibratedRange } from "./range-calibration";
+import RANGE_DATA from "./range-data.json";
 
 export type Confidence = "low" | "medium" | "high";
 
@@ -113,8 +115,15 @@ export function estimateProgress(facts: Facts, now: number, opts: EstimateOption
 
 	const { lowZ, highZ } = evalQuantileRangeZ(model, feat.x, feat.logElapsed, feat.anchorZ, rawZ);
 	const shift = z - rawZ;
-	const lowMinutes = Math.min(remMinutes, zToMinutes(lowZ + shift));
-	const highMinutes = Math.max(remMinutes, zToMinutes(highZ + shift));
+	let lowMinutes = Math.min(remMinutes, zToMinutes(lowZ + shift));
+	let highMinutes = Math.max(remMinutes, zToMinutes(highZ + shift));
+	// This residual distribution was fit out-of-fold for this predictor. Do not
+	// recalibrate unrelated injected models, or alter short-prompt readings.
+	if (model === MODEL_DATA && feat.elapsedS > 60) {
+		const [lowS, highS] = calibratedRange(RANGE_DATA, feat.elapsedS, remS, lowMinutes * 60, highMinutes * 60);
+		lowMinutes = lowS / 60;
+		highMinutes = highS / 60;
+	}
 
 	// Confidence tier: high when active todos have real velocity or post-edit verification is underway.
 	let confidence: Confidence = "medium";

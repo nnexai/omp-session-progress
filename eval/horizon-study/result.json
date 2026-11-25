@@ -1,0 +1,742 @@
+{
+  "baselineCommit": "1d2301b",
+  "rangeArtifactSha256": "94efc601dbd50bfc5e689104c53a1fd07f1d7fd00005fb2e84945e3aa3cba2ce",
+  "selection": "Development: group all checkpoints by prompt, folds by whole session, exclude official and enriched sessions. Priority = 0.35*medium + 0.45*15+ + 0.20*30+ MAE. Required point gain >=0.25 min plus medium/all/short guardrails. Only calibrated intervals shipped.",
+  "development": {
+    "sessions": 244,
+    "point": {
+      "baseline": {
+        "priority": 11.880987093293601,
+        "maeMin": {
+          "all": 2.4529216598362864,
+          "short": 0.4043927353368867,
+          "medium": 2.5794996240061097,
+          "long": 14.504558237912487,
+          "halfHour": 22.255555089154214,
+          "slow": 8.38590294833411
+        }
+      },
+      "deadlines": {
+        "priority": 11.954863471098374,
+        "maeMin": {
+          "all": 2.4656194243746583,
+          "short": 0.39813671448481797,
+          "medium": 2.611042684027919,
+          "long": 14.575652012707849,
+          "halfHour": 22.409775629850348,
+          "slow": 8.45655311840139
+        }
+      },
+      "turns": {
+        "priority": 12.258742709583004,
+        "maeMin": {
+          "all": 2.4212092822081934,
+          "short": 0.3105252857276793,
+          "medium": 2.4959054627339965,
+          "long": 14.899537175806627,
+          "halfHour": 23.401920342565617,
+          "slow": 8.492940741803894
+        }
+      },
+      "uncertainty": {
+        "priority": 12.778477193201805,
+        "maeMin": {
+          "all": 2.7282807182975355,
+          "short": 0.4043927353368867,
+          "medium": 3.160521929229117,
+          "long": 15.87370076096312,
+          "halfHour": 22.645645877691056,
+          "slow": 9.125446433566037
+        }
+      },
+      "lifetime": {
+        "priority": 11.781248900755248,
+        "maeMin": {
+          "all": 2.489696624542306,
+          "short": 0.4043927353368867,
+          "medium": 2.817839584589016,
+          "long": 14.315958232822569,
+          "halfHour": 21.764119206894676,
+          "slow": 8.475943546968889
+        }
+      },
+      "calibration": {
+        "priority": 11.78627553904851,
+        "maeMin": {
+          "all": 2.4836474060791636,
+          "short": 0.4043927353368867,
+          "medium": 2.7380290227633846,
+          "long": 14.422437881165758,
+          "halfHour": 21.689341672783673,
+          "slow": 8.41126213378453
+        }
+      },
+      "hybrid": {
+        "priority": 11.815778356198987,
+        "maeMin": {
+          "all": 2.4470871824641716,
+          "short": 0.3145898702718917,
+          "medium": 2.782042881086043,
+          "long": 14.448547018132016,
+          "halfHour": 21.70108594829732,
+          "slow": 8.387561506043575
+        }
+      }
+    },
+    "range": {
+      "baseline": {
+        "all": {
+          "prompts": 802,
+          "points": 21669,
+          "scoreMin": 11.892954334041148,
+          "widthMin": 9.214764513251874,
+          "coverage": 0.7221599886161338,
+          "printedRate": 0.38704951645380803,
+          "printedPrompts": 436,
+          "printedScoreMin": 19.935157179178326,
+          "printedCoverage": 0.48369134830224975
+        },
+        "short": {
+          "prompts": 357,
+          "points": 801,
+          "scoreMin": 3.6660302867274877,
+          "widthMin": 3.6154161593530207,
+          "coverage": 0.7663398692810456,
+          "printedRate": 0.06629318394024278,
+          "printedPrompts": 52,
+          "printedScoreMin": 9.315762820512822,
+          "printedCoverage": 0
+        },
+        "medium": {
+          "prompts": 182,
+          "points": 5166,
+          "scoreMin": 12.590875374884478,
+          "widthMin": 10.707860184754127,
+          "coverage": 0.6576281210274303,
+          "printedRate": 0.811856772039905,
+          "printedPrompts": 179,
+          "printedScoreMin": 12.6512859280543,
+          "printedCoverage": 0.6754588673001819
+        },
+        "long": {
+          "prompts": 84,
+          "points": 14302,
+          "scoreMin": 59.92925854370903,
+          "widthMin": 39.148540730395695,
+          "coverage": 0.5552739476448258,
+          "printedRate": 0.8774742376398573,
+          "printedPrompts": 84,
+          "printedScoreMin": 60.61597207744146,
+          "printedCoverage": 0.550600432811836
+        },
+        "halfHour": {
+          "prompts": 40,
+          "points": 10572,
+          "scoreMin": 90.18882034834263,
+          "widthMin": 56.44884826446343,
+          "coverage": 0.5406267664388686,
+          "printedRate": 0.7865376312214458,
+          "printedPrompts": 40,
+          "printedScoreMin": 93.94948928652373,
+          "printedCoverage": 0.5016046436107353
+        }
+      },
+      "candidate": {
+        "all": {
+          "prompts": 802,
+          "points": 21669,
+          "scoreMin": 10.069925954608946,
+          "widthMin": 6.786641034292923,
+          "coverage": 0.7158366898243488,
+          "printedRate": 0.39519186533383105,
+          "printedPrompts": 436,
+          "printedScoreMin": 16.5005936484677,
+          "printedCoverage": 0.4611100329890765
+        },
+        "short": {
+          "prompts": 357,
+          "points": 801,
+          "scoreMin": 3.6660302867274877,
+          "widthMin": 3.6154161593530207,
+          "coverage": 0.7663398692810456,
+          "printedRate": 0.06629318394024278,
+          "printedPrompts": 52,
+          "printedScoreMin": 9.315762820512822,
+          "printedCoverage": 0
+        },
+        "medium": {
+          "prompts": 182,
+          "points": 5166,
+          "scoreMin": 9.114817938904372,
+          "widthMin": 7.029661589601518,
+          "coverage": 0.650998265452793,
+          "printedRate": 0.811856772039905,
+          "printedPrompts": 179,
+          "printedScoreMin": 8.88199390801542,
+          "printedCoverage": 0.6475349897809675
+        },
+        "long": {
+          "prompts": 84,
+          "points": 14302,
+          "scoreMin": 51.100328885479115,
+          "widthMin": 24.952274567821565,
+          "coverage": 0.48801068958662197,
+          "printedRate": 0.9552142828991254,
+          "printedPrompts": 84,
+          "printedScoreMin": 51.916426717938364,
+          "printedCoverage": 0.4928971066141676
+        },
+        "halfHour": {
+          "prompts": 40,
+          "points": 10572,
+          "scoreMin": 77.90997636394236,
+          "widthMin": 35.89649428218005,
+          "coverage": 0.48968144010994097,
+          "printedRate": 0.9324702235676945,
+          "printedPrompts": 40,
+          "printedScoreMin": 80.79731709236977,
+          "printedCoverage": 0.48984225772568085
+        }
+      },
+      "selected": true
+    }
+  },
+  "official": {
+    "sessions": 40,
+    "basePoint": {
+      "all": {
+        "prompts": 257,
+        "points": 6382,
+        "missing": 0,
+        "maeMin": 2.248163053338383,
+        "miss15": 0.025462366322709915,
+        "over15": 0.015006840686230745,
+        "over30": 0.00005385537140010502,
+        "premature": 0.00008323102852743503,
+        "coverage": 0.7265251988334669
+      },
+      "short": {
+        "prompts": 104,
+        "points": 203,
+        "missing": 0,
+        "maeMin": 0.40010963017873824,
+        "miss15": 0,
+        "over15": 0,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.7764423076923077
+      },
+      "medium": {
+        "prompts": 62,
+        "points": 1963,
+        "missing": 0,
+        "maeMin": 2.685707621993168,
+        "miss15": 0,
+        "over15": 0.0020161290322580645,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.6756740815688763
+      },
+      "long": {
+        "prompts": 31,
+        "points": 3731,
+        "missing": 0,
+        "maeMin": 10.199282740583753,
+        "miss15": 0.2110912304818209,
+        "over15": 0.12037929214068714,
+        "over30": 0.00044647840160732226,
+        "premature": 0.0006900120752113162,
+        "coverage": 0.5529896592073261
+      },
+      "halfHour": {
+        "prompts": 10,
+        "points": 2049,
+        "missing": 0,
+        "maeMin": 16.69352893727091,
+        "miss15": 0.4301218763247248,
+        "over15": 0.27991012237044693,
+        "over30": 0.001384083044982699,
+        "premature": 0.0021390374331550803,
+        "coverage": 0.49721274467940135
+      },
+      "slow": {
+        "prompts": 50,
+        "points": 1494,
+        "missing": 0,
+        "maeMin": 5.520717037075473,
+        "miss15": 0.0714132098716577,
+        "over15": 0.07518307066646891,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.6376477973620895
+      }
+    },
+    "point": {
+      "all": {
+        "prompts": 257,
+        "points": 6382,
+        "missing": 0,
+        "maeMin": 2.2747845494029826,
+        "miss15": 0.02544338120573897,
+        "over15": 0.023991970657859928,
+        "over30": 0.0004981621854509713,
+        "premature": 0.000041615514263717515,
+        "coverage": 0.7265251988334669
+      },
+      "short": {
+        "prompts": 104,
+        "points": 203,
+        "missing": 0,
+        "maeMin": 0.40010963017873824,
+        "miss15": 0,
+        "over15": 0,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.7764423076923077
+      },
+      "medium": {
+        "prompts": 62,
+        "points": 1963,
+        "missing": 0,
+        "maeMin": 2.7845911362030202,
+        "miss15": 0.0005467468562055768,
+        "over15": 0.008504793375173654,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.6756740815688763
+      },
+      "long": {
+        "prompts": 31,
+        "points": 3731,
+        "missing": 0,
+        "maeMin": 10.18850601235661,
+        "miss15": 0.20984034402548934,
+        "over15": 0.181891589348685,
+        "over30": 0.004129925214867731,
+        "premature": 0.0003450060376056581,
+        "coverage": 0.5529896592073261
+      },
+      "halfHour": {
+        "prompts": 10,
+        "points": 2049,
+        "missing": 0,
+        "maeMin": 16.021487797838265,
+        "miss15": 0.3990857628545178,
+        "over15": 0.360410400247985,
+        "over30": 0.012802768166089964,
+        "premature": 0.0010695187165775401,
+        "coverage": 0.49721274467940135
+      },
+      "slow": {
+        "prompts": 50,
+        "points": 1494,
+        "missing": 0,
+        "maeMin": 5.772293831431916,
+        "miss15": 0.07638028941220121,
+        "over15": 0.13402800584736982,
+        "over30": 0.001875,
+        "premature": 0,
+        "coverage": 0.6376477973620895
+      }
+    },
+    "pointPriorityDelta": -0.10464852561529447,
+    "baseline": {
+      "all": {
+        "prompts": 257,
+        "points": 6382,
+        "scoreMin": 11.691058945340284,
+        "widthMin": 9.382436801840063,
+        "coverage": 0.7265251988334669,
+        "printedRate": 0.43224680026945733,
+        "printedPrompts": 151,
+        "printedScoreMin": 17.751422219560563,
+        "printedCoverage": 0.49476591268681847
+      },
+      "short": {
+        "prompts": 104,
+        "points": 203,
+        "scoreMin": 3.9763236557868544,
+        "widthMin": 3.9252872303143787,
+        "coverage": 0.7764423076923077,
+        "printedRate": 0.054487179487179474,
+        "printedPrompts": 13,
+        "printedScoreMin": 11.101010256410257,
+        "printedCoverage": 0
+      },
+      "medium": {
+        "prompts": 62,
+        "points": 1963,
+        "scoreMin": 14.084227425677653,
+        "widthMin": 12.043186832442432,
+        "coverage": 0.6756740815688763,
+        "printedRate": 0.838282056953373,
+        "printedPrompts": 62,
+        "printedScoreMin": 14.152142430436896,
+        "printedCoverage": 0.6831786535306227
+      },
+      "long": {
+        "prompts": 31,
+        "points": 3731,
+        "scoreMin": 42.45002245577349,
+        "widthMin": 28.00845247792549,
+        "coverage": 0.5529896592073261,
+        "printedRate": 0.9367062568417802,
+        "printedPrompts": 31,
+        "printedScoreMin": 40.70046672370368,
+        "printedCoverage": 0.5718188974393718
+      },
+      "halfHour": {
+        "prompts": 10,
+        "points": 2049,
+        "scoreMin": 71.18604797651417,
+        "widthMin": 43.77355780102948,
+        "coverage": 0.49721274467940135,
+        "printedRate": 0.8722664203620184,
+        "printedPrompts": 10,
+        "printedScoreMin": 68.04173239117156,
+        "printedCoverage": 0.515881607980596
+      }
+    },
+    "range": {
+      "all": {
+        "prompts": 257,
+        "points": 6382,
+        "scoreMin": 9.49831830086266,
+        "widthMin": 6.637417870252582,
+        "coverage": 0.7108479273901231,
+        "printedRate": 0.436827094977071,
+        "printedPrompts": 151,
+        "printedScoreMin": 13.907097353944005,
+        "printedCoverage": 0.460592926131135
+      },
+      "short": {
+        "prompts": 104,
+        "points": 203,
+        "scoreMin": 3.9763236557868544,
+        "widthMin": 3.9252872303143787,
+        "coverage": 0.7764423076923077,
+        "printedRate": 0.054487179487179474,
+        "printedPrompts": 13,
+        "printedScoreMin": 11.101010256410257,
+        "printedCoverage": 0
+      },
+      "medium": {
+        "prompts": 62,
+        "points": 1963,
+        "scoreMin": 9.210661259801745,
+        "widthMin": 6.975986594494034,
+        "coverage": 0.6454155276800181,
+        "printedRate": 0.838282056953373,
+        "printedPrompts": 62,
+        "printedScoreMin": 8.739263265039105,
+        "printedCoverage": 0.6404500035389769
+      },
+      "long": {
+        "prompts": 31,
+        "points": 3731,
+        "scoreMin": 35.52586655784837,
+        "widthMin": 16.886635389226385,
+        "coverage": 0.4785192083884326,
+        "printedRate": 0.9746783774823194,
+        "printedPrompts": 31,
+        "printedScoreMin": 34.26597585500592,
+        "printedCoverage": 0.49404648871594636
+      },
+      "halfHour": {
+        "prompts": 10,
+        "points": 2049,
+        "scoreMin": 59.214166631610205,
+        "widthMin": 25.778019421678387,
+        "coverage": 0.468438971836283,
+        "printedRate": 0.9899799943476901,
+        "printedPrompts": 10,
+        "printedScoreMin": 57.95866753824744,
+        "printedCoverage": 0.4696162006904697
+      }
+    },
+    "rangePass": true,
+    "rangeScoreDelta95": {
+      "medium": [
+        -5.433399578701432,
+        -4.253045153380076
+      ],
+      "long": [
+        -9.309448150045737,
+        -4.836985245429507
+      ],
+      "halfHour": [
+        -17.10027139081243,
+        -7.29511237751184
+      ]
+    }
+  },
+  "enriched": {
+    "sessions": 42,
+    "basePoint": {
+      "all": {
+        "prompts": 176,
+        "points": 8027,
+        "missing": 0,
+        "maeMin": 3.8454043044944073,
+        "miss15": 0.05204789282957067,
+        "over15": 0.04004753902674903,
+        "over30": 0.007888709677904998,
+        "premature": 0.00370210943137418,
+        "coverage": 0.6918598874211845
+      },
+      "short": {
+        "prompts": 49,
+        "points": 121,
+        "missing": 0,
+        "maeMin": 0.3903799127139308,
+        "miss15": 0,
+        "over15": 0,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.7976190476190477
+      },
+      "medium": {
+        "prompts": 61,
+        "points": 2076,
+        "missing": 0,
+        "maeMin": 2.8738189804854644,
+        "miss15": 0.0009107468123861566,
+        "over15": 0.0018214936247723133,
+        "over30": 0,
+        "premature": 0.0010245901639344263,
+        "coverage": 0.6411122875967524
+      },
+      "long": {
+        "prompts": 37,
+        "points": 5586,
+        "missing": 0,
+        "maeMin": 12.369882386475592,
+        "miss15": 0.24607766439051032,
+        "over15": 0.18749339885396532,
+        "over30": 0.03752467306246702,
+        "premature": 0.012542466484374477,
+        "coverage": 0.5858177144186854
+      },
+      "halfHour": {
+        "prompts": 17,
+        "points": 3878,
+        "missing": 0,
+        "maeMin": 19.564035052974656,
+        "miss15": 0.43970833957409083,
+        "over15": 0.2951431771913823,
+        "over30": 0.0816713472536047,
+        "premature": 0.027298309407167976,
+        "coverage": 0.5341785735729866
+      },
+      "slow": {
+        "prompts": 60,
+        "points": 1213,
+        "missing": 0,
+        "maeMin": 7.564648727806823,
+        "miss15": 0.10461815441201434,
+        "over15": 0.12891592204199304,
+        "over30": 0.03064120102423796,
+        "premature": 0.00425580860363469,
+        "coverage": 0.6557725763879584
+      }
+    },
+    "point": {
+      "all": {
+        "prompts": 176,
+        "points": 8027,
+        "missing": 0,
+        "maeMin": 3.8975697026463223,
+        "miss15": 0.053371468577556175,
+        "over15": 0.05631551670132795,
+        "over30": 0.008967184220749887,
+        "premature": 0.0028042985510901095,
+        "coverage": 0.6918598874211845
+      },
+      "short": {
+        "prompts": 49,
+        "points": 121,
+        "missing": 0,
+        "maeMin": 0.3903799127139308,
+        "miss15": 0,
+        "over15": 0,
+        "over30": 0,
+        "premature": 0,
+        "coverage": 0.7976190476190477
+      },
+      "medium": {
+        "prompts": 61,
+        "points": 2076,
+        "missing": 0,
+        "maeMin": 3.031706590028445,
+        "miss15": 0.00505050505050505,
+        "over15": 0.009917204835237621,
+        "over30": 0,
+        "premature": 0.0010245901639344263,
+        "coverage": 0.6411122875967524
+      },
+      "long": {
+        "prompts": 37,
+        "points": 5586,
+        "missing": 0,
+        "maeMin": 12.341984423463908,
+        "miss15": 0.245548585447813,
+        "over15": 0.2515292282293034,
+        "over30": 0.0426547141311346,
+        "premature": 0.008271798513293493,
+        "coverage": 0.5858177144186854
+      },
+      "halfHour": {
+        "prompts": 17,
+        "points": 3878,
+        "missing": 0,
+        "maeMin": 19.196928509166508,
+        "miss15": 0.42598695965615874,
+        "over15": 0.34417991210956456,
+        "over30": 0.09283673075599884,
+        "premature": 0.01800332617599172,
+        "coverage": 0.5341785735729866
+      },
+      "slow": {
+        "prompts": 60,
+        "points": 1213,
+        "missing": 0,
+        "maeMin": 7.515384476437788,
+        "miss15": 0.09761278211619932,
+        "over15": 0.18194095724733586,
+        "over30": 0.04463064295485635,
+        "premature": 0.0008914193696802392,
+        "coverage": 0.6557725763879584
+      }
+    },
+    "pointPriorityDelta": -0.03071472877684478,
+    "baseline": {
+      "all": {
+        "prompts": 176,
+        "points": 8027,
+        "scoreMin": 17.77839216166842,
+        "widthMin": 13.103071567268925,
+        "coverage": 0.6918598874211845,
+        "printedRate": 0.6062283957652725,
+        "printedPrompts": 134,
+        "printedScoreMin": 22.87154544004859,
+        "printedCoverage": 0.5297343347627432
+      },
+      "short": {
+        "prompts": 49,
+        "points": 121,
+        "scoreMin": 3.90055650809919,
+        "widthMin": 3.847707238867527,
+        "coverage": 0.7976190476190477,
+        "printedRate": 0.09523809523809523,
+        "printedPrompts": 11,
+        "printedScoreMin": 10.255369696969696,
+        "printedCoverage": 0
+      },
+      "medium": {
+        "prompts": 61,
+        "points": 2076,
+        "scoreMin": 14.435036795614469,
+        "widthMin": 11.973109490013883,
+        "coverage": 0.6411122875967524,
+        "printedRate": 0.8659078311166365,
+        "printedPrompts": 61,
+        "printedScoreMin": 14.385028748008525,
+        "printedCoverage": 0.6578988387522893
+      },
+      "long": {
+        "prompts": 37,
+        "points": 5586,
+        "scoreMin": 50.86105492813087,
+        "widthMin": 32.982833465246046,
+        "coverage": 0.5858177144186854,
+        "printedRate": 0.9311870921533927,
+        "printedPrompts": 37,
+        "printedScoreMin": 50.92282648060634,
+        "printedCoverage": 0.5833921135744451
+      },
+      "halfHour": {
+        "prompts": 17,
+        "points": 3878,
+        "scoreMin": 77.38673402616068,
+        "widthMin": 46.37890774153696,
+        "coverage": 0.5341785735729866,
+        "printedRate": 0.8698883905127464,
+        "printedPrompts": 17,
+        "printedScoreMin": 78.32537808091988,
+        "printedCoverage": 0.5182536849604495
+      }
+    },
+    "range": {
+      "all": {
+        "prompts": 176,
+        "points": 8027,
+        "scoreMin": 14.711396769118693,
+        "widthMin": 8.777623676303012,
+        "coverage": 0.6802519999745743,
+        "printedRate": 0.6151510230644275,
+        "printedPrompts": 134,
+        "printedScoreMin": 18.362489474493625,
+        "printedCoverage": 0.5077353959615404
+      },
+      "short": {
+        "prompts": 49,
+        "points": 121,
+        "scoreMin": 3.90055650809919,
+        "widthMin": 3.847707238867527,
+        "coverage": 0.7976190476190477,
+        "printedRate": 0.09523809523809523,
+        "printedPrompts": 11,
+        "printedScoreMin": 10.255369696969696,
+        "printedCoverage": 0
+      },
+      "medium": {
+        "prompts": 61,
+        "points": 2076,
+        "scoreMin": 9.835522158775621,
+        "widthMin": 7.396504675622621,
+        "coverage": 0.6327131626800101,
+        "printedRate": 0.8659078311166365,
+        "printedPrompts": 61,
+        "printedScoreMin": 9.507955397416444,
+        "printedCoverage": 0.6374481623140728
+      },
+      "long": {
+        "prompts": 37,
+        "points": 5586,
+        "scoreMin": 44.42318675521455,
+        "widthMin": 20.509292336284272,
+        "coverage": 0.5344845133546603,
+        "printedRate": 0.9736298598466699,
+        "printedPrompts": 37,
+        "printedScoreMin": 43.22627668442894,
+        "printedCoverage": 0.5374362612330938
+      },
+      "halfHour": {
+        "prompts": 17,
+        "points": 3878,
+        "scoreMin": 70.32796227877725,
+        "widthMin": 27.99087822791522,
+        "coverage": 0.4622995584407005,
+        "printedRate": 0.9622638260804678,
+        "printedPrompts": 17,
+        "printedScoreMin": 68.63058722581899,
+        "printedCoverage": 0.4610270008686224
+      }
+    },
+    "rangePass": true,
+    "rangeScoreDelta95": {
+      "medium": [
+        -5.419925118052238,
+        -3.6452340511363093
+      ],
+      "long": [
+        -8.76130671228673,
+        -3.9526865576348142
+      ],
+      "halfHour": [
+        -11.764270994851609,
+        -3.023919392249267
+      ]
+    }
+  }
+}
