@@ -10,6 +10,8 @@ const identities = new WeakMap<ObservedEvent, VerificationIdentity>();
 const handoffs = new WeakMap<ObservedEvent, number>();
 const notices = new WeakMap<Trace, Notice[]>();
 const receipts=new WeakMap<ObservedEvent,number>();
+const receiptCounts=new WeakMap<ObservedEvent,number>();
+export const verificationReceiptCount=(event:ObservedEvent)=>receiptCounts.get(event);
 export const verificationReceipt=(event:ObservedEvent)=>receipts.get(event);
 export const verificationIdentity = (event:ObservedEvent) => identities.get(event);
 export const verificationHandoff = (event:ObservedEvent) => handoffs.get(event);
@@ -41,8 +43,8 @@ export function verificationTrace(text:string,path:string):Trace {
       // The native wait tool can deliver the completion instead of a custom
       // notice. Match only its first structured header, never quoted stdout.
       if(event.toolName==='wait' && !event.isError){
-        const receipt=/^## Completed \(\d+\)\s*### (bg_[\w-]+) \[bash\] — completed\b/.exec(textOf(content));
-        if(receipt)receipts.set(event,jobId(receipt[1]!));
+        const receipt=/^## Completed \((\d+)\)\s*### (bg_[\w-]+) \[bash\] — completed\b/.exec(textOf(content));
+        if(receipt){receipts.set(event,jobId(receipt[2]!));receiptCounts.set(event,Number(receipt[1]));}
         return;
       }
       if(!['bash','exec','shell'].includes(String(event.toolName))) return;
