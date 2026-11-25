@@ -1,0 +1,1861 @@
+{
+  "provenance": {
+    "refitWeightsSha256": "9c1aab3f897156ba2f48fd97e80dfedf35b04608c47c35449f1fbf5c78bd2df6"
+  },
+  "development": {
+    "sessions": 244,
+    "trainingCalls": 268,
+    "completed": 226,
+    "background": 62,
+    "terminalNotices": 20,
+    "crossValidated": {
+      "balancedMediumLong": {
+        "mae": {
+          "local": 8.60381037661364,
+          "exact": 8.60375288939933,
+          "pooled": 8.603507258915103
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": -5.748721430966418e-05,
+            "ci95": [
+              -0.00020403912684556862,
+              0
+            ]
+          },
+          "pooledVsLocal": {
+            "delta": -0.00030311769853531026,
+            "ci95": [
+              -0.0007310667320137836,
+              -3.738851252110606e-05
+            ]
+          },
+          "pooledVsExact": {
+            "delta": -0.00024563048422564606,
+            "ci95": [
+              -0.0006570491803906323,
+              -2.0975479710419284e-05
+            ]
+          }
+        }
+      },
+      "halfHour": {
+        "sessions": 28,
+        "prompts": 40,
+        "calls": 9,
+        "readings": 10572,
+        "mae": {
+          "local": 22.467996281484808,
+          "exact": 22.467996281484808,
+          "pooled": 22.467996281484808
+        },
+        "miss15": {
+          "local": 0.48811975237947447,
+          "exact": 0.48811975237947447,
+          "pooled": 0.48811975237947447
+        },
+        "forecast15": {
+          "local": 0.49310134278742473,
+          "exact": 0.49310134278742473,
+          "pooled": 0.49310134278742473
+        },
+        "forecast30": {
+          "local": 0.09145325109311928,
+          "exact": 0.09145325109311928,
+          "pooled": 0.09145325109311928
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": 0,
+            "ci95": [
+              0,
+              0
+            ]
+          },
+          "pooledVsLocal": {
+            "delta": 0,
+            "ci95": [
+              0,
+              0
+            ]
+          },
+          "pooledVsExact": {
+            "delta": 0,
+            "ci95": [
+              0,
+              0
+            ]
+          }
+        }
+      },
+      "coverage": {
+        "verification": {
+          "sessions": 23,
+          "prompts": 31,
+          "calls": 38,
+          "readings": 1332
+        },
+        "populationTimerSupported": {
+          "sessions": 19,
+          "prompts": 23,
+          "calls": 27,
+          "readings": 28
+        },
+        "exactAvailable": {
+          "sessions": 3,
+          "prompts": 3,
+          "calls": 3,
+          "readings": 4
+        },
+        "familyOnlyAvailable": {
+          "sessions": 7,
+          "prompts": 9,
+          "calls": 13,
+          "readings": 32
+        },
+        "anyAvailable": {
+          "sessions": 9,
+          "prompts": 12,
+          "calls": 16,
+          "readings": 36
+        },
+        "usedExact": {
+          "sessions": 2,
+          "prompts": 2,
+          "calls": 2,
+          "readings": 2
+        },
+        "usedFamily": {
+          "sessions": 7,
+          "prompts": 8,
+          "calls": 10,
+          "readings": 10
+        },
+        "availableButFallback": {
+          "sessions": 5,
+          "prompts": 5,
+          "calls": 7,
+          "readings": 24
+        },
+        "exactAvailableButNotUsed": {
+          "sessions": 1,
+          "prompts": 1,
+          "calls": 1,
+          "readings": 2
+        }
+      },
+      "exactTool": {
+        "mae": {
+          "local": 0.5859500000000002,
+          "exact": 0.09901884187620663,
+          "pooled": 0.09901884187620663
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": -0.4869311581237935,
+            "ci95": [
+              -0.7819162878787871,
+              -0.19194602836879987
+            ]
+          },
+          "pooledVsLocal": {
+            "delta": -0.4869311581237935,
+            "ci95": [
+              -0.7819162878787871,
+              -0.19194602836879987
+            ]
+          },
+          "pooledVsExact": {
+            "delta": 0,
+            "ci95": [
+              0,
+              0
+            ]
+          }
+        },
+        "naive": {
+          "mae": 0.06867916666666686,
+          "naiveVsPopulation": {
+            "delta": -0.5172708333333332,
+            "ci95": [
+              -0.826991666666666,
+              -0.20755000000000054
+            ]
+          },
+          "historyVsNaive": {
+            "delta": 0.030339675209539767,
+            "ci95": [
+              0.015603971631200649,
+              0.045075378787878886
+            ]
+          }
+        }
+      },
+      "anyTool": {
+        "mae": {
+          "local": 0.3700266666666683,
+          "exact": 0.2726404350419095,
+          "pooled": 0.2365148197376568
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": -0.0973862316247587,
+            "ci95": [
+              -0.3172118615006451,
+              0
+            ]
+          },
+          "pooledVsLocal": {
+            "delta": -0.13351184692901144,
+            "ci95": [
+              -0.35212790792650905,
+              0.1400512477808945
+            ]
+          },
+          "pooledVsExact": {
+            "delta": -0.03612561530425275,
+            "ci95": [
+              -0.16573977293235337,
+              0.2201313225323544
+            ]
+          }
+        },
+        "naive": {
+          "mae": 0.10184166666666619,
+          "naiveVsPopulation": {
+            "delta": -0.2681850000000021,
+            "ci95": [
+              -0.44255303030303117,
+              -0.16715833333333716
+            ]
+          },
+          "historyVsNaive": {
+            "delta": 0.13467315307099065,
+            "ci95": [
+              0.002978812962001319,
+              0.43781788972983887
+            ]
+          }
+        }
+      }
+    }
+  },
+  "heldoutSessions": 42,
+  "atDispatch": {
+    "starts": 124,
+    "completed": 92,
+    "background": 41,
+    "terminalNotices": 9,
+    "exact": {
+      "calls": 37,
+      "matchedCalls": 37,
+      "matchedSessions": 7,
+      "populationMae": 1.4756130630630642,
+      "historyMae": 0.033068390321521354
+    },
+    "familyOnly": {
+      "calls": 21,
+      "matchedCalls": 21,
+      "matchedSessions": 4,
+      "populationMae": 1.0137873015873002,
+      "historyMae": 0.02996741580365503
+    },
+    "all": {
+      "calls": 92,
+      "matchedCalls": 58,
+      "matchedSessions": 7,
+      "populationMae": 1.3084002873563223,
+      "historyMae": 0.03194562368574217
+    },
+    "atLeastOneMinute": {
+      "calls": 2,
+      "matchedCalls": 0,
+      "matchedSessions": 0,
+      "populationMae": null,
+      "historyMae": null
+    },
+    "atLeastTenMinutes": {
+      "calls": 0,
+      "matchedCalls": 0,
+      "matchedSessions": 0,
+      "populationMae": null,
+      "historyMae": null
+    }
+  },
+  "method": {
+    "durationUnit": "seconds",
+    "predictionUnit": "minutes",
+    "weighting": "mean readings within prompt, then mean prompts",
+    "bootstrap": "paired whole-session percentile bootstrap, 3000 replicates, seed 201193; treatment minus baseline",
+    "toolBaseline": "population; tool errors use matched readings with observed tool remainder",
+    "naive": "median prior exact durations, otherwise family durations, minus call age, floored at zero; used-family subgroup uses family history"
+  },
+  "completedPrompts": 177,
+  "noReadings": 1,
+  "slices": {
+    "all": {
+      "sessions": 42,
+      "prompts": 176,
+      "calls": 19,
+      "readings": 8027,
+      "mae": {
+        "local": 4.079252490822401,
+        "exact": 4.079252490822401,
+        "pooled": 4.079269145984167
+      },
+      "miss15": {
+        "local": 0.05394819921653216,
+        "exact": 0.05394819921653216,
+        "pooled": 0.05394819921653216
+      },
+      "forecast15": {
+        "local": 0.04197889598816056,
+        "exact": 0.04197889598816056,
+        "pooled": 0.04197889598816056
+      },
+      "forecast30": {
+        "local": 0.005315737035511179,
+        "exact": 0.005315737035511179,
+        "pooled": 0.005315737035511179
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 1.665516176689207e-05,
+          "ci95": [
+            0,
+            6.138865907796868e-05
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 1.665516176689207e-05,
+          "ci95": [
+            0,
+            6.138865907796868e-05
+          ]
+        }
+      }
+    },
+    "medium": {
+      "sessions": 29,
+      "prompts": 61,
+      "calls": 3,
+      "readings": 2076,
+      "mae": {
+        "local": 3.117103913752898,
+        "exact": 3.117103913752898,
+        "pooled": 3.1171519679901274
+      },
+      "miss15": {
+        "local": 0.008024507368769664,
+        "exact": 0.008024507368769664,
+        "pooled": 0.008024507368769664
+      },
+      "forecast15": {
+        "local": 0.014035436330518297,
+        "exact": 0.014035436330518297,
+        "pooled": 0.014035436330518297
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 4.805423722906564e-05,
+          "ci95": [
+            0,
+            0.00016592312099847193
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 4.805423722906564e-05,
+          "ci95": [
+            0,
+            0.00016592312099847193
+          ]
+        }
+      }
+    },
+    "long": {
+      "sessions": 21,
+      "prompts": 37,
+      "calls": 16,
+      "readings": 5586,
+      "mae": {
+        "local": 12.360534110528114,
+        "exact": 12.360534110528114,
+        "pooled": 12.360534110528114
+      },
+      "miss15": {
+        "local": 0.2433888679085057,
+        "exact": 0.2433888679085057,
+        "pooled": 0.2433888679085057
+      },
+      "forecast15": {
+        "local": 0.17654389399336867,
+        "exact": 0.17654389399336867,
+        "pooled": 0.17654389399336867
+      },
+      "forecast30": {
+        "local": 0.025285668060809934,
+        "exact": 0.025285668060809934,
+        "pooled": 0.025285668060809934
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "30+": {
+      "sessions": 12,
+      "prompts": 17,
+      "calls": 10,
+      "readings": 3878,
+      "mae": {
+        "local": 19.58724748790931,
+        "exact": 19.58724748790931,
+        "pooled": 19.58724748790931
+      },
+      "miss15": {
+        "local": 0.4391969869890957,
+        "exact": 0.4391969869890957,
+        "pooled": 0.4391969869890957
+      },
+      "forecast15": {
+        "local": 0.27765996202965965,
+        "exact": 0.27765996202965965,
+        "pooled": 0.27765996202965965
+      },
+      "forecast30": {
+        "local": 0.055033512838233385,
+        "exact": 0.055033512838233385,
+        "pooled": 0.055033512838233385
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "short": {
+      "sessions": 22,
+      "prompts": 49,
+      "calls": 0,
+      "readings": 121,
+      "mae": {
+        "local": 0.887799916335591,
+        "exact": 0.887799916335591,
+        "pooled": 0.887799916335591
+      },
+      "miss15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "slow": {
+      "sessions": 25,
+      "prompts": 60,
+      "calls": 6,
+      "readings": 1213,
+      "mae": {
+        "local": 7.9287582248980675,
+        "exact": 7.9287582248980675,
+        "pooled": 7.9287582248980675
+      },
+      "miss15": {
+        "local": 0.10268473583221202,
+        "exact": 0.10268473583221202,
+        "pooled": 0.10268473583221202
+      },
+      "forecast15": {
+        "local": 0.1429399292424708,
+        "exact": 0.1429399292424708,
+        "pooled": 0.1429399292424708
+      },
+      "forecast30": {
+        "local": 0.0172927847346452,
+        "exact": 0.0172927847346452,
+        "pooled": 0.0172927847346452
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "exactMatch": {
+      "sessions": 1,
+      "prompts": 2,
+      "calls": 2,
+      "readings": 2,
+      "mae": {
+        "local": 6.918975192782714,
+        "exact": 6.918975192782714,
+        "pooled": 6.918975192782714
+      },
+      "miss15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": null
+        }
+      }
+    },
+    "familyOnly": {
+      "sessions": 2,
+      "prompts": 2,
+      "calls": 3,
+      "readings": 113,
+      "mae": {
+        "local": 3.413188541266696,
+        "exact": 3.413188541266696,
+        "pooled": 3.4894025615120037
+      },
+      "miss15": {
+        "local": 0.013392857142857142,
+        "exact": 0.013392857142857142,
+        "pooled": 0.013392857142857142
+      },
+      "forecast15": {
+        "local": 0.45982142857142855,
+        "exact": 0.45982142857142855,
+        "pooled": 0.45982142857142855
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0.07621402024530788,
+          "ci95": [
+            0,
+            0.15242804049061576
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0.07621402024530788,
+          "ci95": [
+            0,
+            0.15242804049061576
+          ]
+        }
+      }
+    },
+    "anyVerification": {
+      "sessions": 13,
+      "prompts": 18,
+      "calls": 19,
+      "readings": 1445,
+      "mae": {
+        "local": 9.029994469946061,
+        "exact": 9.029994469946061,
+        "pooled": 9.038462694417763
+      },
+      "miss15": {
+        "local": 0.15322040188649014,
+        "exact": 0.15322040188649014,
+        "pooled": 0.15322040188649014
+      },
+      "forecast15": {
+        "local": 0.22145447701025434,
+        "exact": 0.22145447701025434,
+        "pooled": 0.22145447701025434
+      },
+      "forecast30": {
+        "local": 0.011111111111111112,
+        "exact": 0.011111111111111112,
+        "pooled": 0.011111111111111112
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0.008468224471700876,
+          "ci95": [
+            0,
+            0.028580257591990454
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0.008468224471700876,
+          "ci95": [
+            0,
+            0.028580257591990454
+          ]
+        }
+      }
+    },
+    "foregroundVerification": {
+      "sessions": 4,
+      "prompts": 6,
+      "calls": 6,
+      "readings": 8,
+      "mae": {
+        "local": 7.337772034234643,
+        "exact": 7.337772034234643,
+        "pooled": 7.363176707649746
+      },
+      "miss15": {
+        "local": 0.16666666666666666,
+        "exact": 0.16666666666666666,
+        "pooled": 0.16666666666666666
+      },
+      "forecast15": {
+        "local": 0.16666666666666666,
+        "exact": 0.16666666666666666,
+        "pooled": 0.16666666666666666
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0.025404673415102625,
+          "ci95": [
+            0,
+            0.11432103036796182
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0.025404673415102625,
+          "ci95": [
+            0,
+            0.11432103036796182
+          ]
+        }
+      }
+    },
+    "backgroundVerification": {
+      "sessions": 9,
+      "prompts": 12,
+      "calls": 13,
+      "readings": 1437,
+      "mae": {
+        "local": 9.876105687801774,
+        "exact": 9.876105687801774,
+        "pooled": 9.876105687801774
+      },
+      "miss15": {
+        "local": 0.14649726949640188,
+        "exact": 0.14649726949640188,
+        "pooled": 0.14649726949640188
+      },
+      "forecast15": {
+        "local": 0.2488483821820482,
+        "exact": 0.2488483821820482,
+        "pooled": 0.2488483821820482
+      },
+      "forecast30": {
+        "local": 0.016666666666666666,
+        "exact": 0.016666666666666666,
+        "pooled": 0.016666666666666666
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "longMatched": {
+      "sessions": 2,
+      "prompts": 3,
+      "calls": 4,
+      "readings": 114,
+      "mae": {
+        "local": 6.773892059156981,
+        "exact": 6.773892059156981,
+        "pooled": 6.773892059156981
+      },
+      "miss15": {
+        "local": 0.008928571428571428,
+        "exact": 0.008928571428571428,
+        "pooled": 0.008928571428571428
+      },
+      "forecast15": {
+        "local": 0.306547619047619,
+        "exact": 0.306547619047619,
+        "pooled": 0.306547619047619
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "halfHourMatched": {
+      "sessions": 2,
+      "prompts": 2,
+      "calls": 3,
+      "readings": 113,
+      "mae": {
+        "local": 8.900394884980507,
+        "exact": 8.900394884980507,
+        "pooled": 8.900394884980507
+      },
+      "miss15": {
+        "local": 0.013392857142857142,
+        "exact": 0.013392857142857142,
+        "pooled": 0.013392857142857142
+      },
+      "forecast15": {
+        "local": 0.45982142857142855,
+        "exact": 0.45982142857142855,
+        "pooled": 0.45982142857142855
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "historyUsed": {
+      "sessions": 1,
+      "prompts": 1,
+      "calls": 1,
+      "readings": 1,
+      "mae": {
+        "local": 0.34265129062788,
+        "exact": 0.34265129062788,
+        "pooled": 0.4950793311184958
+      },
+      "miss15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsLocal": {
+          "delta": 0.15242804049061576,
+          "ci95": null
+        },
+        "pooledVsExact": {
+          "delta": 0.15242804049061576,
+          "ci95": null
+        }
+      }
+    },
+    "verificationOver60": {
+      "sessions": 9,
+      "prompts": 12,
+      "calls": 12,
+      "readings": 1387,
+      "mae": {
+        "local": 9.663127590958924,
+        "exact": 9.663127590958924,
+        "pooled": 9.663127590958924
+      },
+      "miss15": {
+        "local": 0.14039353647964778,
+        "exact": 0.14039353647964778,
+        "pooled": 0.14039353647964778
+      },
+      "forecast15": {
+        "local": 0.24565675499725073,
+        "exact": 0.24565675499725073,
+        "pooled": 0.24565675499725073
+      },
+      "forecast30": {
+        "local": 0.014900662251655629,
+        "exact": 0.014900662251655629,
+        "pooled": 0.014900662251655629
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "crossPromptExact": {
+      "sessions": 1,
+      "prompts": 1,
+      "calls": 1,
+      "readings": 1,
+      "mae": {
+        "local": 2.5208864075099244,
+        "exact": 2.5208864075099244,
+        "pooled": 2.5208864075099244
+      },
+      "miss15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": null
+        }
+      }
+    },
+    "crossPromptFamily": {
+      "sessions": 2,
+      "prompts": 3,
+      "calls": 4,
+      "readings": 114,
+      "mae": {
+        "local": 6.773892059156981,
+        "exact": 6.773892059156981,
+        "pooled": 6.773892059156981
+      },
+      "miss15": {
+        "local": 0.008928571428571428,
+        "exact": 0.008928571428571428,
+        "pooled": 0.008928571428571428
+      },
+      "forecast15": {
+        "local": 0.306547619047619,
+        "exact": 0.306547619047619,
+        "pooled": 0.306547619047619
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "crossPromptFamilyOnly": {
+      "sessions": 2,
+      "prompts": 2,
+      "calls": 3,
+      "readings": 113,
+      "mae": {
+        "local": 8.900394884980507,
+        "exact": 8.900394884980507,
+        "pooled": 8.900394884980507
+      },
+      "miss15": {
+        "local": 0.013392857142857142,
+        "exact": 0.013392857142857142,
+        "pooled": 0.013392857142857142
+      },
+      "forecast15": {
+        "local": 0.45982142857142855,
+        "exact": 0.45982142857142855,
+        "pooled": 0.45982142857142855
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    }
+  },
+  "balancedMediumLong": {
+    "mae": {
+      "local": 7.738819012140506,
+      "exact": 7.738819012140506,
+      "pooled": 7.7388430392591205
+    },
+    "contrasts": {
+      "exactVsLocal": {
+        "delta": 0,
+        "ci95": [
+          0,
+          0
+        ]
+      },
+      "pooledVsLocal": {
+        "delta": 2.402711861453282e-05,
+        "ci95": [
+          0,
+          8.296156049923597e-05
+        ]
+      },
+      "pooledVsExact": {
+        "delta": 2.402711861453282e-05,
+        "ci95": [
+          0,
+          8.296156049923597e-05
+        ]
+      }
+    }
+  },
+  "coverage": {
+    "verification": {
+      "sessions": 13,
+      "prompts": 18,
+      "calls": 19,
+      "readings": 1445
+    },
+    "populationTimerSupported": {
+      "sessions": 10,
+      "prompts": 10,
+      "calls": 10,
+      "readings": 10
+    },
+    "exactAvailable": {
+      "sessions": 1,
+      "prompts": 2,
+      "calls": 2,
+      "readings": 2
+    },
+    "familyOnlyAvailable": {
+      "sessions": 2,
+      "prompts": 2,
+      "calls": 3,
+      "readings": 113
+    },
+    "anyAvailable": {
+      "sessions": 3,
+      "prompts": 4,
+      "calls": 5,
+      "readings": 115
+    },
+    "usedExact": {
+      "sessions": 0,
+      "prompts": 0,
+      "calls": 0,
+      "readings": 0
+    },
+    "usedFamily": {
+      "sessions": 1,
+      "prompts": 1,
+      "calls": 1,
+      "readings": 1
+    },
+    "availableButFallback": {
+      "sessions": 2,
+      "prompts": 3,
+      "calls": 4,
+      "readings": 114
+    },
+    "exactAvailableButNotUsed": {
+      "sessions": 1,
+      "prompts": 2,
+      "calls": 2,
+      "readings": 2
+    }
+  },
+  "tool": {
+    "exactSupport": {
+      "sessions": 0,
+      "prompts": 0,
+      "calls": 0,
+      "readings": 0,
+      "promptWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      },
+      "callWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      }
+    },
+    "anySupport": {
+      "sessions": 1,
+      "prompts": 1,
+      "calls": 1,
+      "readings": 1,
+      "promptWeighted": {
+        "mae": {
+          "local": 0.2057166666666679,
+          "exact": 0.2057166666666679,
+          "pooled": 0.05328862617605179
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": 0,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": 0.03492500000000073,
+          "naiveVsPopulation": {
+            "delta": -0.17079166666666717,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": 0.018363626176051057,
+            "ci95": null
+          }
+        }
+      },
+      "callWeighted": {
+        "mae": {
+          "local": 0.2057166666666679,
+          "exact": 0.2057166666666679,
+          "pooled": 0.05328862617605179
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": 0,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": 0.03492500000000073,
+          "naiveVsPopulation": {
+            "delta": -0.17079166666666717,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": 0.018363626176051057,
+            "ci95": null
+          }
+        }
+      }
+    },
+    "exactSupportSlow": {
+      "sessions": 0,
+      "prompts": 0,
+      "calls": 0,
+      "readings": 0,
+      "promptWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      },
+      "callWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      }
+    },
+    "anySupportSlow": {
+      "sessions": 0,
+      "prompts": 0,
+      "calls": 0,
+      "readings": 0,
+      "promptWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      },
+      "callWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      }
+    },
+    "usedExact": {
+      "sessions": 0,
+      "prompts": 0,
+      "calls": 0,
+      "readings": 0,
+      "promptWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      },
+      "callWeighted": {
+        "mae": {
+          "local": null,
+          "exact": null,
+          "pooled": null
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": null,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": null,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": null,
+          "naiveVsPopulation": {
+            "delta": null,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": null,
+            "ci95": null
+          }
+        }
+      }
+    },
+    "usedFamily": {
+      "sessions": 1,
+      "prompts": 1,
+      "calls": 1,
+      "readings": 1,
+      "promptWeighted": {
+        "mae": {
+          "local": 0.2057166666666679,
+          "exact": 0.2057166666666679,
+          "pooled": 0.05328862617605179
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": 0,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": 0.03492500000000073,
+          "naiveVsPopulation": {
+            "delta": -0.17079166666666717,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": 0.018363626176051057,
+            "ci95": null
+          }
+        }
+      },
+      "callWeighted": {
+        "mae": {
+          "local": 0.2057166666666679,
+          "exact": 0.2057166666666679,
+          "pooled": 0.05328862617605179
+        },
+        "contrasts": {
+          "exactVsLocal": {
+            "delta": 0,
+            "ci95": null
+          },
+          "pooledVsLocal": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          },
+          "pooledVsExact": {
+            "delta": -0.15242804049061612,
+            "ci95": null
+          }
+        },
+        "naive": {
+          "mae": 0.03492500000000073,
+          "naiveVsPopulation": {
+            "delta": -0.17079166666666717,
+            "ci95": null
+          },
+          "historyVsNaive": {
+            "delta": 0.018363626176051057,
+            "ci95": null
+          }
+        }
+      }
+    }
+  },
+  "literalSensitivity": {
+    "rule": "Post-hoc sensitivity: most recent exact run, else same runner/action/scope. Floor the local ETA at max(0, prior duration minus age), regardless of population support.",
+    "changedReadings": 0,
+    "balanced": {
+      "mae": {
+        "local": 7.738819012140506,
+        "exact": 7.738819012140506,
+        "pooled": 7.738819012140506
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "halfHour": {
+      "local": 19.58724748790931,
+      "exact": 19.58724748790931,
+      "pooled": 19.58724748790931
+    },
+    "slow": {
+      "local": 7.9287582248980675,
+      "exact": 7.9287582248980675,
+      "pooled": 7.9287582248980675
+    },
+    "shortFalse15": {
+      "local": 0,
+      "exact": 0,
+      "pooled": 0
+    },
+    "exactHistory": {
+      "sessions": 1,
+      "prompts": 2,
+      "calls": 2,
+      "readings": 2,
+      "mae": {
+        "local": 6.918975192782714,
+        "exact": 6.918975192782714,
+        "pooled": 6.918975192782714
+      },
+      "miss15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast15": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": null
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": null
+        }
+      }
+    },
+    "runnerHistoryOnly": {
+      "sessions": 2,
+      "prompts": 2,
+      "calls": 3,
+      "readings": 113,
+      "mae": {
+        "local": 3.413188541266696,
+        "exact": 3.413188541266696,
+        "pooled": 3.413188541266696
+      },
+      "miss15": {
+        "local": 0.013392857142857142,
+        "exact": 0.013392857142857142,
+        "pooled": 0.013392857142857142
+      },
+      "forecast15": {
+        "local": 0.45982142857142855,
+        "exact": 0.45982142857142855,
+        "pooled": 0.45982142857142855
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "longWithHistory": {
+      "sessions": 2,
+      "prompts": 3,
+      "calls": 4,
+      "readings": 114,
+      "mae": {
+        "local": 6.773892059156981,
+        "exact": 6.773892059156981,
+        "pooled": 6.773892059156981
+      },
+      "miss15": {
+        "local": 0.008928571428571428,
+        "exact": 0.008928571428571428,
+        "pooled": 0.008928571428571428
+      },
+      "forecast15": {
+        "local": 0.306547619047619,
+        "exact": 0.306547619047619,
+        "pooled": 0.306547619047619
+      },
+      "forecast30": {
+        "local": 0,
+        "exact": 0,
+        "pooled": 0
+      },
+      "contrasts": {
+        "exactVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsLocal": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        },
+        "pooledVsExact": {
+          "delta": 0,
+          "ci95": [
+            0,
+            0
+          ]
+        }
+      }
+    },
+    "toolOnObservedMatches": {
+      "calls": 4,
+      "readings": 5,
+      "sessions": 3,
+      "populationMinusAge": 2.3874125000000004,
+      "latestMatchMinusAge": 0.10081666666666134,
+      "contrast": {
+        "delta": -2.286595833333339,
+        "ci95": [
+          -4.569441666666665,
+          0.056833333333308145
+        ]
+      }
+    }
+  }
+}

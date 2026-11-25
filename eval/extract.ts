@@ -43,6 +43,7 @@ interface Entry {
 	customType?: string;
 	data?: Record<string, unknown>;
 	cwd?: string;
+	content?: unknown;
 	message?: {
 		role?: string;
 		content?: unknown;
@@ -92,8 +93,15 @@ export function extractSession(path: string): Trace {
 	return extractSessionText(readFileSync(path, "utf8"), path);
 }
 
+/** Optional in-memory observers; custom messages never become clock events. */
+interface ExtractionObservers {
+	onToolStart?: (event: ObservedEvent, args: Record<string, unknown>, cwd: string) => void;
+	onToolEnd?: (event: ObservedEvent, content: unknown) => void;
+	onCustomMessage?: (customType: string, content: unknown, timestamp: number) => void;
+}
+
 /** Replay already-verified bytes without reopening a changing session file. */
-export function extractSessionText(text: string, path: string): Trace {
+export function extractSessionText(text: string, path: string, observers?: ExtractionObservers): Trace {
 	const entries: Entry[] = [];
 	for (const line of text.split("\n")) {
 		if (!line.trim()) continue;
@@ -110,6 +118,9 @@ export function extractSessionText(text: string, path: string): Trace {
 		if (e.type === "custom" && e.customType === "tool_execution_start" && e.data) {
 			const t = time(e.data.startedAt);
 			if (Number.isFinite(t)) toolStartAt.set(String(e.data.toolCallId), t);
+		} else if (observers?.onCustomMessage && e.type === "custom_message" && typeof e.customType === "string") {
+			const t = time(e.timestamp);
+			if (Number.isFinite(t)) observers.onCustomMessage(e.customType, e.content ?? e.message?.content, t);
 		}
 	}
 	const messages = branch.filter(e => e.type === "message" && e.message && Number.isFinite(time(e.timestamp)));
@@ -141,7 +152,9 @@ export function extractSessionText(text: string, path: string): Trace {
 					const id = String(call.id);
 					const name = typeof call.name === "string" ? call.name : "tool";
 					const args = call.arguments && typeof call.arguments === "object" ? (call.arguments as Record<string, unknown>) : {};
-					push(Math.max(t, toolStartAt.get(id) ?? t), { type: "tool_execution_start", toolCallId: id, toolName: name, intent: call.intent, args: eventArgs(name, args) });
+					const event: ObservedEvent = { type: "tool_execution_start", toolCallId: id, toolName: name, intent: call.intent, args: eventArgs(name, args) };
+					observers?.onToolStart?.(event, args, String(e.cwd ?? header?.cwd ?? ""));
+					push(Math.max(t, toolStartAt.get(id) ?? t), event);
 				}
 			}
 			const next = messages[i + 1]?.message?.role;
@@ -150,7 +163,9 @@ export function extractSessionText(text: string, path: string): Trace {
 				push(t + 1, { type: "agent_end", stopReason: m.stopReason });
 			}
 		} else if (m.role === "toolResult") {
-			push(t, { type: "tool_execution_end", toolCallId: String(m.toolCallId), toolName: m.toolName, isError: m.isError === true, details: m.details });
+			const event: ObservedEvent = { type: "tool_execution_end", toolCallId: String(m.toolCallId), toolName: m.toolName, isError: m.isError === true, details: m.details };
+			observers?.onToolEnd?.(event, m.content);
+			push(t, event);
 		}
 	}
 	// Stable: events of one message keep their order.

@@ -1,5 +1,4 @@
-import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { frozenText } from '../frozen-session';
 import { activeSegments, extractSessionText, type Trace } from '../extract';
 import { applyEvent, emptyFacts, activeMs } from '../../src/facts';
 import type { Entry } from '../tool-timing/cohort';
@@ -9,7 +8,6 @@ import type { Plans, Route } from './types';
 
 interface Checkpoint extends Plans { elapsedS:number }
 interface RouteSession {id:string; prompts:Checkpoint[][]}
-export const sha=(input:string|Buffer)=>createHash('sha256').update(input).digest('hex');
 // Use persisted message_end timestamps (not message construction time). The most
 // recent nonempty public assistant statement supersedes its predecessor. Unchanged
 // prose expires after five active minutes; the confirmed checklist is a living plan.
@@ -46,15 +44,6 @@ export function replayPlans(trace:Trace):RouteSession {
   return {id:trace.id,prompts};
 }
 
-// An archived session may have been appended since the previous study. Accept
-// only its byte-identical committed prefix; raw bytes never leave memory.
 export function frozenPlans(e:Entry):RouteSession {
-  const bytes=readFileSync(e.path);
-  if(sha(bytes)===e.digest)return replayPlans(extractSessionText(bytes.toString('utf8'),e.path));
-  const h=createHash('sha256');
-  for(let start=0,end:number;(end=bytes.indexOf(10,start))!==-1;start=end+1){
-    h.update(bytes.subarray(start,end+1));if(h.copy().digest('hex')!==e.digest)continue;
-    return replayPlans(extractSessionText(bytes.toString('utf8',0,end+1),e.path));
-  }
-  throw Error('No byte-identical frozen session prefix');
+  return replayPlans(extractSessionText(frozenText(e),e.path));
 }

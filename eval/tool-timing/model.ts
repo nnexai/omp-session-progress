@@ -8,7 +8,7 @@ const MIN_CALLS = 8;
 const MIN_SESSIONS = 3;
 const MAX_POST_MIN = 7 * 24 * 60;
 
-type Duration = { durationS: number; completed: boolean; session: number };
+export type Duration = { durationS: number; completed: boolean; session: number };
 type Features = {
   family: string; phase: Evidence['phase']; request: number; openKinds: number;
   currentKinds: number; recent: number; plan: boolean; wrap: boolean;
@@ -96,7 +96,7 @@ export function fitTiming(sessions: Session[]): TimingModel {
 // Condition on survival strictly beyond the observed age, then calculate the product-limit
 // median. Censors remove risk only after events at the same time. If survival
 // never reaches one half, the median is not identified: do not impute a finish.
-function survivalMedian(rows: Duration[], ageS: number): { enough: boolean; leftS: number | null } {
+export function survivalMedian(rows: Duration[], ageS: number): { enough: boolean; leftS: number | null } {
   let lo = 0, hi = rows.length;
   while (lo < hi) {
     const mid = lo + Math.floor((hi - lo) / 2);
