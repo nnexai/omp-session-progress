@@ -98,7 +98,11 @@ export function estimateProgress(facts: Facts, now: number, opts: EstimateOption
 		};
 	}
 
-	const rawZ = evalEnsembleZ(model, feat.x, feat.logElapsed, feat.anchorZ);
+	const rawZ = evalEnsembleZ(model, feat.x, feat.logElapsed, feat.anchorZ, {
+		elapsedS: feat.elapsedS,
+		toolCalls: feat.toolCalls,
+		hasActiveTodo: feat.hasActiveTodo,
+	});
 	const z = opts.overrideZ ?? rawZ;
 	const remMinutes = zToMinutes(z);
 	const remS = remMinutes * 60;

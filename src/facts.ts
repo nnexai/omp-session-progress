@@ -61,6 +61,12 @@ export type WorkPhase =
 	| "wrapping up"
 	| "done";
 
+export interface BackgroundJob {
+	startedAtS: number;
+	kind: "task" | "bash" | "other";
+	isSlowModel: boolean;
+}
+
 export interface Facts {
 	running: boolean;
 	/** Completed or active user prompts seen in this session (0-based index; -1 before any prompt). */
@@ -75,6 +81,12 @@ export interface Facts {
 	promptKwHeavy: boolean;
 	promptKwLight: boolean;
 	promptKwContinue: boolean;
+	promptIsQuestion: boolean;
+	promptIsTinyCmd: boolean;
+	promptHasCodeOrLog: boolean;
+	promptFilePaths: number;
+	promptKwE2eBench: boolean;
+	promptKwCommitShip: boolean;
 
 	/** Authoritative todo list (survives across prompts in the session). */
 	todos: TodoItem[];
@@ -84,6 +96,10 @@ export interface Facts {
 	todoInitThisPrompt: boolean;
 	/** Open (non-done, non-dropped) todos at the start of this prompt or right after init. */
 	todoStartRem: number;
+	/** Live todo count at initial observation in this prompt (tracks scope expansion). */
+	todoInitTotal: number;
+	/** Open todos carried over from earlier prompts before this prompt started. */
+	carryoverOpenTodos: number;
 	/** Active seconds when todos were initialized in this prompt (null if carried over). */
 	todoInitAtS: number | null;
 	/** Active-second timestamps of each todo completion during this prompt. */
@@ -102,6 +118,7 @@ export interface Facts {
 	recent: string[];
 	failures: string[];
 	toolHistory: ToolRecord[];
+	toolTimesS: number[];
 	catCounts: ToolCategoryCounts;
 	toolTimeSumS: number;
 	taskTimeSumS: number;
@@ -112,18 +129,67 @@ export interface Facts {
 	lastWriteAtS: number | null;
 	postWriteExecCount: number;
 	postWriteCleanExecCount: number;
+	subsequentToolsAfterLastWrite: number;
 	lastExecClean: boolean;
 	taskSubagentsLaunched: number;
 	taskCompleted: number;
+	taskDispatches: number;
+
+	/** Async background jobs (async task/bash launches reconciled with wait snapshots). */
+	bgJobs: Map<string, BackgroundJob>;
+	bgDoneCount: number;
+	bgDoneDurSumS: number;
+	bgDoneMaxS: number;
+	waitCount: number;
+	waitTimeSumS: number;
+
+	/** Tool intent & workflow stage progression (strictly causal). */
+	intentTestCount: number;
+	intentE2eCount: number;
+	intentBuildCount: number;
+	intentGitCount: number;
+	intentReleaseCount: number;
+	lastIntentTestAtS: number;
+	lastIntentGitAtS: number;
+	underwayIntentTest: boolean;
+	underwayIntentE2e: boolean;
+	underwayIntentGit: boolean;
+	curStage: number;
+	stageAtS: number;
+	stageTransitions: number;
+	editVerifyCycles: number;
+	verificationsSeen: number;
+	sawEditInCycle: boolean;
+	lastErrorAtS: number;
+
+	/** Working set & file dynamics (local paths only, never transmitted). */
+	filesRead: Set<string>;
+	filesEdited: Set<string>;
+	editPathCounts: Map<string, number>;
+	recentReadNovel: number[];
+	editedTestFile: boolean;
+	editedDocFile: boolean;
 
 	/** Per-prompt LLM turn & token metrics (from message_end). */
 	assistantTurns: number;
 	turnTimesS: number[];
 	totalOutputTokens: number;
+	recentOutputTokens: number[];
 	latestContextTokens: number;
+	promptStartContextTokens: number;
+	prevTurnContextTokens: number;
+	compactions: number;
+	lastActivityEndAtS: number;
+	thinkTimeSumS: number;
+	thinkCount: number;
+	recentThinkS: number[];
+	curTurnTools: number;
+	turnFanoutHist: number[];
 	model: string;
 	agentNote: string | null;
 	agentWrapUp: boolean;
+	proseHasRemaining: boolean;
+	proseHasDebug: boolean;
 	retry: string | null;
 
 	/** Active time of the current prompt up to `lastAt` (ms). */
@@ -131,12 +197,15 @@ export interface Facts {
 	/** Last completed prompt's active duration (ms), shown when turn ended. */
 	lastCompletedMs: number | null;
 	lastAt: number | null;
+	prevPromptEndAtMs: number | null;
+	gapSincePrevPromptS: number;
 	/** Open `ask` calls: the agent is waiting on the user. */
 	asking: Set<string>;
 	askCount: number;
 
 	/** Strictly causal history of earlier prompts completed in this session (seconds). */
 	priorPromptDurationsS: number[];
+	priorMaxDurS: number;
 	sessionActiveS: number;
 }
 
@@ -156,10 +225,18 @@ export function emptyFacts(): Facts {
 		promptKwHeavy: false,
 		promptKwLight: false,
 		promptKwContinue: false,
+		promptIsQuestion: false,
+		promptIsTinyCmd: false,
+		promptHasCodeOrLog: false,
+		promptFilePaths: 0,
+		promptKwE2eBench: false,
+		promptKwCommitShip: false,
 		todos: [],
 		todoUpdated: false,
 		todoInitThisPrompt: false,
 		todoStartRem: 0,
+		todoInitTotal: 0,
+		carryoverOpenTodos: 0,
 		todoInitAtS: null,
 		todoDoneEventsS: [],
 		todoDoneToolsAt: [],
@@ -173,6 +250,7 @@ export function emptyFacts(): Facts {
 		recent: [],
 		failures: [],
 		toolHistory: [],
+		toolTimesS: [],
 		catCounts: { explore: 0, write: 0, exec: 0, delegate: 0, todo: 0, other: 0 },
 		toolTimeSumS: 0,
 		taskTimeSumS: 0,
@@ -183,23 +261,69 @@ export function emptyFacts(): Facts {
 		lastWriteAtS: null,
 		postWriteExecCount: 0,
 		postWriteCleanExecCount: 0,
+		subsequentToolsAfterLastWrite: 0,
 		lastExecClean: false,
 		taskSubagentsLaunched: 0,
 		taskCompleted: 0,
+		taskDispatches: 0,
+		bgJobs: new Map(),
+		bgDoneCount: 0,
+		bgDoneDurSumS: 0,
+		bgDoneMaxS: 0,
+		waitCount: 0,
+		waitTimeSumS: 0,
+		intentTestCount: 0,
+		intentE2eCount: 0,
+		intentBuildCount: 0,
+		intentGitCount: 0,
+		intentReleaseCount: 0,
+		lastIntentTestAtS: -1,
+		lastIntentGitAtS: -1,
+		underwayIntentTest: false,
+		underwayIntentE2e: false,
+		underwayIntentGit: false,
+		curStage: 0,
+		stageAtS: 0,
+		stageTransitions: 0,
+		editVerifyCycles: 0,
+		verificationsSeen: 0,
+		sawEditInCycle: false,
+		lastErrorAtS: -1,
+		filesRead: new Set(),
+		filesEdited: new Set(),
+		editPathCounts: new Map(),
+		recentReadNovel: [],
+		editedTestFile: false,
+		editedDocFile: false,
 		assistantTurns: 0,
 		turnTimesS: [],
 		totalOutputTokens: 0,
+		recentOutputTokens: [],
 		latestContextTokens: 0,
+		promptStartContextTokens: 0,
+		prevTurnContextTokens: 0,
+		compactions: 0,
+		lastActivityEndAtS: 0,
+		thinkTimeSumS: 0,
+		thinkCount: 0,
+		recentThinkS: [],
+		curTurnTools: 0,
+		turnFanoutHist: [],
 		model: "",
 		agentNote: null,
 		agentWrapUp: false,
+		proseHasRemaining: false,
+		proseHasDebug: false,
 		retry: null,
 		activeMs: 0,
 		lastCompletedMs: null,
 		lastAt: null,
+		prevPromptEndAtMs: null,
+		gapSincePrevPromptS: 0,
 		asking: new Set(),
 		askCount: 0,
 		priorPromptDurationsS: [],
+		priorMaxDurS: 0,
 		sessionActiveS: 0,
 	};
 }
@@ -436,8 +560,25 @@ const KW_HEAVY = /\b(implement|build|refactor|migrate|redesign|audit|overhaul|ar
 const KW_LIGHT = /\b(fix|typo|rename|check|why|what|explain|status|commit|push|diff|quick|small|just)\b/i;
 const KW_CONTINUE = /\b(continue|proceed|go ahead|yes|do it|looks good|lgtm|approved|next)\b/i;
 const KW_WRAPUP = /\b(all tests pass|verified|completed|everything passes|ready to|summary|done\b|no errors|build succeeds)/i;
+const RE_INTENT_TEST = /\b(test|tests|spec|vitest|jest|pytest|verify|verif\w*|check|lint|typecheck|tsc|cargo\s+test|bun\s+test)\b/i;
+const RE_INTENT_E2E = /\b(e2e|end[- ]to[- ]end|playwright|browser|smoke|benchmark|eval|train|experiment|emulator|tui)\b/i;
+const RE_INTENT_BUILD = /\b(build|compile|bundle|webpack|vite|cargo\s+build|docker|install|migrate)\b/i;
+const RE_INTENT_GIT = /\b(git\s+(status|diff|add|commit|push|log|pr)|commit|committing|pushing|pull request|gh\s+pr)\b/i;
+const RE_INTENT_RELEASE = /\b(deploy|publish|release|push)\b/i;
+const RE_TEST_PATH = /(?:^|\/)(?:tests?|__tests__|specs?)\/|\.(?:test|spec)\.[a-z]+$|_test\.[a-z]+$/i;
+const RE_DOC_PATH = /\.(?:md|mdx|rst|txt)$|readme|changelog/i;
+const RE_PROSE_REM = /\b(next i|now let|still need|remaining|left to|moving on to|let me also|after that)\b/i;
+const RE_PROSE_DEBUG = /\b(failed|failing|error|bug|mismatch|unexpected|investigat|let me fix|let's fix|broken)\b/i;
 
-function startPrompt(facts: Facts, rawPrompt: string): boolean {
+function recordEditedFile(facts: Facts, path: string): void {
+	if (!path) return;
+	facts.filesEdited.add(path);
+	facts.editPathCounts.set(path, (facts.editPathCounts.get(path) ?? 0) + 1);
+	if (RE_TEST_PATH.test(path)) facts.editedTestFile = true;
+	if (RE_DOC_PATH.test(path)) facts.editedDocFile = true;
+}
+
+function startPrompt(facts: Facts, rawPrompt: string, at: number): boolean {
 	const goal = clean(rawPrompt, LIMITS.goal);
 	if (!goal) return false;
 	// Record superseded prompt duration only if it hadn't already ended via agent_end.
@@ -445,16 +586,35 @@ function startPrompt(facts: Facts, rawPrompt: string): boolean {
 		const durS = facts.activeMs / 1000;
 		facts.priorPromptDurationsS.push(durS);
 		facts.sessionActiveS += durS;
+		if (durS > facts.priorMaxDurS) facts.priorMaxDurS = durS;
+	} else if (facts.promptIndex >= 0) {
+		const lastDur = facts.priorPromptDurationsS[facts.priorPromptDurationsS.length - 1] ?? 0;
+		if (lastDur > facts.priorMaxDurS) facts.priorMaxDurS = lastDur;
 	}
+	facts.carryoverOpenTodos = facts.todos.filter(t => t.status !== "dropped" && t.status !== "done").length;
+	facts.gapSincePrevPromptS =
+		facts.prevPromptEndAtMs !== null ? Math.min(3600, Math.max(0, (at - facts.prevPromptEndAtMs) / 1000)) : 0;
+
 	facts.promptIndex += 1;
 	facts.requests += 1;
 	facts.goal = goal;
 	facts.promptChars = rawPrompt.length;
 	facts.promptListItems = (rawPrompt.slice(0, 4000).match(/^\s*(?:\d+[.)]|[-*•])\s+/gm) ?? []).length;
-	const head = rawPrompt.slice(0, 2000);
-	facts.promptKwHeavy = KW_HEAVY.test(head);
-	facts.promptKwLight = KW_LIGHT.test(head);
-	facts.promptKwContinue = KW_CONTINUE.test(head) && rawPrompt.length < 180;
+	const trimmed = rawPrompt.trim();
+	const head = trimmed.slice(0, 2500);
+	facts.promptKwHeavy = KW_HEAVY.test(head.slice(0, 2000));
+	facts.promptKwLight = KW_LIGHT.test(head.slice(0, 2000));
+	facts.promptKwContinue = KW_CONTINUE.test(head.slice(0, 2000)) && rawPrompt.length < 180;
+	facts.promptIsQuestion =
+		/\?\s*$/.test(head.slice(0, 400)) ||
+		/^(what|why|how|where|when|does|do|is|are|can|could|should|explain|tell me)\b/i.test(head);
+	facts.promptIsTinyCmd =
+		trimmed.length < 40 &&
+		/^(commit|push|status|diff|yes|no|ok|go|run|test|retry|continue|ship|merge|rebase|clean)\b/i.test(trimmed);
+	facts.promptHasCodeOrLog = /```|^\s*at\s+\S+\s*\(|Error:|Traceback|FAIL\b|Exception/m.test(head);
+	facts.promptFilePaths = (head.match(/(?:[\w.-]+\/)+[\w.-]+\.[a-z]{1,6}\b/gi) ?? []).length;
+	facts.promptKwE2eBench = /\b(e2e|end[- ]to[- ]end|benchmark|experiment|evaluate|train|browser|playwright|visual|audit|ratchet)\b/i.test(head);
+	facts.promptKwCommitShip = /\b(commit|push|pr\b|pull request|release|deploy|merge|changelog)\b/i.test(head);
 
 	facts.running = true;
 	facts.activeMs = 0;
@@ -465,6 +625,7 @@ function startPrompt(facts: Facts, rawPrompt: string): boolean {
 	facts.todoUpdated = false;
 	facts.todoInitThisPrompt = false;
 	facts.todoStartRem = facts.todos.filter(t => t.status !== "dropped" && t.status !== "done").length;
+	facts.todoInitTotal = 0;
 	facts.todoInitAtS = null;
 	facts.todoDoneEventsS = [];
 	facts.todoDoneToolsAt = [];
@@ -477,6 +638,7 @@ function startPrompt(facts: Facts, rawPrompt: string): boolean {
 	facts.recent = [];
 	facts.failures = [];
 	facts.toolHistory = [];
+	facts.toolTimesS = [];
 	facts.catCounts = { explore: 0, write: 0, exec: 0, delegate: 0, todo: 0, other: 0 };
 	facts.toolTimeSumS = 0;
 	facts.taskTimeSumS = 0;
@@ -487,15 +649,61 @@ function startPrompt(facts: Facts, rawPrompt: string): boolean {
 	facts.lastWriteAtS = null;
 	facts.postWriteExecCount = 0;
 	facts.postWriteCleanExecCount = 0;
+	facts.subsequentToolsAfterLastWrite = 0;
 	facts.lastExecClean = false;
 	facts.taskSubagentsLaunched = 0;
 	facts.taskCompleted = 0;
+	facts.taskDispatches = 0;
+
+	facts.bgJobs.clear();
+	facts.bgDoneCount = 0;
+	facts.bgDoneDurSumS = 0;
+	facts.bgDoneMaxS = 0;
+	facts.waitCount = 0;
+	facts.waitTimeSumS = 0;
+
+	facts.intentTestCount = 0;
+	facts.intentE2eCount = 0;
+	facts.intentBuildCount = 0;
+	facts.intentGitCount = 0;
+	facts.intentReleaseCount = 0;
+	facts.lastIntentTestAtS = -1;
+	facts.lastIntentGitAtS = -1;
+	facts.underwayIntentTest = false;
+	facts.underwayIntentE2e = false;
+	facts.underwayIntentGit = false;
+	facts.curStage = 0;
+	facts.stageAtS = 0;
+	facts.stageTransitions = 0;
+	facts.editVerifyCycles = 0;
+	facts.verificationsSeen = 0;
+	facts.sawEditInCycle = false;
+	facts.lastErrorAtS = -1;
+
+	facts.filesRead.clear();
+	facts.filesEdited.clear();
+	facts.editPathCounts.clear();
+	facts.recentReadNovel = [];
+	facts.editedTestFile = false;
+	facts.editedDocFile = false;
 
 	facts.assistantTurns = 0;
 	facts.turnTimesS = [];
 	facts.totalOutputTokens = 0;
+	facts.recentOutputTokens = [];
+	facts.promptStartContextTokens = facts.latestContextTokens;
+	facts.prevTurnContextTokens = facts.latestContextTokens;
+	facts.compactions = 0;
+	facts.lastActivityEndAtS = 0;
+	facts.thinkTimeSumS = 0;
+	facts.thinkCount = 0;
+	facts.recentThinkS = [];
+	facts.curTurnTools = 0;
+	facts.turnFanoutHist = [];
 	facts.agentNote = null;
 	facts.agentWrapUp = false;
+	facts.proseHasRemaining = false;
+	facts.proseHasDebug = false;
 	facts.retry = null;
 	return true;
 }
@@ -512,7 +720,7 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 	switch (event.type) {
 		case "before_agent_start": {
 			if (typeof event.prompt !== "string") return false;
-			return startPrompt(facts, event.prompt);
+			return startPrompt(facts, event.prompt, at);
 		}
 		case "agent_start":
 			facts.running = true;
@@ -523,18 +731,24 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 				const durS = facts.activeMs / 1000;
 				facts.priorPromptDurationsS.push(durS);
 				facts.sessionActiveS += durS;
+				if (durS > facts.priorMaxDurS) facts.priorMaxDurS = durS;
 			}
+			facts.prevPromptEndAtMs = at;
 			facts.running = false;
 			facts.underway.clear();
 			facts.asking.clear();
+			facts.bgJobs.clear();
 			return true;
 		}
 		case "tool_execution_start": {
 			const args = record(event.args);
 			const name = clean(event.toolName, 40) || "tool";
+			const rawIntent = typeof event.intent === "string" ? event.intent : "";
 			const label = toolLabel(event.toolName, event.intent, args);
 			const subtasks = name === "task" && Array.isArray(args?.tasks) ? args.tasks.length : name === "task" ? 1 : 0;
 			facts.running = true;
+			facts.curTurnTools += 1;
+			facts.toolTimesS.push(curS);
 			// Do not mutate todos on tool_execution_start: wait for confirmed successful tool_execution_end.
 			facts.underway.set(String(event.toolCallId), {
 				name,
@@ -547,7 +761,75 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 				facts.asking.add(String(event.toolCallId));
 				facts.askCount += 1;
 			}
-			if (name === "task") facts.taskSubagentsLaunched += subtasks;
+			if (name === "task") {
+				facts.taskSubagentsLaunched += subtasks;
+				facts.taskDispatches += 1;
+			}
+
+			// Intent semantics & workflow stage progression
+			const isTest = RE_INTENT_TEST.test(rawIntent);
+			const isE2e = RE_INTENT_E2E.test(rawIntent);
+			const isBuild = RE_INTENT_BUILD.test(rawIntent);
+			const isGit = RE_INTENT_GIT.test(rawIntent);
+			const isRelease = RE_INTENT_RELEASE.test(rawIntent);
+			if (isTest) {
+				facts.intentTestCount += 1;
+				facts.lastIntentTestAtS = curS;
+				facts.underwayIntentTest = true;
+			}
+			if (isE2e) {
+				facts.intentE2eCount += 1;
+				facts.underwayIntentE2e = true;
+			}
+			if (isBuild) facts.intentBuildCount += 1;
+			if (isGit) {
+				facts.intentGitCount += 1;
+				facts.lastIntentGitAtS = curS;
+				facts.underwayIntentGit = true;
+			}
+			if (isRelease) facts.intentReleaseCount += 1;
+
+			let stage = 0;
+			if (WRITE_TOOLS.has(name)) {
+				stage = 2;
+				facts.sawEditInCycle = true;
+				facts.subsequentToolsAfterLastWrite = 0;
+			} else if (DELEGATE_TOOLS.has(name)) {
+				stage = 4;
+			} else if (EXEC_TOOLS.has(name)) {
+				if (isGit || isRelease) {
+					stage = 5;
+				} else if (isTest || isE2e || isBuild || facts.firstWriteAtS !== null) {
+					stage = 3;
+					facts.verificationsSeen += 1;
+					if (facts.sawEditInCycle) {
+						facts.editVerifyCycles += 1;
+						facts.sawEditInCycle = false;
+					}
+				} else {
+					stage = 1;
+				}
+			} else if (EXPLORE_TOOLS.has(name)) {
+				stage = 1;
+			}
+			if (!WRITE_TOOLS.has(name) && facts.lastWriteAtS !== null) {
+				facts.subsequentToolsAfterLastWrite += 1;
+			}
+			if (stage > 0 && stage !== facts.curStage) {
+				facts.curStage = stage;
+				facts.stageAtS = curS;
+				facts.stageTransitions += 1;
+			}
+
+			// Working set file tracking from args.path
+			if (EXPLORE_TOOLS.has(name) && typeof args?.path === "string" && args.path) {
+				const isNew = !facts.filesRead.has(args.path);
+				facts.filesRead.add(args.path);
+				pushBounded(facts.recentReadNovel, isNew ? 1 : 0, 8);
+			}
+			if (WRITE_TOOLS.has(name) && typeof args?.path === "string" && args.path) {
+				recordEditedFile(facts, args.path);
+			}
 			return true;
 		}
 		case "tool_execution_end": {
@@ -561,17 +843,29 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 			facts.toolCalls += 1;
 			facts.toolTimeSumS += durS;
 			facts.lastToolEndAtS = curS;
+			facts.lastActivityEndAtS = curS;
 			if (durS > facts.maxToolDurS) facts.maxToolDurS = durS;
 			const isError = event.isError === true;
 			if (isError) {
 				facts.failedCalls += 1;
 				facts.errorStreak += 1;
+				facts.lastErrorAtS = curS;
 				pushBounded(facts.failures, label, LIMITS.failures);
 			} else {
 				facts.errorStreak = 0;
 			}
 			pushBounded(facts.recent, isError ? `${label} (failed)` : label, LIMITS.recent);
 			pushBounded(facts.toolHistory, { name, isError, atS: curS, durS }, LIMITS.toolHistory);
+
+			// Refresh underway intent flags after removing completed call
+			facts.underwayIntentTest = false;
+			facts.underwayIntentE2e = false;
+			facts.underwayIntentGit = false;
+			for (const u of facts.underway.values()) {
+				if (RE_INTENT_TEST.test(u.label)) facts.underwayIntentTest = true;
+				if (RE_INTENT_E2E.test(u.label)) facts.underwayIntentE2e = true;
+				if (RE_INTENT_GIT.test(u.label)) facts.underwayIntentGit = true;
+			}
 
 			if (EXPLORE_TOOLS.has(name)) facts.catCounts.explore += 1;
 			else if (WRITE_TOOLS.has(name)) {
@@ -600,16 +894,69 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 				facts.catCounts.other += 1;
 			}
 
+			const result = record(event.result);
+			const details = record(result?.details) ?? record(event.details);
+
+			// Edited file paths from authoritative edit/write tool result details
+			if (WRITE_TOOLS.has(name) && details) {
+				if (typeof details.path === "string") recordEditedFile(facts, details.path);
+				if (typeof details.resolvedPath === "string") recordEditedFile(facts, details.resolvedPath);
+				const perFile = record(details.perFileResults);
+				if (perFile) {
+					for (const p of Object.keys(perFile)) recordEditedFile(facts, p);
+				}
+			}
+
+			// Async background job tracking (task/bash launches reconciled with wait job snapshots)
+			if (name === "task" && details && details.async && Array.isArray(details.progress)) {
+				for (const item of details.progress as Array<Record<string, unknown>>) {
+					const jid = String(item?.id ?? `${id}:${item?.index ?? 0}`);
+					const isSlowModel =
+						item?.modelRole === "slow" || /opus|sol|pro|reviewer|planner/i.test(String(item?.agent ?? ""));
+					facts.bgJobs.set(jid, { startedAtS: curS, kind: "task", isSlowModel });
+				}
+			} else if (name === "bash" && details) {
+				const asyncObj = record(details.async);
+				if (asyncObj && asyncObj.state === "running" && asyncObj.jobId) {
+					facts.bgJobs.set(String(asyncObj.jobId), { startedAtS: curS, kind: "bash", isSlowModel: false });
+				}
+			} else if (name === "wait") {
+				facts.waitCount += 1;
+				facts.waitTimeSumS += durS;
+				if (details && Array.isArray(details.jobs)) {
+					for (const job of details.jobs as Array<Record<string, unknown>>) {
+						const jid = String(job?.id ?? "");
+						const st = String(job?.status ?? "");
+						if (st === "running" || st === "pending") {
+							if (jid && !facts.bgJobs.has(jid)) {
+								const jDurS = typeof job?.durationMs === "number" ? job.durationMs / 1000 : 0;
+								facts.bgJobs.set(jid, {
+									startedAtS: Math.max(0, curS - jDurS),
+									kind: job?.type === "task" ? "task" : "bash",
+									isSlowModel: false,
+								});
+							}
+						} else if (st === "completed" || st === "failed" || st === "cancelled") {
+							if (jid) facts.bgJobs.delete(jid);
+							facts.bgDoneCount += 1;
+							const jDurS = typeof job?.durationMs === "number" ? Math.min(3600, job.durationMs / 1000) : 0;
+							facts.bgDoneDurSumS += jDurS;
+							if (jDurS > facts.bgDoneMaxS) facts.bgDoneMaxS = jDurS;
+						}
+					}
+				}
+			}
+
 			// Count confirmed todo milestones only when the todo tool succeeded.
 			if (name === "todo" && !isError) {
-				const result = record(event.result);
-				const details = record(result?.details) ?? record(event.details);
 				if (details && Array.isArray(details.phases)) {
 					applyTodoPhases(facts, details, curS);
 				} else if (started?.todoArgs) {
 					if (started.todoArgs.op !== "view") facts.todoUpdated = true;
 					applyTodoArgs(facts, started.todoArgs, curS);
 				}
+				const liveCount = facts.todos.filter(t => t.status !== "dropped").length;
+				if (facts.todoInitTotal === 0 && liveCount > 0) facts.todoInitTotal = liveCount;
 			}
 			return true;
 		}
@@ -621,9 +968,28 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 			if (typeof message.model === "string" && message.model) facts.model = message.model;
 			const usage = record(message.usage);
 			if (usage) {
-				if (typeof usage.output === "number") facts.totalOutputTokens += usage.output;
+				if (typeof usage.output === "number") {
+					facts.totalOutputTokens += usage.output;
+					pushBounded(facts.recentOutputTokens, usage.output, 5);
+				}
 				const ctx = (Number(usage.input) || 0) + (Number(usage.cacheRead) || 0) + (Number(usage.cacheWrite) || 0);
-				if (ctx > 0) facts.latestContextTokens = ctx;
+				if (ctx > 0) {
+					if (facts.prevTurnContextTokens > 30_000 && ctx < facts.prevTurnContextTokens * 0.65) {
+						facts.compactions += 1;
+					}
+					facts.latestContextTokens = ctx;
+					facts.prevTurnContextTokens = ctx;
+				}
+			}
+			const thinkS = Math.max(0, Math.min(300, curS - facts.lastActivityEndAtS));
+			if (thinkS > 0.2) {
+				facts.thinkTimeSumS += thinkS;
+				facts.thinkCount += 1;
+				pushBounded(facts.recentThinkS, thinkS, 5);
+			}
+			if (facts.curTurnTools > 0) {
+				pushBounded(facts.turnFanoutHist, facts.curTurnTools, 20);
+				facts.curTurnTools = 0;
 			}
 			if (message.stopReason === "error") {
 				facts.retry = `model error: ${clean(message.errorMessage, 100) || "unknown"}`;
@@ -637,7 +1003,10 @@ export function applyEvent(facts: Facts, event: ObservedEvent, at: number): bool
 						.join(" ")
 				: "";
 			if (text) {
+				const head = text.slice(0, 1500);
 				facts.agentWrapUp = KW_WRAPUP.test(text.slice(0, 2000));
+				facts.proseHasRemaining = RE_PROSE_REM.test(head);
+				facts.proseHasDebug = RE_PROSE_DEBUG.test(head);
 				const flat = clean(text, 600);
 				const note = clean(/^(.+?[.!?])(?:\s|$)/.exec(flat)?.[1] ?? flat, LIMITS.note);
 				if (note) facts.agentNote = note;

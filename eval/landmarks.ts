@@ -23,3 +23,19 @@ export function landmarks(segments: Segment[], structuredSample: boolean): Array
 		return { sample, at: Math.round(s.t + ms - elapsed), cut: s.index + 1, elapsedS: ms / 1000, remainingS: (total - ms) / 1000 };
 	});
 }
+
+/** Prompt-uniform checkpoints across EVERY completed prompt (>5s), regardless of tool count,
+ * so short prompts receive unbiased representation when weighted by 1 / checkpoints. */
+export function allDenseLandmarks(segments: Segment[]): Probe[] {
+	const total = segments.reduce((sum, segment) => sum + segment.ms, 0);
+	const count = total < 30_000 ? 4 : 8;
+	const out: Probe[] = [];
+	let i = 0, elapsed = 0;
+	for (let k = 0; k < count; k++) {
+		const ms = total * ((k + 0.5) / count);
+		while (elapsed + segments[i]!.ms < ms) elapsed += segments[i++]!.ms;
+		const s = segments[i]!;
+		out.push({ at: Math.round(s.t + ms - elapsed), cut: s.index + 1, elapsedS: ms / 1000, remainingS: (total - ms) / 1000 });
+	}
+	return out;
+}

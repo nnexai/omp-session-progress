@@ -5,7 +5,7 @@
 import { activeMs, EXPLORE_TOOLS, EXEC_TOOLS, type Facts, WRITE_TOOLS } from "./facts";
 
 export interface ExtractedFeatures {
-	/** 78 numeric features fed into the local GBDT ensemble. */
+	/** 140 general, tool-agnostic causal numeric features fed into the local GBDT ensemble. */
 	x: number[];
 	/** Active elapsed seconds of the current prompt. */
 	elapsedS: number;
@@ -17,9 +17,13 @@ export interface ExtractedFeatures {
 	hasActiveTodo: boolean;
 	/** Count of todos completed during this prompt. */
 	todoDoneThisPrompt: number;
+	/** Tool calls completed so far in this prompt. */
+	toolCalls: number;
 }
 
 export const SMOOTH_S = 30;
+
+const RE_TODO_VERIFY = /\b(test|verify|check|commit|doc|readme|summary|reply)\b/i;
 
 export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 	const elapsedS = activeMs(facts, now) / 1000;
@@ -54,15 +58,25 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 		: 0;
 
 	let ewmaTodoDur = 90;
-	if (todoDoneThisPrompt > 0) {
+	let rawAvgPerTodo = 90;
+	let medianTodoDur = 90;
+	if (hasActiveTodo && todoDoneThisPrompt > 0) {
+		rawAvgPerTodo = Math.max(5, timeSinceTodoStartS / todoDoneThisPrompt);
 		let prev = todoBaseS;
 		let acc = 0;
+		const dts: number[] = [];
 		for (let i = 0; i < todoDoneThisPrompt; i++) {
 			const dt = Math.max(5, facts.todoDoneEventsS[i]! - prev);
 			acc = i === 0 ? dt : 0.45 * dt + 0.55 * acc;
+			dts.push(Math.max(3, facts.todoDoneEventsS[i]! - prev));
 			prev = facts.todoDoneEventsS[i]!;
 		}
 		ewmaTodoDur = (todoDoneThisPrompt * acc + 1.5 * 90) / (todoDoneThisPrompt + 1.5);
+		dts.sort((a, b) => a - b);
+		medianTodoDur = dts[dts.length >> 1]!;
+	} else if (hasActiveTodo) {
+		rawAvgPerTodo = Math.max(30, elapsedS);
+		medianTodoDur = rawAvgPerTodo;
 	}
 
 	let todoImpliedLogRem = logElapsed;
@@ -93,6 +107,21 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 			? Math.log(Math.max(10, (timeSinceTodoStartS * (1 - promptTodoSmoothFrac)) / promptTodoSmoothFrac) + SMOOTH_S)
 			: logElapsed;
 	const anchorZ = hasActiveTodo ? todoImpliedLogRem : logElapsed;
+
+	const rawTodoLogRem = hasActiveTodo
+		? todoRem === 0
+			? Math.log(12 + SMOOTH_S)
+			: Math.log(Math.max(10, todoRem * rawAvgPerTodo) + SMOOTH_S)
+		: logElapsed;
+	const medTodoLogRem = hasActiveTodo
+		? todoRem === 0
+			? Math.log(12 + SMOOTH_S)
+			: Math.log(Math.max(10, todoRem * medianTodoDur) + SMOOTH_S)
+		: logElapsed;
+	const curTodoExcess = hasActiveTodo && todoRem > 0 ? Math.min(8, timeSinceTodoDoneS / Math.max(15, rawAvgPerTodo)) : 0;
+	const todoScopeGrowth = facts.todoInitTotal > 0 ? todoTotal / facts.todoInitTotal : 1;
+	const remVerifyTodos = hasActiveTodo ? remTodoItems.filter(t => RE_TODO_VERIFY.test(t.text)).length : 0;
+	const remVerifyShare = hasActiveTodo && todoRem > 0 ? remVerifyTodos / todoRem : 0;
 
 	const remTodoChars = hasActiveTodo ? remTodoItems.reduce((a, t) => a + t.text.length, 0) : 0;
 	const remHeavyTodos = hasActiveTodo
@@ -126,11 +155,34 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 
 	let underwayTaskCount = 0;
 	let maxUnderwayDurS = 0;
+	let underwayExecCount = 0;
+	let underwayExecAgeS = 0;
+	let underwayWaitOrTask = 0;
 	for (const u of facts.underway.values()) {
-		if (u.name === "task" || u.name === "wait") underwayTaskCount += Math.max(1, u.subtasks);
-		maxUnderwayDurS = Math.max(maxUnderwayDurS, Math.max(0, elapsedS - u.startedAtS));
+		const age = Math.max(0, elapsedS - u.startedAtS);
+		if (u.name === "task" || u.name === "wait") {
+			underwayTaskCount += Math.max(1, u.subtasks);
+			underwayWaitOrTask += 1;
+		}
+		if (EXEC_TOOLS.has(u.name)) {
+			underwayExecCount += 1;
+			underwayExecAgeS = Math.max(underwayExecAgeS, age);
+		}
+		maxUnderwayDurS = Math.max(maxUnderwayDurS, age);
 	}
 	const avgTaskDurLog = facts.taskDoneCount > 0 ? Math.log(facts.taskTimeSumS / facts.taskDoneCount + 5) : 0;
+
+	let oldestBgAgeS = 0;
+	let bgTaskRunning = 0;
+	let bgBashRunning = 0;
+	let bgSlowRunning = 0;
+	for (const job of facts.bgJobs.values()) {
+		oldestBgAgeS = Math.max(oldestBgAgeS, Math.max(0, elapsedS - job.startedAtS));
+		if (job.kind === "task") bgTaskRunning += 1;
+		else if (job.kind === "bash") bgBashRunning += 1;
+		if (job.isSlowModel) bgSlowRunning += 1;
+	}
+	const avgBgDurS = facts.bgDoneCount > 0 ? facts.bgDoneDurSumS / facts.bgDoneCount : 0;
 
 	const hasWritten = facts.firstWriteAtS !== null ? 1 : 0;
 	const writeRatioElapsed = facts.firstWriteAtS !== null && elapsedS > 1 ? facts.firstWriteAtS / elapsedS : 1;
@@ -159,7 +211,41 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 		priorN > 0 ? Math.log(facts.priorPromptDurationsS[priorN - 1]! + SMOOTH_S) : Math.log(320 + SMOOTH_S);
 	const logSessionActive = Math.log(facts.sessionActiveS + SMOOTH_S);
 
+	// Working set / file dynamics
+	const nRead = facts.filesRead.size;
+	const nEdit = facts.filesEdited.size;
+	let totalFileEdits = 0;
+	for (const c of facts.editPathCounts.values()) totalFileEdits += c;
+	const reEditRatio = nEdit > 0 ? totalFileEdits / nEdit : 0;
+	const readNovelty =
+		facts.recentReadNovel.length > 0
+			? facts.recentReadNovel.reduce((a, b) => a + b, 0) / facts.recentReadNovel.length
+			: 1;
+
+	// Context growth, thinking latency, tool fanout & velocity trend
+	const deltaCtx = Math.max(0, facts.latestContextTokens - facts.promptStartContextTokens);
+	const avgThinkS = facts.thinkCount > 0 ? facts.thinkTimeSumS / facts.thinkCount : 0;
+	const recThinkS =
+		facts.recentThinkS.length > 0
+			? facts.recentThinkS.reduce((a, b) => a + b, 0) / facts.recentThinkS.length
+			: 0;
+	const avgFanout =
+		facts.turnFanoutHist.length > 0
+			? facts.turnFanoutHist.reduce((a, b) => a + b, 0) / facts.turnFanoutHist.length
+			: 0;
+	const recOutAvg =
+		facts.recentOutputTokens.length > 0
+			? facts.recentOutputTokens.reduce((a, b) => a + b, 0) / facts.recentOutputTokens.length
+			: 0;
+	const halfS = elapsedS * 0.5;
+	let toolsSecondHalf = 0;
+	for (let i = 0; i < facts.toolTimesS.length; i++) {
+		if (facts.toolTimesS[i]! >= halfS) toolsSecondHalf++;
+	}
+	const toolHalfRatio = facts.toolTimesS.length > 0 ? toolsSecondHalf / facts.toolTimesS.length : 0.5;
+
 	const x = [
+		// Original 78 general causal features
 		logElapsed,
 		hasTodoNum,
 		facts.todoInitThisPrompt ? 1 : 0,
@@ -238,7 +324,82 @@ export function extractFeatures(facts: Facts, now: number): ExtractedFeatures {
 		logSessionActive,
 		todoImpliedLogRem - logElapsed,
 		todoRatioImplied - logElapsed,
+
+		// 62 new general causal features (CV-verified):
+		// Async background jobs & underway tool families (14)
+		facts.bgJobs.size,
+		bgTaskRunning,
+		bgBashRunning,
+		bgSlowRunning,
+		Math.log(oldestBgAgeS + 10),
+		facts.bgDoneCount,
+		Math.log(avgBgDurS + 10),
+		Math.log(facts.bgDoneMaxS + 10),
+		Math.log1p(facts.waitCount),
+		Math.log(facts.waitTimeSumS + 5),
+		Math.log1p(facts.taskDispatches),
+		underwayExecCount,
+		Math.log(underwayExecAgeS + 5),
+		underwayWaitOrTask,
+
+		// Tool intent semantics & edit-verify stage progression (17)
+		Math.log1p(facts.intentTestCount),
+		Math.log1p(facts.intentE2eCount),
+		Math.log1p(facts.intentBuildCount),
+		Math.log1p(facts.intentGitCount),
+		facts.intentReleaseCount > 0 ? 1 : 0,
+		facts.lastIntentTestAtS >= 0 ? Math.log(Math.max(0, elapsedS - facts.lastIntentTestAtS) + 10) : logElapsed,
+		facts.lastIntentGitAtS >= 0 ? Math.log(Math.max(0, elapsedS - facts.lastIntentGitAtS) + 10) : logElapsed,
+		facts.underwayIntentTest ? 1 : 0,
+		facts.underwayIntentE2e ? 1 : 0,
+		facts.underwayIntentGit ? 1 : 0,
+		facts.curStage,
+		Math.log(Math.max(0, elapsedS - facts.stageAtS) + 10),
+		Math.log1p(facts.stageTransitions),
+		facts.editVerifyCycles,
+		Math.log1p(facts.verificationsSeen),
+		facts.lastErrorAtS >= 0 ? Math.log(Math.max(0, elapsedS - facts.lastErrorAtS) + 10) : logElapsed,
+		Math.log1p(facts.subsequentToolsAfterLastWrite),
+
+		// Working set / file dynamics (6)
+		Math.log1p(nRead),
+		Math.log1p(nEdit),
+		reEditRatio,
+		readNovelty,
+		facts.editedTestFile ? 1 : 0,
+		facts.editedDocFile ? 1 : 0,
+
+		// Adaptive unshrunk todo velocity & scope (6)
+		rawTodoLogRem,
+		medTodoLogRem,
+		rawTodoLogRem - logElapsed,
+		curTodoExcess,
+		todoScopeGrowth,
+		remVerifyShare,
+
+		// Context growth, LLM thinking latency, tool fanout & prose (9)
+		Math.log1p(deltaCtx),
+		Math.log1p(deltaCtx / Math.max(1, elapsedS)),
+		facts.compactions,
+		Math.log(avgThinkS + 2),
+		Math.log(recThinkS + 2),
+		avgFanout,
+		Math.log1p(recOutAvg),
+		facts.proseHasRemaining ? 1 : 0,
+		facts.proseHasDebug ? 1 : 0,
+
+		// Prompt structure, session history & half-prompt velocity trend (10)
+		facts.promptIsQuestion ? 1 : 0,
+		facts.promptIsTinyCmd ? 1 : 0,
+		facts.promptHasCodeOrLog ? 1 : 0,
+		Math.log1p(facts.promptFilePaths),
+		facts.promptKwE2eBench ? 1 : 0,
+		facts.promptKwCommitShip ? 1 : 0,
+		Math.log(facts.gapSincePrevPromptS + 10),
+		Math.log1p(facts.carryoverOpenTodos),
+		Math.log(facts.priorMaxDurS + SMOOTH_S),
+		toolHalfRatio,
 	];
 
-	return { x, elapsedS, logElapsed, anchorZ, hasActiveTodo, todoDoneThisPrompt };
+	return { x, elapsedS, logElapsed, anchorZ, hasActiveTodo, todoDoneThisPrompt, toolCalls: tools };
 }

@@ -1,10 +1,10 @@
 // The progress widget renderer: pure text + optional OMP theme styling so it
 // can be tested without OMP and renders natively in both the TUI and RPC hosts.
 //
-// Layout (2–3 rows, borderless, aligned with OMP's native TODO/status visuals):
+// Layout (1 crisp row normally; 2nd row only when a real observed blocker exists,
+// avoiding duplication of OMP's native TODO list and active tool spinner):
 //   PROGRESS  ━━━━━━━━━───────────────  ~38%  ~2–4m left · 1m 24s         editing
-//    ├─ todos 2/5 · 11 tools · now: bash: Running unit tests
-//    └─ next: Update README and verify build
+//    └─ ⚠ provider retry 1/3: rate limited
 
 import { activeMs, type WorkPhase } from "./facts";
 import type { Report } from "./observer";
@@ -116,63 +116,6 @@ function phaseBadge(phase: WorkPhase, blocker: string | null, underwayTasks: num
 	return { text: phase, tone: "dim" };
 }
 
-function activitySegments(report: Report, narrow: boolean): Segment[] {
-	const f = report.facts;
-	const parts: Segment[] = [];
-	const sep = () => {
-		if (parts.length) parts.push({ tone: "dim", text: " · " });
-	};
-
-	if (f.requests === 0 && !f.running) {
-		parts.push({ tone: "muted", text: narrow ? "ready · local" : "ready · local estimator (no LLM calls)" });
-		return parts;
-	}
-
-	// Only display todos when updated in this prompt so leftover plans never mislead.
-	const liveTodos = f.todos.filter(t => t.status !== "dropped");
-	if (f.todoUpdated && liveTodos.length > 0) {
-		const done = liveTodos.filter(t => t.status === "done").length;
-		const blocked = liveTodos.filter(t => t.status === "blocked").length;
-		const todoText =
-			!narrow && f.todoPhasesTotal > 1
-				? `phase ${Math.min(f.todoPhasesTotal, f.todoPhasesDone + (done < liveTodos.length ? 1 : 0))}/${f.todoPhasesTotal} · todos ${done}/${liveTodos.length}`
-				: narrow
-					? `${done}/${liveTodos.length}`
-					: `todos ${done}/${liveTodos.length}`;
-		parts.push({ tone: done === liveTodos.length ? "success" : null, text: todoText });
-		if (blocked > 0) {
-			sep();
-			parts.push({ tone: "warning", text: `${blocked} blocked` });
-		}
-	}
-
-	sep();
-	parts.push({ tone: "muted", text: `${f.toolCalls} tool${f.toolCalls === 1 ? "" : "s"}` });
-	if (f.failedCalls > 0) {
-		parts.push({ tone: "warning", text: ` (${f.failedCalls} err)` });
-	}
-
-	const running = [...f.underway.values()];
-	if (f.asking.size > 0) {
-		sep();
-		parts.push({ tone: "warning", text: narrow ? "awaiting reply" : "waiting for your answer" });
-	} else if (running.length > 0) {
-		sep();
-		const active = running[running.length - 1]!;
-		const prefix = running.length > 1 ? `${running.length} running: ` : narrow ? "" : "now: ";
-		parts.push({ tone: null, text: `${prefix}${active.label}` });
-	} else if (f.recent.length > 0) {
-		sep();
-		const last = f.recent[f.recent.length - 1]!;
-		parts.push({ tone: "muted", text: `${narrow ? "" : "last: "}${last}` });
-	} else if (f.running) {
-		sep();
-		parts.push({ tone: "dim", text: "thinking…" });
-	}
-
-	return parts;
-}
-
 function normalizeStyle(styleOrPaint: Paint | WidgetStyle): Required<WidgetStyle> {
 	if (typeof styleOrPaint === "function") {
 		return {
@@ -217,6 +160,7 @@ export function widgetLines(report: Report, now: number, width: number, styleOrP
 
 	const barTone: Tone = doneState ? "success" : waitingState || hasBlocker ? "warning" : "accent";
 	const barProgress = doneState ? 1 : r?.estimate.progress ?? null;
+	const clockPrefix = !narrow && st.clock ? `${st.clock} ` : "";
 
 	// ---- Row 1: PROGRESS  [bar]  ~42%  ~2–4m left · 1m 24s   [phase] ----
 	const header: Segment[] = [
@@ -230,19 +174,18 @@ export function widgetLines(report: Report, now: number, width: number, styleOrP
 		header.push({ tone: "success", bold: true, text: `${st.check} 100%` });
 		header.push({ tone: "muted", text: ` · done in ${formatElapsed(elapsed, narrow)}` });
 	} else if (!f.running && f.requests === 0) {
-		header.push({ tone: "muted", text: "watching" });
+		header.push({ tone: "muted", text: narrow ? "watching" : "watching · local" });
 	} else if (waitingState) {
 		const pct = r?.estimate.progress !== null && r?.estimate.progress !== undefined ? `~${Math.round(r.estimate.progress * 100)}% · ` : "";
 		header.push({ tone: "warning", bold: true, text: `${pct}waiting for you` });
-		header.push({ tone: "muted", text: ` · ${formatElapsed(elapsed, narrow)}` });
+		header.push({ tone: "muted", text: ` · ${clockPrefix}${formatElapsed(elapsed, narrow)}` });
 	} else if (!r || r.estimate.progress === null || r.estimate.remainingMinutes === null) {
 		const msg = r?.estimate.abstainReason === "starting" ? "starting…" : r?.estimate.abstainReason ?? "watching";
 		header.push({ tone: "muted", text: msg });
-		if (elapsed >= 1000) header.push({ tone: "dim", text: ` · ${formatElapsed(elapsed, narrow)}` });
+		if (elapsed >= 1000) header.push({ tone: "dim", text: ` · ${clockPrefix}${formatElapsed(elapsed, narrow)}` });
 	} else {
 		const pct = Math.round(r.estimate.progress * 100);
 		const rem = formatRemaining(r.estimate.remainingMinutes, r.estimate.lowMinutes, r.estimate.highMinutes, narrow);
-		const clockPrefix = !narrow && st.clock ? `${st.clock} ` : "";
 		header.push({ tone: "accent", bold: true, text: `~${pct}%` });
 		header.push({ tone: null, text: narrow ? " · " : "  " });
 		header.push({ tone: null, text: rem });
@@ -250,31 +193,25 @@ export function widgetLines(report: Report, now: number, width: number, styleOrP
 		header.push({ tone: "muted", text: `${clockPrefix}${formatElapsed(elapsed, narrow)}` });
 	}
 
-	// ---- Body rows ----
-	const body: Segment[][] = [activitySegments(report, narrow)];
+	const max = Math.max(10, width - 1);
+	const lines: Segment[][] = [[{ tone: null, text: " " }, ...header]];
+
+	// Show a 2nd line ONLY for an observed blocker (retry, model error, blocked todo, error streak).
 	if (r?.blocker) {
-		body.push([
+		lines.push([
+			{ tone: "dim", text: `  ${st.last} ` },
 			{ tone: "warning", bold: true, text: `${st.warn} ` },
 			{ tone: "warning", text: r.blocker },
 		]);
-	} else if (r?.next && f.running) {
-		body.push([
-			{ tone: "dim", text: narrow ? "next: " : "next: " },
-			{ tone: "muted", text: r.next },
-		]);
 	}
-
-	const max = Math.max(10, width - 1);
-	const lines: Segment[][] = [[{ tone: null, text: " " }, ...header]];
-	body.forEach((row, i) => {
-		const connector = i === body.length - 1 ? `  ${st.last} ` : `  ${st.branch} `;
-		lines.push([{ tone: "dim", text: connector }, ...row]);
-	});
 
 	// Right-aligned workflow phase badge on row 1 when space permits
 	if (!narrow && width >= PHASE_TAG_WIDTH) {
 		let underwayTasks = 0;
 		for (const u of f.underway.values()) if (u.name === "task" || u.name === "wait") underwayTasks += Math.max(1, u.subtasks);
+		if (underwayTasks === 0 && f.bgJobs.size > 0) {
+			for (const j of f.bgJobs.values()) if (j.kind === "task") underwayTasks += 1;
+		}
 		const badge = phaseBadge(r?.phase ?? (doneState ? "done" : "watching"), r?.blocker ?? null, underwayTasks);
 		const badgeText = hasBlocker ? `${st.warn} ${badge.text}` : badge.text;
 		const gap = max - visibleLen(lines[0]!) - badgeText.length;

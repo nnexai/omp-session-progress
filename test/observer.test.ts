@@ -316,14 +316,14 @@ describe("widget layout and responsiveness", () => {
 		const report: Report = { phase: "on", sessionId: "s1", facts, reading };
 
 		const wide = widgetLines(report, 85_000, 100, plain);
-		expect(wide).toHaveLength(3);
+		expect(wide).toHaveLength(1);
 		expect(wide[0]).toContain("PROGRESS");
 		expect(wide[0]).toContain("━");
 		expect(wide[0]).toContain("1m 25s");
 		expect(wide[0]).toContain("exploring");
-		expect(wide[1]).toContain("todos 1/3");
-		expect(wide[1]).toContain("bash: Running unit tests");
-		expect(wide[2]).toContain("next: Update docs");
+		// Does not duplicate OMP's native tool spinner or TODO next item
+		expect(wide[0]).not.toContain("last:");
+		expect(wide[0]).not.toContain("next:");
 
 		for (const width of [40, 54, 72, 100]) {
 			for (const line of widgetLines(report, 85_000, width, plain)) {
@@ -332,29 +332,83 @@ describe("widget layout and responsiveness", () => {
 		}
 
 		// Narrow mode compacts labels and drops phase tag
-		const narrow = widgetLines(report, 85_000, 54, plain).join("\n");
-		expect(narrow).toContain("1/3");
-		expect(narrow).not.toContain("exploring");
+		const narrow = widgetLines(report, 85_000, 54, plain);
+		expect(narrow).toHaveLength(1);
+		expect(narrow[0]).toContain("1m25s");
+		expect(narrow[0]).not.toContain("exploring");
 	});
 
-	test("renders waiting for you, done state, blocker, and empty when off", () => {
+	test("renders waiting for you, done state, blocker row, and empty when off", () => {
 		const facts = emptyFacts();
 		applyEvent(facts, { type: "before_agent_start", prompt: "Fix bug" }, 0);
 		applyEvent(facts, { type: "tool_execution_start", toolCallId: "q", toolName: "ask" }, 20_000);
 		const waitingReport: Report = { phase: "on", sessionId: "s1", facts, reading: estimateProgress(facts, 30_000) };
 		const waitingLines = widgetLines(waitingReport, 30_000, 100, plain);
+		expect(waitingLines).toHaveLength(1);
 		expect(waitingLines[0]).toContain("waiting for you");
-		expect(waitingLines[1]).toContain("waiting for your answer");
+		expect(waitingLines[0]).toContain("waiting");
 
+		// Active retry/blocker adds a 2nd line
 		applyEvent(facts, { type: "tool_execution_end", toolCallId: "q", toolName: "ask", isError: false }, 35_000);
+		applyEvent(facts, { type: "auto_retry_start", attempt: 1, maxAttempts: 3, errorMessage: "rate limited" }, 40_000);
+		const blockedReport: Report = { phase: "on", sessionId: "s1", facts, reading: estimateProgress(facts, 42_000) };
+		const blockedLines = widgetLines(blockedReport, 42_000, 100, plain);
+		expect(blockedLines).toHaveLength(2);
+		expect(blockedLines[0]).toContain("blocked");
+		expect(blockedLines[1]).toContain("rate limited");
+		applyEvent(facts, { type: "auto_retry_end", success: true }, 45_000);
+
 		applyEvent(facts, { type: "agent_end" }, 65_000);
 		const doneReport: Report = { phase: "on", sessionId: "s1", facts, reading: estimateProgress(facts, 65_000) };
 		const doneLines = widgetLines(doneReport, 65_000, 100, plain);
+		expect(doneLines).toHaveLength(1);
 		expect(doneLines[0]).toContain("100%");
 		expect(doneLines[0]).toContain("done in 50s");
 		expect(doneLines[0]).not.toContain("left");
 
 		expect(widgetLines({ ...doneReport, phase: "off" }, 65_000, 100, plain)).toEqual([]);
+	});
+
+	test("tracks async background jobs, wait snapshots, edit details paths, and edit-verify cycles", () => {
+		const facts = emptyFacts();
+		applyEvent(facts, { type: "before_agent_start", prompt: "Implement parser and run tests" }, 0);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "e1", toolName: "edit", intent: "Edit parser" }, 5_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "e1", toolName: "edit", isError: false, result: { details: { path: "src/parser.ts" } } }, 7_000);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "b1", toolName: "bash", intent: "Running unit tests" }, 10_000);
+		applyEvent(facts, { type: "tool_execution_end", toolCallId: "b1", toolName: "bash", isError: false }, 15_000);
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "tk1", toolName: "task", intent: "Delegate review", args: { tasks: [null] } }, 20_000);
+		applyEvent(
+			facts,
+			{
+				type: "tool_execution_end",
+				toolCallId: "tk1",
+				toolName: "task",
+				isError: false,
+				result: { details: { async: true, progress: [{ id: "Rev1", agent: "reviewer", modelRole: "slow", status: "pending" }] } },
+			},
+			20_100,
+		);
+		expect(facts.filesEdited.has("src/parser.ts")).toBe(true);
+		expect(facts.editVerifyCycles).toBe(1);
+		expect(facts.intentTestCount).toBe(1);
+		expect(facts.bgJobs.size).toBe(1);
+		expect(facts.bgJobs.get("Rev1")?.isSlowModel).toBe(true);
+
+		applyEvent(facts, { type: "tool_execution_start", toolCallId: "w1", toolName: "wait" }, 30_000);
+		applyEvent(
+			facts,
+			{
+				type: "tool_execution_end",
+				toolCallId: "w1",
+				toolName: "wait",
+				isError: false,
+				result: { details: { jobs: [{ id: "Rev1", type: "task", status: "completed", durationMs: 45_000 }] } },
+			},
+			75_000,
+		);
+		expect(facts.bgJobs.size).toBe(0);
+		expect(facts.bgDoneCount).toBe(1);
+		expect(facts.bgDoneMaxS).toBe(45);
 	});
 
 	test("formatting helpers produce clean human durations", () => {
