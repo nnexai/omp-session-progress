@@ -7,6 +7,7 @@ import { extractFeatures, SMOOTH_S } from "./features";
 import { type EnsembleModel, evalEnsembleZ, evalQuantileRangeZ } from "./gbdt";
 import { MODEL_DATA } from "./model-data";
 import { calibratedRange } from "./range-calibration";
+import { handoffMinutes } from "./handoff";
 import RANGE_DATA from "./range-data.json";
 
 export type Confidence = "low" | "medium" | "high";
@@ -14,11 +15,11 @@ export type Confidence = "low" | "medium" | "high";
 export interface Estimate {
 	/** Elapsed share of active time (0..1), mathematically consistent with remainingMinutes. */
 	progress: number | null;
-	/** Median (P50) expected active minutes remaining. */
+	/** Point forecast in active minutes; capped during a confirmed plan handoff. */
 	remainingMinutes: number | null;
-	/** Calibrated lower bound (P25) remaining minutes. */
+	/** Calibrated lower forecast bound in active minutes. */
 	lowMinutes: number | null;
-	/** Calibrated upper bound (P75) remaining minutes. */
+	/** Calibrated upper forecast bound in active minutes. */
 	highMinutes: number | null;
 	/** Raw log-scale target z = ln(remainingS + 30) for optional live display smoothing. */
 	logRemZ: number | null;
@@ -106,12 +107,8 @@ export function estimateProgress(facts: Facts, now: number, opts: EstimateOption
 		hasActiveTodo: feat.hasActiveTodo,
 	});
 	const z = opts.overrideZ ?? rawZ;
-	const remMinutes = zToMinutes(z);
+	let remMinutes = zToMinutes(z);
 	const remS = remMinutes * 60;
-	const progress =
-		feat.elapsedS <= 0
-			? 0.02
-			: Math.min(0.99, Math.max(0.01, feat.elapsedS / (feat.elapsedS + remS + 1e-6)));
 
 	const { lowZ, highZ } = evalQuantileRangeZ(model, feat.x, feat.logElapsed, feat.anchorZ, rawZ);
 	const shift = z - rawZ;
@@ -124,6 +121,12 @@ export function estimateProgress(facts: Facts, now: number, opts: EstimateOption
 		lowMinutes = lowS / 60;
 		highMinutes = highS / 60;
 	}
+	if (model === MODEL_DATA && feat.hasActiveTodo && feat.todoDoneThisPrompt) {
+		const handoff = handoffMinutes(facts, feat.elapsedS, remMinutes, lowMinutes, highMinutes);
+		if (handoff) [remMinutes, lowMinutes, highMinutes] = handoff;
+	}
+	const progress = feat.elapsedS <= 0 ? 0.02
+		: Math.min(0.99, Math.max(0.01, feat.elapsedS / (feat.elapsedS + remMinutes * 60 + 1e-6)));
 
 	// Confidence tier: high when active todos have real velocity or post-edit verification is underway.
 	let confidence: Confidence = "medium";

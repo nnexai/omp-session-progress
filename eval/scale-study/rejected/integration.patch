@@ -1,0 +1,411 @@
+--- a/src/facts.ts
++++ b/src/facts.ts
+@@ -2,6 +2,8 @@
+ // extension events (and, on mid-session opt-in, the current branch history).
+ // Everything stays strictly local — nothing is sent to any external model.
+ 
++import { scopeBits } from "./work-shape";
++
+ export const LIMITS = {
+ 	goal: 500,
+ 	note: 160,
+@@ -77,6 +79,10 @@
+ 	goal: string | null;
+ 	/** Raw prompt length & structure (computed locally, never transmitted). */
+ 	promptChars: number;
++	requestScope: number;
++	acceptedScope: number;
++	previousAnswerScope: number;
++	outputAtFirstTurn: number;
+ 	promptListItems: number;
+ 	promptKwHeavy: boolean;
+ 	promptKwLight: boolean;
+@@ -221,6 +227,10 @@
+ 		requests: 0,
+ 		goal: null,
+ 		promptChars: 0,
++		requestScope: 0,
++		acceptedScope: 0,
++		previousAnswerScope: 0,
++		outputAtFirstTurn: 0,
+ 		promptListItems: 0,
+ 		promptKwHeavy: false,
+ 		promptKwLight: false,
+@@ -602,6 +612,10 @@
+ 	facts.promptListItems = (rawPrompt.slice(0, 4000).match(/^\s*(?:\d+[.)]|[-*•])\s+/gm) ?? []).length;
+ 	const trimmed = rawPrompt.trim();
+ 	const head = trimmed.slice(0, 2500);
++	facts.requestScope = scopeBits(head);
++	facts.acceptedScope = trimmed.length < 180 && KW_CONTINUE.test(trimmed) ? facts.previousAnswerScope : 0;
++	facts.previousAnswerScope = 0;
++	facts.outputAtFirstTurn = 0;
+ 	facts.promptKwHeavy = KW_HEAVY.test(head.slice(0, 2000));
+ 	facts.promptKwLight = KW_LIGHT.test(head.slice(0, 2000));
+ 	facts.promptKwContinue = KW_CONTINUE.test(head.slice(0, 2000)) && rawPrompt.length < 180;
+@@ -969,6 +983,7 @@
+ 			const usage = record(message.usage);
+ 			if (usage) {
+ 				if (typeof usage.output === "number") {
++					if (facts.assistantTurns === 1) facts.outputAtFirstTurn = usage.output;
+ 					facts.totalOutputTokens += usage.output;
+ 					pushBounded(facts.recentOutputTokens, usage.output, 5);
+ 				}
+@@ -1002,6 +1017,7 @@
+ 						.map(block => block?.text as string)
+ 						.join(" ")
+ 				: "";
++			if (message.stopReason === "stop") facts.previousAnswerScope = scopeBits(text.slice(-1500));
+ 			if (text) {
+ 				const head = text.slice(0, 1500);
+ 				facts.agentWrapUp = KW_WRAPUP.test(text.slice(0, 2000));
+--- a/src/observer.ts
++++ b/src/observer.ts
+@@ -5,6 +5,7 @@
+ 
+ import { estimateProgress, type Reading } from "./estimator";
+ import { applyEvent, type BranchEntry, emptyFacts, type Facts, type ObservedEvent, seedFromBranch } from "./facts";
++import { HorizonHistory } from "./horizon-history";
+ 
+ export interface ObserverOptions {
+ 	/** Live UI refresh interval while the agent is working (ms). Set 0 to disable ticking. */
+@@ -48,6 +49,8 @@
+ 	#reading: Reading | null = null;
+ 	#epoch = 0;
+ 	#timer: unknown = null;
++	#history = new HorizonHistory();
++	#completed = false;
+ 
+ 	// Live display smoothing state (strictly scoped to one promptId).
+ 	#smoothPromptId = -1;
+@@ -74,6 +77,8 @@
+ 		this.#sessionId = sessionId;
+ 		this.#sink = sink;
+ 		this.#facts = emptyFacts();
++		this.#history = new HorizonHistory();
++		this.#completed = false;
+ 		this.#reading = null;
+ 		this.#resetSmoothing();
+ 		this.#refresh();
+@@ -87,6 +92,8 @@
+ 		this.#sessionId = null;
+ 		this.#sink = null;
+ 		this.#facts = emptyFacts();
++		this.#history = new HorizonHistory();
++		this.#completed = false;
+ 		this.#reading = null;
+ 		this.#resetSmoothing();
+ 	}
+@@ -96,6 +103,8 @@
+ 		if (this.#phase === "off") return;
+ 		this.#stop();
+ 		this.#facts = emptyFacts();
++		this.#history = new HorizonHistory();
++		this.#completed = false;
+ 		this.#reading = null;
+ 		this.#resetSmoothing();
+ 		this.#refresh();
+@@ -105,9 +114,20 @@
+ 	observe(sessionId: string, event: ObservedEvent): void {
+ 		if (this.#phase === "off" || sessionId !== this.#sessionId) return;
+ 		const prevPrompt = this.#facts.requests;
++		const wasRunning = this.#facts.running;
+ 		if (!applyEvent(this.#facts, event, this.#clock.now())) return;
++		if (event.type === "message_end") {
++			const m = event.message as {role?:string;stopReason?:string}|undefined;
++			if (m?.role === "assistant") this.#completed = m.stopReason === "stop";
++		}
++		if (event.type === "agent_end" && wasRunning) {
++			this.#history.finish(this.#facts.activeMs/1000, this.#completed && (event.stopReason === undefined || event.stopReason === "stop"));
++			this.#completed = false;
++		}
+ 		if (this.#facts.requests !== prevPrompt) {
+ 			// Prompt changed: immediately clear any prior prompt's reading and smoothing.
++			this.#history.finish(0,false);
++			this.#completed = false;
+ 			this.#reading = null;
+ 			this.#resetSmoothing();
+ 		}
+@@ -126,6 +146,8 @@
+ 	seedBranch(sessionId: string, branch: BranchEntry[], isIdle: boolean): void {
+ 		if (this.#phase === "off" || sessionId !== this.#sessionId) return;
+ 		seedFromBranch(this.#facts, branch, this.#clock.now(), isIdle);
++		this.#history = new HorizonHistory();
++		this.#completed = false;
+ 		this.#resetSmoothing();
+ 		this.#refresh();
+ 	}
+@@ -155,35 +177,26 @@
+ 	#refresh(): void {
+ 		if (this.#phase !== "on") return;
+ 		const now = this.#clock.now();
+-		let reading = estimateProgress(this.#facts, now, {
++		const reading = estimateProgress(this.#facts, now, {
+ 			allowEarlyAbstain: this.options.allowEarlyAbstain,
++			history: this.#history,
++			smooth: !this.options.smoothDisplay || !this.#facts.running ? undefined : rawZ => {
++				const todoDone = this.#facts.todoDoneEventsS.length;
++				const dt = now - this.#smoothAt;
++				let z = rawZ;
++				if (this.#smoothPromptId === this.#facts.requests && this.#smoothZ !== null &&
++					todoDone === this.#smoothTodoDone && dt >= 0 && dt < 15_000) {
++					const alpha = dt < 2_000 ? 0.35 : 0.6;
++					z = alpha * rawZ + (1-alpha) * this.#smoothZ;
++				}
++				this.#smoothPromptId = this.#facts.requests;
++				this.#smoothAt = now;
++				this.#smoothTodoDone = todoDone;
++				return this.#smoothZ = z;
++			},
+ 		});
++		if (!this.#facts.running) this.#resetSmoothing();
+ 
+-		if (this.options.smoothDisplay && this.#facts.running && reading.estimate.logRemZ !== null) {
+-			const rawZ = reading.estimate.logRemZ;
+-			const todoDone = this.#facts.todoDoneEventsS.length;
+-			const samePrompt = this.#smoothPromptId === reading.promptId && this.#smoothZ !== null;
+-			const milestoneChanged = todoDone !== this.#smoothTodoDone;
+-			const dtMs = now - this.#smoothAt;
+-			if (samePrompt && !milestoneChanged && dtMs >= 0 && dtMs < 15_000) {
+-				// Gentle EMA prevents visual jitter during fast tool bursts while still tracking trend smoothly.
+-				const alpha = dtMs < 2_000 ? 0.35 : 0.6;
+-				const blendedZ = alpha * rawZ + (1 - alpha) * this.#smoothZ!;
+-				this.#smoothZ = blendedZ;
+-				reading = estimateProgress(this.#facts, now, {
+-					allowEarlyAbstain: this.options.allowEarlyAbstain,
+-					overrideZ: blendedZ,
+-				});
+-			} else {
+-				this.#smoothZ = rawZ;
+-			}
+-			this.#smoothPromptId = reading.promptId;
+-			this.#smoothAt = now;
+-			this.#smoothTodoDone = todoDone;
+-		} else if (!this.#facts.running) {
+-			this.#resetSmoothing();
+-		}
+-
+ 		this.#reading = reading;
+ 		this.#emit();
+ 		this.#scheduleTick();
+--- a/src/estimator.ts
++++ b/src/estimator.ts
+@@ -1,6 +1,6 @@
+ // Local, zero-LLM progress & remaining-time estimator.
+ // Uses a compact 3-anchor GBDT ensemble + calibrated P25/P75 quantile heads
+-// trained on historic OMP sessions. Runs in < 0.1 ms with zero network calls.
++// trained on historic OMP sessions. All inference stays local.
+ 
+ import { type Facts, inferBlocker, inferNextHint, inferPhase, type WorkPhase } from "./facts";
+ import { extractFeatures, SMOOTH_S } from "./features";
+@@ -8,13 +8,15 @@
+ import { MODEL_DATA } from "./model-data";
+ import { calibratedRange } from "./range-calibration";
+ import RANGE_DATA from "./range-data.json";
++import { horizonSeconds } from "./horizon-eta";
++import type { HorizonHistory } from "./horizon-history";
+ 
+ export type Confidence = "low" | "medium" | "high";
+ 
+ export interface Estimate {
+ 	/** Elapsed share of active time (0..1), mathematically consistent with remainingMinutes. */
+ 	progress: number | null;
+-	/** Median (P50) expected active minutes remaining. */
++	/** Estimated remaining active minutes, accounting for the cost of long-task misses. */
+ 	remainingMinutes: number | null;
+ 	/** Calibrated lower bound (P25) remaining minutes. */
+ 	lowMinutes: number | null;
+@@ -42,8 +44,9 @@
+ 	model?: EnsembleModel;
+ 	/** When true (live widget), abstain during the first couple seconds before any tool/plan signal arrives. */
+ 	allowEarlyAbstain?: boolean;
+-	/** Optional externally smoothed log-scale z value to keep the live progress bar steady. */
+-	overrideZ?: number;
++	/** Smooth the control point once before computing the interval and horizon adjustment. */
++	smooth?: (rawZ:number) => number;
++	history?: HorizonHistory;
+ }
+ 
+ function zToMinutes(z: number): number {
+@@ -105,13 +108,9 @@
+ 		toolCalls: feat.toolCalls,
+ 		hasActiveTodo: feat.hasActiveTodo,
+ 	});
+-	const z = opts.overrideZ ?? rawZ;
+-	const remMinutes = zToMinutes(z);
++	const z = opts.smooth?.(rawZ) ?? rawZ;
++	let remMinutes = zToMinutes(z);
+ 	const remS = remMinutes * 60;
+-	const progress =
+-		feat.elapsedS <= 0
+-			? 0.02
+-			: Math.min(0.99, Math.max(0.01, feat.elapsedS / (feat.elapsedS + remS + 1e-6)));
+ 
+ 	const { lowZ, highZ } = evalQuantileRangeZ(model, feat.x, feat.logElapsed, feat.anchorZ, rawZ);
+ 	const shift = z - rawZ;
+@@ -124,6 +123,16 @@
+ 		lowMinutes = lowS / 60;
+ 		highMinutes = highS / 60;
+ 	}
++	if (model === MODEL_DATA && facts.running) {
++		opts.history?.capture(feat.elapsedS, zToMinutes(rawZ)*60);
++		if (feat.elapsedS > 450) {
++			remMinutes = horizonSeconds(remS, feat.elapsedS, feat.x, facts, opts.history) / 60;
++			lowMinutes = Math.min(lowMinutes, remMinutes);
++			highMinutes = Math.max(highMinutes, remMinutes);
++		}
++	}
++	const progress = feat.elapsedS <= 0 ? 0.02
++		: Math.min(0.99, Math.max(0.01, feat.elapsedS / (feat.elapsedS + remMinutes * 60 + 1e-6)));
+ 
+ 	// Confidence tier: high when active todos have real velocity or post-edit verification is underway.
+ 	let confidence: Confidence = "medium";
+--- /dev/null
++++ b/src/work-shape.ts
+@@ -0,0 +1,59 @@
++import type { Facts } from './facts';
++
++// Fixed, public vocabulary; a request becomes category bits, never project names,
++// token hashes, commands or an embedding that must be sent to another process.
++const categories = [
++  /\b(implement|create|add|build|support|introduce)\b/i,
++  /\b(refactor|restructure|simplify|split|extract|remove|replace)\b/i,
++  /\b(debug|fix|broken|fails?|wrong|hangs?|regression|crash)\b/i,
++  /\b(trace|investigate|research|analy[sz]e|diagnose|figure out|look into)\b/i,
++  /\b(review|audit|inspect|evaluate|assess|compare)\b/i,
++  /\b(test|verify|validate|smoke|check)\b/i,
++  /\b(benchmark|performance|latency|profil[ei]|experiment|accuracy|faster)\b/i,
++  /\b(integrat\w*|migrat\w*|port|cutover|end.to.end|across|full suite)\b/i,
++  /\b(install|deploy|release|rollout|restart|rebuild|package)\b/i,
++  /\b(commit|push|merge|rebase|cherry.pick|pull request)\b/i,
++  /\b(render|visual|design|layout|dialog|ui|ux|widget|screen)\b/i,
++  /\b(browser|emulator|hardware|device|native|desktop|android|phone)\b/i,
++  /\b(delegate|subagents?|workers?|supervis\w*|parallel|orchestrat\w*)\b/i,
++  /\b(explain|summari[sz]e|describe|suggest|why|what|which)\b/i,
++  /\b(plan|proposal|strategy|approach|architecture|ideas?)\b/i,
++  /\b(document\w*|readme|changelog|guide|note|write.up)\b/i,
++  /\b(quick|small|only|just|single|one.line|brief|simple)\b/i,
++  /\b(all|each|every|across|whole|entire|multiple|comprehensive)\b/i,
++  /\b(until|iterate|again|keep going|keep at|do not stop|repeat)\b/i,
++  /\b(then|afterwards|after that|as well as|also|once)\b/i,
++  /\b(read.only|no (?:code )?changes?|without (?:editing|changing)|do not (?:edit|change|implement))\b/i,
++  /\b(go ahead|continue|proceed|yes|agreed|do it|approved)\b/i,
++  /\b(evidence|acceptance|reproduc\w*|baseline|receipt|criteria)\b/i,
++  /\b(blocked|waiting|failed|timeout|error|unexpected|mismatch)\b/i,
++];
++export function scopeBits(text:string):number {
++  let bits=0; const bounded=text.slice(0,3000);
++  for(let i=0;i<categories.length;i++)if(categories[i]!.test(bounded))bits|=1<<i;
++  return bits;
++}
++function since(times:number[],n:number,elapsed:number){
++  return times.length>=n?Math.log1p(Math.max(0,elapsed-times[times.length-n]!)):-1;
++}
++// Appends to a fresh feature vector only; the legacy 140 feature indices stay fixed.
++export function addWorkShape(x:number[],f:Facts,e:number):void {
++  for(let i=0;i<categories.length;i++)x.push((f.requestScope>>>i)&1);
++  // For brief approvals, the deliverable is often in the preceding answer, not “yes”.
++  for(const i of [0,2,4,5,7,8,9,12,14,18])x.push((f.acceptedScope>>>i)&1);
++  const t=f.turnTimesS,u=f.toolTimesS;
++  for(const k of [1,3,8,20])x.push(since(t,k,e),since(u,k,e));
++  x.push(Math.log1p(f.firstWriteAtS??e),Math.log1p(f.todoInitAtS??e),
++    Math.log1p(Math.max(0,e-f.lastActivityEndAtS)),Math.log1p(t[0]??e),
++    Math.log1p(u[0]??e),Math.log1p(f.priorPromptDurationsS.at(-2)??0),
++    Math.log1p(f.outputAtFirstTurn),Math.log1p(!t.length?0:f.outputAtFirstTurn/Math.max(1,t[0]!)));
++  // Current route size in the agent's own confirmed plan, at the instant it was posted.
++  let checks=0,edits=0,deploys=0,investigations=0;
++  if(f.todoUpdated)for(const item of f.todos){if(item.status==='done'||item.status==='dropped')continue;
++    if(/test|verif|validat|smoke|check/i.test(item.text))checks++;
++    if(/implement|build|updat|refactor|chang|add /i.test(item.text))edits++;
++    if(/deploy|install|release|commit|push/i.test(item.text))deploys++;
++    if(/investigat|research|inspect|analy|review/i.test(item.text))investigations++;
++  }
++  x.push(checks,edits,deploys,investigations);
++}
+--- /dev/null
++++ b/src/horizon-eta.ts
+@@ -0,0 +1,47 @@
++import data from './horizon-data.json';
++import { addWorkShape } from './work-shape';
++import type { Facts } from './facts';
++import type { HorizonHistory } from './horizon-history';
++
++const knots=[-4,-3,-2,-1.4,-.9,-.45,0,.45,.9,1.4,2,2.7,3.5,4.3];
++const shape=knots.slice(1,-1).map(Math.tanh);
++const mid=knots.slice(1).map((v,i)=>Math.exp((knots[i]!+v)/2));
++const sigmoid=(x:number)=>1/(1+Math.exp(-x));
++const clamp=(x:number,lo:number,hi:number)=>Math.min(hi,Math.max(lo,x));
++
++/** Predict a distribution of remaining/control ratios, then choose a point
++ * accounting for the cost of missing long jobs. Never changes short tasks. */
++export function horizonSeconds(base:number,age:number,x:number[],facts:Facts,history?:HorizonHistory):number {
++  if(age<=450)return base;
++  const le=Math.log1p(age/60), lb=Math.log1p(base/60);
++  const v=[le,lb,lb-le,Math.max(0,le-1.4),Math.max(0,le-2.7),Math.max(0,lb-1.6)];
++  for(const i of data.base)v.push(x[i]!);
++  addWorkShape(v,facts,age);
++  if(history)history.append(v,base);else for(let i=0;i<20;i++)v.push(0);
++  let center=0,skew=0;
++  for(let j=0;j<v.length;j++){
++    const n=clamp((v[j]!-data.mu[j]!)/data.sd[j]!,-4,4);
++    center+=n*data.beta[j]!;skew+=n*data.skew[j]!;
++  }
++  // Store both arrays in the now-unused feature scratch; no per-bin allocations.
++  let previous=0,pLong=0,pHalf=0;
++  for(let i=0;i<mid.length;i++){
++    const cdf=i===shape.length?1:Math.max(previous,sigmoid(-center-skew*shape[i]!-data.intercept[i]!));
++    const mass=cdf-previous;previous=cdf;
++    const total=age+Math.max(0,(base+30)*mid[i]!-30);
++    const long=sigmoid((total-900)/120), half=sigmoid((total-1800)/240);
++    pLong+=mass*long;pHalf+=mass*half;v[i]=mass;v[mid.length+i]=long+half;
++  }
++  const premium=5*clamp((pLong+.5*pHalf-.20)/.5,0,1);
++  let target=.55*(1+premium*(pLong+pHalf));
++  for(let i=0;i<mid.length;i++){
++    const mass=v[i]!*(1+premium*v[mid.length+i]!);
++    if(target<=mass && mass>0){
++      const logRatio=knots[i]!+(knots[i+1]!-knots[i]!)*target/mass;
++      const ratio=Math.max(30/(base+30),Math.exp(logRatio));
++      return Math.max(0,(base+30)*clamp(ratio,.2,5)**Math.min(1,(age-450)/450)-30);
++    }
++    target-=mass;
++  }
++  return base;
++}
+--- /dev/null
++++ b/src/horizon-history.ts
+@@ -0,0 +1,35 @@
++// Only forecasts made while opted in may become history. A superseded or
++// aborted prompt never supplies a duration label, and branch changes forget all.
++const ages = [15, 60, 180, 450, 900];
++const clamp = (v:number, bound:number) => Math.max(-bound, Math.min(bound,v));
++export class HorizonHistory {
++  private current: ({age:number; seconds:number}|null)[] = [];
++  private recent: (number|null)[][] = [];
++  private pooled = new Float64Array(3*ages.length);
++
++  capture(age:number, seconds:number):void {
++    while (this.current.length<ages.length && age>=ages[this.current.length]!) {
++      const landmark=ages[this.current.length]!;
++      // Never relabel a mid-session opt-in estimate as one made minutes earlier.
++      this.current.push(age-landmark<=5 ? {age,seconds} : null);
++    }
++  }
++  finish(seconds:number, completed:boolean):void {
++    if (completed && seconds>5) {
++      this.recent.push(this.current.map(a=>a?clamp(Math.log((Math.max(0,seconds-a.age)+30)/(a.seconds+30)),2.5):null));
++      if(this.recent.length>8)this.recent.shift();
++      this.pooled.fill(0);
++      for(let j=0;j<ages.length;j++){
++        let count=0,sum=0,last=0;
++        for(let i=this.recent.length-1;i>=0&&count<4;i--){const v=this.recent[i]![j];if(v==null)continue;if(!count)last=v;count++;sum+=v;}
++        if(count)this.pooled.set([sum/count,last,count/4],3*j);
++      }
++    }
++    this.current=[];
++  }
++  append(to:number[],base:number):void {
++    for(let i=0;i<ages.length;i++){
++      const a=this.current[i];to.push(this.pooled[3*i]!,this.pooled[3*i+1]!,this.pooled[3*i+2]!,a?clamp(Math.log((base+30)/(a.seconds+30)),3):0);
++    }
++  }
++}
