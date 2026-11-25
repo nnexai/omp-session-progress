@@ -89,8 +89,13 @@ function eventArgs(name: string, args: Record<string, unknown>): Record<string, 
 }
 
 export function extractSession(path: string): Trace {
+	return extractSessionText(readFileSync(path, "utf8"), path);
+}
+
+/** Replay already-verified bytes without reopening a changing session file. */
+export function extractSessionText(text: string, path: string): Trace {
 	const entries: Entry[] = [];
-	for (const line of readFileSync(path, "utf8").split("\n")) {
+	for (const line of text.split("\n")) {
 		if (!line.trim()) continue;
 		try {
 			entries.push(JSON.parse(line));

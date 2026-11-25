@@ -1,0 +1,1000 @@
+{
+  "provenance": {
+    "refitWeightsSha256": "9c1aab3f897156ba2f48fd97e80dfedf35b04608c47c35449f1fbf5c78bd2df6"
+  },
+  "developmentSessions": 244,
+  "heldoutSessions": 42,
+  "completed": 177,
+  "slices": {
+    "all": {
+      "sessions": 42,
+      "prompts": 176,
+      "readings": 8027,
+      "coverage": {
+        "prose": {
+          "prompts": 42,
+          "readings": 654,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 106,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 106,
+            "wrong": 2,
+            "prompts": 8
+          }
+        },
+        "checklist": {
+          "prompts": 91,
+          "readings": 5850,
+          "conflicts": 0,
+          "finalRight": 9,
+          "finalWrong": 103,
+          "moreRight": 2035,
+          "moreWrong": 87,
+          "handoff": {
+            "right": 9,
+            "wrong": 103,
+            "prompts": 4
+          },
+          "subsequentWork": {
+            "right": 2035,
+            "wrong": 87,
+            "prompts": 39
+          }
+        },
+        "either": {
+          "prompts": 94,
+          "readings": 5907,
+          "conflicts": 0,
+          "finalRight": 9,
+          "finalWrong": 103,
+          "moreRight": 2090,
+          "moreWrong": 89,
+          "handoff": {
+            "right": 9,
+            "wrong": 103,
+            "prompts": 4
+          },
+          "subsequentWork": {
+            "right": 2090,
+            "wrong": 89,
+            "prompts": 43
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 4.069283763407011,
+          "majorMiss": 0.05317772921691757,
+          "forecast15": 0.05465510575847139,
+          "brier": 0.18066845831488487,
+          "precision": 0.652523481049917,
+          "recall": 0.6425870609424464
+        },
+        "bag": {
+          "mae": 4.087007170620156,
+          "majorMiss": 0.05367064593494926,
+          "forecast15": 0.057118331909509885,
+          "brier": 0.17855828067648097,
+          "precision": 0.6584031815877469,
+          "recall": 0.6344609206880112
+        },
+        "prose": {
+          "mae": 4.082650846885032,
+          "majorMiss": 0.05312513999262136,
+          "forecast15": 0.05457493036135213,
+          "brier": 0.18278493211485608,
+          "precision": 0.6481598979866323,
+          "recall": 0.6303737407917426
+        },
+        "checklist": {
+          "mae": 4.087024132642517,
+          "majorMiss": 0.05346898513314821,
+          "forecast15": 0.05821601057589705,
+          "brier": 0.178681776045128,
+          "precision": 0.6511164892191238,
+          "recall": 0.6414532493733894
+        },
+        "ordered": {
+          "mae": 4.089344971766386,
+          "majorMiss": 0.05335303240544784,
+          "forecast15": 0.058089930771429835,
+          "brier": 0.17917962087808434,
+          "precision": 0.6519477143430816,
+          "recall": 0.6402174514968886
+        }
+      },
+      "orderedVsBase": {
+        "delta": 0.020061208359374718,
+        "ci95": [
+          -0.002152739722231978,
+          0.03934550455426049
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.0014888374368005526,
+        "ci95": [
+          -0.004821738220459692,
+          0.0029505488315608825
+        ]
+      }
+    },
+    "medium": {
+      "sessions": 29,
+      "prompts": 61,
+      "readings": 2076,
+      "coverage": {
+        "prose": {
+          "prompts": 19,
+          "readings": 249,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 12,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 12,
+            "wrong": 0,
+            "prompts": 2
+          }
+        },
+        "checklist": {
+          "prompts": 49,
+          "readings": 1495,
+          "conflicts": 0,
+          "finalRight": 8,
+          "finalWrong": 13,
+          "moreRight": 580,
+          "moreWrong": 42,
+          "handoff": {
+            "right": 8,
+            "wrong": 13,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 580,
+            "wrong": 42,
+            "prompts": 22
+          }
+        },
+        "either": {
+          "prompts": 49,
+          "readings": 1502,
+          "conflicts": 0,
+          "finalRight": 8,
+          "finalWrong": 13,
+          "moreRight": 580,
+          "moreWrong": 42,
+          "handoff": {
+            "right": 8,
+            "wrong": 13,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 580,
+            "wrong": 42,
+            "prompts": 22
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 3.1915585805602236,
+          "majorMiss": 0.007451564828614009,
+          "forecast15": 0.01797080879048092,
+          "brier": 0.20239735623013244,
+          "precision": 0.4359272829317185,
+          "recall": 0.25728722493627276
+        },
+        "bag": {
+          "mae": 3.2419097601787654,
+          "majorMiss": 0.008734889882430867,
+          "forecast15": 0.019840087053201807,
+          "brier": 0.19930953283597475,
+          "precision": 0.4358573326261705,
+          "recall": 0.2362175222873216
+        },
+        "prose": {
+          "mae": 3.2271548380876545,
+          "majorMiss": 0.007451564828614009,
+          "forecast15": 0.01797080879048092,
+          "brier": 0.2062285107655344,
+          "precision": 0.41419044219478796,
+          "recall": 0.23538722354894084
+        },
+        "checklist": {
+          "mae": 3.2380305812630685,
+          "majorMiss": 0.007741347905282332,
+          "forecast15": 0.020750833865587962,
+          "brier": 0.19902051593742226,
+          "precision": 0.4233652356354734,
+          "recall": 0.2526428270996031
+        },
+        "ordered": {
+          "mae": 3.246943274016217,
+          "majorMiss": 0.007741347905282332,
+          "forecast15": 0.020750833865587962,
+          "brier": 0.20011810297228708,
+          "precision": 0.42355010864042086,
+          "recall": 0.24794884830762304
+        }
+      },
+      "orderedVsBase": {
+        "delta": 0.05538469345599355,
+        "ci95": [
+          0.004574308698104474,
+          0.09822382901622648
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.0022792532578454457,
+        "ci95": [
+          -0.010787498834760758,
+          0.009622974351252775
+        ]
+      }
+    },
+    "long": {
+      "sessions": 21,
+      "prompts": 37,
+      "readings": 5586,
+      "coverage": {
+        "prose": {
+          "prompts": 20,
+          "readings": 389,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 94,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 94,
+            "wrong": 0,
+            "prompts": 5
+          }
+        },
+        "checklist": {
+          "prompts": 35,
+          "readings": 4337,
+          "conflicts": 0,
+          "finalRight": 1,
+          "finalWrong": 90,
+          "moreRight": 1454,
+          "moreWrong": 45,
+          "handoff": {
+            "right": 1,
+            "wrong": 90,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 1454,
+            "wrong": 45,
+            "prompts": 16
+          }
+        },
+        "either": {
+          "prompts": 35,
+          "readings": 4371,
+          "conflicts": 0,
+          "finalRight": 1,
+          "finalWrong": 90,
+          "moreRight": 1509,
+          "moreWrong": 45,
+          "handoff": {
+            "right": 1,
+            "wrong": 90,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 1509,
+            "wrong": 45,
+            "prompts": 19
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 12.153250975096855,
+          "majorMiss": 0.24066851047654153,
+          "forecast15": 0.2303534939803143,
+          "brier": 0.0800855669563948,
+          "precision": 0.25486965841948217,
+          "recall": 0.2140521189826327
+        },
+        "bag": {
+          "mae": 12.14505513804578,
+          "majorMiss": 0.24089744328980503,
+          "forecast15": 0.23898867853590355,
+          "brier": 0.07509597305572506,
+          "precision": 0.2853973119685578,
+          "recall": 0.2140521189826327
+        },
+        "prose": {
+          "mae": 12.128673431246604,
+          "majorMiss": 0.24041835632853792,
+          "forecast15": 0.2299721191183416,
+          "brier": 0.07916087584617738,
+          "precision": 0.25486965841948217,
+          "recall": 0.2140521189826327
+        },
+        "checklist": {
+          "mae": 12.163543376242758,
+          "majorMiss": 0.24157619354626653,
+          "forecast15": 0.2427085674474869,
+          "brier": 0.0776603965054863,
+          "precision": 0.25338682901942144,
+          "recall": 0.21686423976883307
+        },
+        "ordered": {
+          "mae": 12.151193021659395,
+          "majorMiss": 0.24102463462531346,
+          "forecast15": 0.2421088364856969,
+          "brier": 0.07742816754833262,
+          "precision": 0.2549440431342271,
+          "recall": 0.21686423976883307
+        }
+      },
+      "orderedVsBase": {
+        "delta": -0.0020579534374600035,
+        "ci95": [
+          -0.056738249505303706,
+          0.05328373980495512
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.002657399408062161,
+        "ci95": [
+          -0.006298265902535351,
+          0.0014173090362199743
+        ]
+      }
+    },
+    "30+": {
+      "sessions": 12,
+      "prompts": 17,
+      "readings": 3878,
+      "coverage": {
+        "prose": {
+          "prompts": 6,
+          "readings": 134,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 54,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 54,
+            "wrong": 0,
+            "prompts": 3
+          }
+        },
+        "checklist": {
+          "prompts": 15,
+          "readings": 2905,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 782,
+          "moreWrong": 34,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 782,
+            "wrong": 34,
+            "prompts": 5
+          }
+        },
+        "either": {
+          "prompts": 15,
+          "readings": 2907,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 836,
+          "moreWrong": 34,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 836,
+            "wrong": 34,
+            "prompts": 8
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 19.26031681332722,
+          "majorMiss": 0.44209151537591523,
+          "forecast15": 0.3514336651656558,
+          "brier": 0.06832193179444894,
+          "precision": 0.19194340744103935,
+          "recall": 0.16670134899677844
+        },
+        "bag": {
+          "mae": 19.251582378842556,
+          "majorMiss": 0.44431324807530875,
+          "forecast15": 0.36219721582888004,
+          "brier": 0.06581526983862203,
+          "precision": 0.2113560635017374,
+          "recall": 0.16670134899677844
+        },
+        "prose": {
+          "mae": 19.247780564708258,
+          "majorMiss": 0.441346055901803,
+          "forecast15": 0.35156888946536646,
+          "brier": 0.06831234117908555,
+          "precision": 0.19194340744103935,
+          "recall": 0.16670134899677844
+        },
+        "checklist": {
+          "mae": 19.2438845608445,
+          "majorMiss": 0.4452458657358861,
+          "forecast15": 0.36382540287428444,
+          "brier": 0.06608587761489731,
+          "precision": 0.19710773952864744,
+          "recall": 0.17389411253513326
+        },
+        "ordered": {
+          "mae": 19.240635261214997,
+          "majorMiss": 0.4445900762761211,
+          "forecast15": 0.36319873562572874,
+          "brier": 0.06609247692141591,
+          "precision": 0.19710773952864744,
+          "recall": 0.17389411253513326
+        }
+      },
+      "orderedVsBase": {
+        "delta": -0.019681552112222053,
+        "ci95": [
+          -0.10990426798586359,
+          0.10882416428896313
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.0022294548730330556,
+        "ci95": [
+          -0.005555317537051443,
+          0.0028582347134384427
+        ]
+      }
+    },
+    "short": {
+      "sessions": 22,
+      "prompts": 49,
+      "readings": 121,
+      "coverage": {
+        "prose": {
+          "prompts": 1,
+          "readings": 2,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 0,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 0,
+            "wrong": 2,
+            "prompts": 1
+          }
+        },
+        "checklist": {
+          "prompts": 2,
+          "readings": 3,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 1,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 1,
+            "wrong": 0,
+            "prompts": 1
+          }
+        },
+        "either": {
+          "prompts": 3,
+          "readings": 5,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 1,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 1,
+            "wrong": 2,
+            "prompts": 2
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 0.6860166811994199,
+          "majorMiss": 0,
+          "forecast15": 0,
+          "brier": 0.18676188825578524,
+          "precision": 0.8190854870775348,
+          "recall": 0.8530020703933747
+        },
+        "bag": {
+          "mae": 0.6886180311437471,
+          "majorMiss": 0,
+          "forecast15": 0,
+          "brier": 0.186547129277707,
+          "precision": 0.8190854870775348,
+          "recall": 0.8530020703933747
+        },
+        "prose": {
+          "mae": 0.6978249361636784,
+          "majorMiss": 0,
+          "forecast15": 0,
+          "brier": 0.18930755629509724,
+          "precision": 0.8169014084507042,
+          "recall": 0.8405797101449275
+        },
+        "checklist": {
+          "mae": 0.6880152160987658,
+          "majorMiss": 0,
+          "forecast15": 0,
+          "brier": 0.18600595847737308,
+          "precision": 0.8190854870775348,
+          "recall": 0.8530020703933747
+        },
+        "ordered": {
+          "mae": 0.690849012267583,
+          "majorMiss": 0,
+          "forecast15": 0,
+          "brier": 0.18652395838609148,
+          "precision": 0.8190854870775348,
+          "recall": 0.8530020703933747
+        }
+      },
+      "orderedVsBase": {
+        "delta": 0.00483233106816311,
+        "ci95": [
+          0,
+          0.013536204096951287
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.00023792986969377856,
+        "ci95": [
+          -0.0019216653339784481,
+          0.0013698493578293601
+        ]
+      }
+    },
+    "slow": {
+      "sessions": 25,
+      "prompts": 60,
+      "readings": 1213,
+      "coverage": {
+        "prose": {
+          "prompts": 18,
+          "readings": 91,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 17,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 17,
+            "wrong": 0,
+            "prompts": 4
+          }
+        },
+        "checklist": {
+          "prompts": 47,
+          "readings": 931,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 23,
+          "moreRight": 295,
+          "moreWrong": 7,
+          "handoff": {
+            "right": 0,
+            "wrong": 23,
+            "prompts": 1
+          },
+          "subsequentWork": {
+            "right": 295,
+            "wrong": 7,
+            "prompts": 20
+          }
+        },
+        "either": {
+          "prompts": 49,
+          "readings": 939,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 23,
+          "moreRight": 304,
+          "moreWrong": 7,
+          "handoff": {
+            "right": 0,
+            "wrong": 23,
+            "prompts": 1
+          },
+          "subsequentWork": {
+            "right": 304,
+            "wrong": 7,
+            "prompts": 22
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 7.896428233283371,
+          "majorMiss": 0.10154579629675814,
+          "forecast15": 0.16771273167476997,
+          "brier": 0.1434391853511384,
+          "precision": 0.8578111981639439,
+          "recall": 0.16860166505416802
+        },
+        "bag": {
+          "mae": 7.93386413191406,
+          "majorMiss": 0.10260792070019582,
+          "forecast15": 0.17298700805198755,
+          "brier": 0.14456559120403026,
+          "precision": 0.8578111981639439,
+          "recall": 0.16860166505416802
+        },
+        "prose": {
+          "mae": 7.900811251015208,
+          "majorMiss": 0.10116700841797027,
+          "forecast15": 0.16771273167476997,
+          "brier": 0.14737125173899734,
+          "precision": 0.8578111981639439,
+          "recall": 0.16860166505416802
+        },
+        "checklist": {
+          "mae": 7.906359156882877,
+          "majorMiss": 0.09888699046763769,
+          "forecast15": 0.17298700805198755,
+          "brier": 0.13958259763110123,
+          "precision": 0.8421883452246282,
+          "recall": 0.16860166505416802
+        },
+        "ordered": {
+          "mae": 7.905020087135158,
+          "majorMiss": 0.09888699046763769,
+          "forecast15": 0.17298700805198755,
+          "brier": 0.1407344626103558,
+          "precision": 0.8421883452246282,
+          "recall": 0.16860166505416802
+        }
+      },
+      "orderedVsBase": {
+        "delta": 0.008591853851790072,
+        "ci95": [
+          -0.07509875830562251,
+          0.1145818140616768
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.0027047227407825812,
+        "ci95": [
+          -0.013050849370792417,
+          0.014373840958786596
+        ]
+      }
+    },
+    "verification": {
+      "sessions": 16,
+      "prompts": 32,
+      "readings": 65,
+      "coverage": {
+        "prose": {
+          "prompts": 1,
+          "readings": 1,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 0,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          }
+        },
+        "checklist": {
+          "prompts": 26,
+          "readings": 54,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 2,
+          "moreRight": 33,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 2,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 33,
+            "wrong": 2,
+            "prompts": 15
+          }
+        },
+        "either": {
+          "prompts": 26,
+          "readings": 54,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 2,
+          "moreRight": 33,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 2,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 33,
+            "wrong": 2,
+            "prompts": 15
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 7.809387594503114,
+          "majorMiss": 0.12569444444444444,
+          "forecast15": 0.10052083333333334,
+          "brier": 0.15710167913474346,
+          "precision": 0.47368421052631576,
+          "recall": 0.3582089552238806
+        },
+        "bag": {
+          "mae": 7.858935514190052,
+          "majorMiss": 0.12569444444444444,
+          "forecast15": 0.10052083333333334,
+          "brier": 0.14720265881573874,
+          "precision": 0.47368421052631576,
+          "recall": 0.3582089552238806
+        },
+        "prose": {
+          "mae": 7.7828671812364,
+          "majorMiss": 0.12569444444444444,
+          "forecast15": 0.10052083333333334,
+          "brier": 0.15294730787631655,
+          "precision": 0.47368421052631576,
+          "recall": 0.3582089552238806
+        },
+        "checklist": {
+          "mae": 7.819456630589399,
+          "majorMiss": 0.12569444444444444,
+          "forecast15": 0.10052083333333334,
+          "brier": 0.1536426168228226,
+          "precision": 0.3829787234042553,
+          "recall": 0.3582089552238806
+        },
+        "ordered": {
+          "mae": 7.805557777671671,
+          "majorMiss": 0.12569444444444444,
+          "forecast15": 0.10052083333333334,
+          "brier": 0.15195108287833833,
+          "precision": 0.47368421052631576,
+          "recall": 0.3582089552238806
+        }
+      },
+      "orderedVsBase": {
+        "delta": -0.0038298168314447253,
+        "ci95": [
+          -0.1479034654150664,
+          0.10451397279097896
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.0051505962564051,
+        "ci95": [
+          -0.019839311205488906,
+          0.004694525032941807
+        ]
+      }
+    },
+    "verificationWithPlan": {
+      "sessions": 13,
+      "prompts": 26,
+      "readings": 54,
+      "coverage": {
+        "prose": {
+          "prompts": 1,
+          "readings": 1,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 0,
+          "moreRight": 0,
+          "moreWrong": 0,
+          "handoff": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          },
+          "subsequentWork": {
+            "right": 0,
+            "wrong": 0,
+            "prompts": 0
+          }
+        },
+        "checklist": {
+          "prompts": 26,
+          "readings": 54,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 2,
+          "moreRight": 33,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 2,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 33,
+            "wrong": 2,
+            "prompts": 15
+          }
+        },
+        "either": {
+          "prompts": 26,
+          "readings": 54,
+          "conflicts": 0,
+          "finalRight": 0,
+          "finalWrong": 2,
+          "moreRight": 33,
+          "moreWrong": 2,
+          "handoff": {
+            "right": 0,
+            "wrong": 2,
+            "prompts": 2
+          },
+          "subsequentWork": {
+            "right": 33,
+            "wrong": 2,
+            "prompts": 15
+          }
+        }
+      },
+      "arms": {
+        "base": {
+          "mae": 7.573513353615502,
+          "majorMiss": 0.11135531135531138,
+          "forecast15": 0.12371794871794872,
+          "brier": 0.1431696527209157,
+          "precision": null,
+          "recall": 0
+        },
+        "bag": {
+          "mae": 7.631373010713421,
+          "majorMiss": 0.11135531135531138,
+          "forecast15": 0.12371794871794872,
+          "brier": 0.13075050770047014,
+          "precision": null,
+          "recall": 0
+        },
+        "prose": {
+          "mae": 7.540872844979546,
+          "majorMiss": 0.11135531135531138,
+          "forecast15": 0.12371794871794872,
+          "brier": 0.1380565804028518,
+          "precision": null,
+          "recall": 0
+        },
+        "checklist": {
+          "mae": 7.58147758709954,
+          "majorMiss": 0.11135531135531138,
+          "forecast15": 0.12371794871794872,
+          "brier": 0.13863594555469147,
+          "precision": 0,
+          "recall": 0
+        },
+        "ordered": {
+          "mae": 7.564841015438394,
+          "majorMiss": 0.11135531135531138,
+          "forecast15": 0.12371794871794872,
+          "brier": 0.13655814883855485,
+          "precision": null,
+          "recall": 0
+        }
+      },
+      "orderedVsBase": {
+        "delta": -0.008672338177110174,
+        "ci95": [
+          -0.20565202585820053,
+          0.12204432621085669
+        ]
+      },
+      "orderedVsBaseBrier": {
+        "delta": -0.006611503882360832,
+        "ci95": [
+          -0.027253999757980128,
+          0.0053956610594879904
+        ]
+      }
+    }
+  },
+  "balanced": {
+    "mae": {
+      "base": 7.67240477782854,
+      "bag": 7.693482449112273,
+      "prose": 7.677914134667129,
+      "checklist": 7.700786978752913,
+      "ordered": 7.6990681478378065
+    },
+    "orderedVsBase": {
+      "delta": 0.026663370009266774,
+      "ci95": [
+        -0.013374469509682891,
+        0.06158497156466447
+      ]
+    },
+    "orderedVsBag": {
+      "delta": 0.005585698725534169,
+      "ci95": [
+        -0.020731070136889282,
+        0.02542466970699475
+      ]
+    },
+    "orderedVsLocal": {
+      "delta": -0.03975086430269843,
+      "ci95": [
+        -0.2209688418253288,
+        0.1550647037475368
+      ]
+    }
+  }
+}
