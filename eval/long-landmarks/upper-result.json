@@ -1,0 +1,210 @@
+{
+  "design": {
+    "revision": "0bada07",
+    "landmarkActiveMinutes": 10,
+    "training": "three whole-session OOF frozen v4 fits; high-score threshold and upper quantile from OOF dev only",
+    "timers": "ReplayClock, Observer ticks/events and 5s then 15s observation cadence",
+    "target": "displayed point >= OOF dev 75th percentile; raise only existing upper bound to the conditional remaining P75; retain lower bound and smoothed point",
+    "acceptance": "Both cohorts: high-score displayed proper score decreases with session-bootstrap 95% upper bound below zero; all-risk displayed score decreases and coverage >= min(0.45, baseline); shorter-than-15-minute score does not increase",
+    "limitations": "Landmark only; completed prompts surviving 10 active minutes. Not a full-trajectory trial; holdouts previously studied; no deployment."
+  },
+  "development": {
+    "eligible": 119,
+    "usable": 119,
+    "high": 33,
+    "cutoffDisplayedMinutes": 11,
+    "upperMinutes": 57.43833333333333
+  },
+  "cohorts": {
+    "official": {
+      "sessions": 40,
+      "riskSet": 52,
+      "eligible": 52,
+      "abstained": 0,
+      "all": {
+        "n": 52,
+        "sessions": 28,
+        "baseline": {
+          "score": 30.31712307692307,
+          "width": 11.557692307692308,
+          "coverage": 0.4807692307692308,
+          "rangeRate": 0.9807692307692307,
+          "upperAtLeast20Rate": 0.15384615384615385
+        },
+        "candidate": {
+          "score": 27.67673205128205,
+          "width": 14.384615384615385,
+          "coverage": 0.5384615384615384,
+          "rangeRate": 0.9807692307692307,
+          "upperAtLeast20Rate": 0.15384615384615385
+        },
+        "pairedScoreDelta95": [
+          -6.516089285714285,
+          0.8571428571428571
+        ]
+      },
+      "highScored": {
+        "n": 6,
+        "sessions": 5,
+        "baseline": {
+          "score": 77.73186666666666,
+          "width": 26.5,
+          "coverage": 0.16666666666666666,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 1
+        },
+        "candidate": {
+          "score": 54.84847777777778,
+          "width": 51,
+          "coverage": 0.6666666666666666,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 1
+        },
+        "pairedScoreDelta95": [
+          -45.79061111111111,
+          9.2
+        ]
+      },
+      "trueLong30Plus": {
+        "n": 10,
+        "sessions": 9,
+        "baseline": {
+          "score": 100.00642666666667,
+          "width": 16.3,
+          "coverage": 0.1,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 0.5
+        },
+        "candidate": {
+          "score": 82.67639333333334,
+          "width": 27.4,
+          "coverage": 0.4,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 0.5
+        },
+        "pairedScoreDelta95": [
+          -31.509151515151515,
+          0
+        ]
+      },
+      "shorterThan15": {
+        "n": 21,
+        "sessions": 16,
+        "baseline": {
+          "score": 10.68242857142857,
+          "width": 8.523809523809524,
+          "coverage": 0.47619047619047616,
+          "rangeRate": 0.9523809523809523,
+          "upperAtLeast20Rate": 0.047619047619047616
+        },
+        "candidate": {
+          "score": 10.68242857142857,
+          "width": 8.523809523809524,
+          "coverage": 0.47619047619047616,
+          "rangeRate": 0.9523809523809523,
+          "upperAtLeast20Rate": 0.047619047619047616
+        },
+        "pairedScoreDelta95": [
+          0,
+          0
+        ]
+      },
+      "pass": false
+    },
+    "enriched": {
+      "sessions": 42,
+      "riskSet": 59,
+      "eligible": 59,
+      "abstained": 0,
+      "all": {
+        "n": 59,
+        "sessions": 29,
+        "baseline": {
+          "score": 43.84049491525424,
+          "width": 14.966101694915254,
+          "coverage": 0.5254237288135594,
+          "rangeRate": 0.9830508474576272,
+          "upperAtLeast20Rate": 0.3050847457627119
+        },
+        "candidate": {
+          "score": 48.265118644067805,
+          "width": 19.610169491525422,
+          "coverage": 0.5423728813559322,
+          "rangeRate": 0.9830508474576272,
+          "upperAtLeast20Rate": 0.3050847457627119
+        },
+        "pairedScoreDelta95": [
+          2.1186823529411765,
+          7.0625
+        ]
+      },
+      "highScored": {
+        "n": 13,
+        "sessions": 10,
+        "baseline": {
+          "score": 55.72989230769232,
+          "width": 32.38461538461539,
+          "coverage": 0.7692307692307693,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 1
+        },
+        "candidate": {
+          "score": 75.81087692307693,
+          "width": 53.46153846153846,
+          "coverage": 0.8461538461538461,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 1
+        },
+        "pairedScoreDelta95": [
+          14.3,
+          27.6
+        ]
+      },
+      "trueLong30Plus": {
+        "n": 17,
+        "sessions": 12,
+        "baseline": {
+          "score": 113.45934509803922,
+          "width": 21.823529411764707,
+          "coverage": 0.17647058823529413,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 0.4117647058823529
+        },
+        "candidate": {
+          "score": 115.52127450980392,
+          "width": 24.647058823529413,
+          "coverage": 0.23529411764705882,
+          "rangeRate": 1,
+          "upperAtLeast20Rate": 0.4117647058823529
+        },
+        "pairedScoreDelta95": [
+          0,
+          5.007542857142856
+        ]
+      },
+      "shorterThan15": {
+        "n": 22,
+        "sessions": 12,
+        "baseline": {
+          "score": 12.255551515151513,
+          "width": 9.681818181818182,
+          "coverage": 0.5454545454545454,
+          "rangeRate": 0.9545454545454546,
+          "upperAtLeast20Rate": 0.09090909090909091
+        },
+        "candidate": {
+          "score": 13.482824242424241,
+          "width": 10.909090909090908,
+          "coverage": 0.5454545454545454,
+          "rangeRate": 0.9545454545454546,
+          "upperAtLeast20Rate": 0.09090909090909091
+        },
+        "pairedScoreDelta95": [
+          0,
+          3.272727272727273
+        ]
+      },
+      "pass": false
+    }
+  }
+}
