@@ -1,4 +1,4 @@
-import { activeSegments, extractSession, GAP_CAP_MS, type PromptLabel, type TraceEvent } from '../extract';
+import { activeSegments, extractSession, GAP_CAP_MS, type PromptLabel, type Trace, type TraceEvent } from '../extract';
 import { activeMs, DELEGATE_TOOLS, EXEC_TOOLS, EXPLORE_TOOLS, WRITE_TOOLS } from '../../src/facts';
 import { evidence } from '../../src/hybrid/runtime/evidence';
 import { Observer, type Clock } from '../../src/observer';
@@ -20,7 +20,7 @@ export function toolFamily(name: string, intent: string): string {
 }
 
 // Identical scheduling and saturation shortcut to eval/run.ts --horizons.
-class ReplayClock implements Clock {
+export class ReplayClock implements Clock {
   time = 0;
   private timer: { at: number; fn: () => void } | null = null;
   now() { return this.time; }
@@ -101,7 +101,11 @@ function intervals(events: TraceEvent[], prompt: PromptLabel): { spans: Span[]; 
 
 /** Replay a session once, using only the prefix available at each checkpoint. */
 export function collectSession(path: string): Session {
-  const trace = extractSession(path);
+  return collectTrace(extractSession(path));
+}
+
+/** Replay an already captured in-memory snapshot without reopening the file. */
+export function collectTrace(trace: Trace): Session {
   const clock = new ReplayClock();
   const observer = new Observer(clock);
   observer.enable('replay', () => {});

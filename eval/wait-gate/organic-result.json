@@ -1,0 +1,2322 @@
+{
+  "method": "Seconds; prompt-weighted matched whole-prompt errors. Prior is last successful measured foreground exact command and cwd frozen at launch. Strict targeting is unavailable: ordinary wait is untargeted. Optimistic sole-known-pending wait is not proof of targeting. Handoffs/notices never supply durations. Unknown competitors persist conservatively. All checkpoint evidence is prefix-only.",
+  "provenance": {
+    "refitWeightsSha256": "9c1aab3f897156ba2f48fd97e80dfedf35b04608c47c35449f1fbf5c78bd2df6"
+  },
+  "development": {
+    "anyPrior": {
+      "all": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      },
+      "matched": {
+        "sessions": 2,
+        "prompts": 2,
+        "calls": 2,
+        "readings": 2,
+        "maeSeconds": {
+          "local": 50.624524201273054,
+          "ungated": 50.624524201273054,
+          "gated": 50.624524201273054,
+          "optimistic": 50.624524201273054
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "medium": {
+        "sessions": 104,
+        "prompts": 182,
+        "calls": 17,
+        "readings": 5166,
+        "maeSeconds": {
+          "local": 158.59029275422344,
+          "ungated": 158.59029275422344,
+          "gated": 158.59029275422344,
+          "optimistic": 158.59029275422344
+        },
+        "miss900": {
+          "local": 0.005340520479902894,
+          "ungated": 0.005340520479902894,
+          "gated": 0.005340520479902894,
+          "optimistic": 0.005340520479902894
+        },
+        "forecast900": {
+          "local": 0.014546401061826008,
+          "ungated": 0.014546401061826008,
+          "gated": 0.014546401061826008,
+          "optimistic": 0.014546401061826008
+        }
+      },
+      "long": {
+        "sessions": 48,
+        "prompts": 84,
+        "calls": 22,
+        "readings": 14302,
+        "maeSeconds": {
+          "local": 873.8669524394134,
+          "ungated": 873.8669524394134,
+          "gated": 873.8669524394134,
+          "optimistic": 873.8669524394134
+        },
+        "miss900": {
+          "local": 0.3006561139188826,
+          "ungated": 0.3006561139188826,
+          "gated": 0.3006561139188826,
+          "optimistic": 0.3006561139188826
+        },
+        "forecast900": {
+          "local": 0.29011034242654665,
+          "ungated": 0.29011034242654665,
+          "gated": 0.29011034242654665,
+          "optimistic": 0.29011034242654665
+        }
+      },
+      "30+": {
+        "sessions": 28,
+        "prompts": 40,
+        "calls": 11,
+        "readings": 10572,
+        "maeSeconds": {
+          "local": 1348.0797768890882,
+          "ungated": 1348.0797768890882,
+          "gated": 1348.0797768890882,
+          "optimistic": 1348.0797768890882
+        },
+        "miss900": {
+          "local": 0.48811975237947447,
+          "ungated": 0.48811975237947447,
+          "gated": 0.48811975237947447,
+          "optimistic": 0.48811975237947447
+        },
+        "forecast900": {
+          "local": 0.49310134278742473,
+          "ungated": 0.49310134278742473,
+          "gated": 0.49310134278742473,
+          "optimistic": 0.49310134278742473
+        }
+      },
+      "slow": {
+        "sessions": 65,
+        "prompts": 144,
+        "calls": 12,
+        "readings": 4088,
+        "maeSeconds": {
+          "local": 508.1516226331774,
+          "ungated": 508.1516226331774,
+          "gated": 508.1516226331774,
+          "optimistic": 508.1516226331774
+        },
+        "miss900": {
+          "local": 0.1408349922644111,
+          "ungated": 0.1408349922644111,
+          "gated": 0.1408349922644111,
+          "optimistic": 0.1408349922644111
+        },
+        "forecast900": {
+          "local": 0.18031300279011006,
+          "ungated": 0.18031300279011006,
+          "gated": 0.18031300279011006,
+          "optimistic": 0.18031300279011006
+        }
+      },
+      "short": {
+        "sessions": 127,
+        "prompts": 357,
+        "calls": 4,
+        "readings": 801,
+        "maeSeconds": {
+          "local": 51.219669733871775,
+          "ungated": 51.219669733871775,
+          "gated": 51.219669733871775,
+          "optimistic": 51.219669733871775
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matchedMedium": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedLong": {
+        "sessions": 1,
+        "prompts": 1,
+        "calls": 1,
+        "readings": 1,
+        "maeSeconds": {
+          "local": 59.38171177449908,
+          "ungated": 59.38171177449908,
+          "gated": 59.38171177449908,
+          "optimistic": 59.38171177449908
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matched30Plus": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedSlow": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedShort": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "wait": {
+        "sessions": 66,
+        "prompts": 149,
+        "calls": 16,
+        "readings": 4284,
+        "maeSeconds": {
+          "local": 423.0726569581619,
+          "ungated": 423.0726569581619,
+          "gated": 423.0726569581619,
+          "optimistic": 423.0726569581619
+        },
+        "miss900": {
+          "local": 0.11543273976956851,
+          "ungated": 0.11543273976956851,
+          "gated": 0.11543273976956851,
+          "optimistic": 0.11543273976956851
+        },
+        "forecast900": {
+          "local": 0.13979118161736986,
+          "ungated": 0.13979118161736986,
+          "gated": 0.13979118161736986,
+          "optimistic": 0.13979118161736986
+        }
+      },
+      "waitIdentifiable": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitAmbiguous": {
+        "sessions": 66,
+        "prompts": 149,
+        "calls": 16,
+        "readings": 4284,
+        "maeSeconds": {
+          "local": 423.0726569581619,
+          "ungated": 423.0726569581619,
+          "gated": 423.0726569581619,
+          "optimistic": 423.0726569581619
+        },
+        "miss900": {
+          "local": 0.11543273976956851,
+          "ungated": 0.11543273976956851,
+          "gated": 0.11543273976956851,
+          "optimistic": 0.11543273976956851
+        },
+        "forecast900": {
+          "local": 0.13979118161736986,
+          "ungated": 0.13979118161736986,
+          "gated": 0.13979118161736986,
+          "optimistic": 0.13979118161736986
+        }
+      },
+      "waitStrict": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitIdentifiableWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedUnchanged": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      },
+      "strictChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "strictUnchanged": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      },
+      "optimisticChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "optimisticUnchanged": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      }
+    },
+    "priorAtLeast60Seconds": {
+      "all": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      },
+      "matched": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "medium": {
+        "sessions": 104,
+        "prompts": 182,
+        "calls": 17,
+        "readings": 5166,
+        "maeSeconds": {
+          "local": 158.59029275422344,
+          "ungated": 158.59029275422344,
+          "gated": 158.59029275422344,
+          "optimistic": 158.59029275422344
+        },
+        "miss900": {
+          "local": 0.005340520479902894,
+          "ungated": 0.005340520479902894,
+          "gated": 0.005340520479902894,
+          "optimistic": 0.005340520479902894
+        },
+        "forecast900": {
+          "local": 0.014546401061826008,
+          "ungated": 0.014546401061826008,
+          "gated": 0.014546401061826008,
+          "optimistic": 0.014546401061826008
+        }
+      },
+      "long": {
+        "sessions": 48,
+        "prompts": 84,
+        "calls": 22,
+        "readings": 14302,
+        "maeSeconds": {
+          "local": 873.8669524394134,
+          "ungated": 873.8669524394134,
+          "gated": 873.8669524394134,
+          "optimistic": 873.8669524394134
+        },
+        "miss900": {
+          "local": 0.3006561139188826,
+          "ungated": 0.3006561139188826,
+          "gated": 0.3006561139188826,
+          "optimistic": 0.3006561139188826
+        },
+        "forecast900": {
+          "local": 0.29011034242654665,
+          "ungated": 0.29011034242654665,
+          "gated": 0.29011034242654665,
+          "optimistic": 0.29011034242654665
+        }
+      },
+      "30+": {
+        "sessions": 28,
+        "prompts": 40,
+        "calls": 11,
+        "readings": 10572,
+        "maeSeconds": {
+          "local": 1348.0797768890882,
+          "ungated": 1348.0797768890882,
+          "gated": 1348.0797768890882,
+          "optimistic": 1348.0797768890882
+        },
+        "miss900": {
+          "local": 0.48811975237947447,
+          "ungated": 0.48811975237947447,
+          "gated": 0.48811975237947447,
+          "optimistic": 0.48811975237947447
+        },
+        "forecast900": {
+          "local": 0.49310134278742473,
+          "ungated": 0.49310134278742473,
+          "gated": 0.49310134278742473,
+          "optimistic": 0.49310134278742473
+        }
+      },
+      "slow": {
+        "sessions": 65,
+        "prompts": 144,
+        "calls": 12,
+        "readings": 4088,
+        "maeSeconds": {
+          "local": 508.1516226331774,
+          "ungated": 508.1516226331774,
+          "gated": 508.1516226331774,
+          "optimistic": 508.1516226331774
+        },
+        "miss900": {
+          "local": 0.1408349922644111,
+          "ungated": 0.1408349922644111,
+          "gated": 0.1408349922644111,
+          "optimistic": 0.1408349922644111
+        },
+        "forecast900": {
+          "local": 0.18031300279011006,
+          "ungated": 0.18031300279011006,
+          "gated": 0.18031300279011006,
+          "optimistic": 0.18031300279011006
+        }
+      },
+      "short": {
+        "sessions": 127,
+        "prompts": 357,
+        "calls": 4,
+        "readings": 801,
+        "maeSeconds": {
+          "local": 51.219669733871775,
+          "ungated": 51.219669733871775,
+          "gated": 51.219669733871775,
+          "optimistic": 51.219669733871775
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matchedMedium": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedLong": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matched30Plus": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedSlow": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedShort": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "wait": {
+        "sessions": 66,
+        "prompts": 149,
+        "calls": 16,
+        "readings": 4284,
+        "maeSeconds": {
+          "local": 423.0726569581619,
+          "ungated": 423.0726569581619,
+          "gated": 423.0726569581619,
+          "optimistic": 423.0726569581619
+        },
+        "miss900": {
+          "local": 0.11543273976956851,
+          "ungated": 0.11543273976956851,
+          "gated": 0.11543273976956851,
+          "optimistic": 0.11543273976956851
+        },
+        "forecast900": {
+          "local": 0.13979118161736986,
+          "ungated": 0.13979118161736986,
+          "gated": 0.13979118161736986,
+          "optimistic": 0.13979118161736986
+        }
+      },
+      "waitIdentifiable": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitAmbiguous": {
+        "sessions": 66,
+        "prompts": 149,
+        "calls": 16,
+        "readings": 4284,
+        "maeSeconds": {
+          "local": 423.0726569581619,
+          "ungated": 423.0726569581619,
+          "gated": 423.0726569581619,
+          "optimistic": 423.0726569581619
+        },
+        "miss900": {
+          "local": 0.11543273976956851,
+          "ungated": 0.11543273976956851,
+          "gated": 0.11543273976956851,
+          "optimistic": 0.11543273976956851
+        },
+        "forecast900": {
+          "local": 0.13979118161736986,
+          "ungated": 0.13979118161736986,
+          "gated": 0.13979118161736986,
+          "optimistic": 0.13979118161736986
+        }
+      },
+      "waitStrict": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitIdentifiableWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedUnchanged": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      },
+      "strictChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "strictUnchanged": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      },
+      "optimisticChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "optimisticUnchanged": {
+        "sessions": 193,
+        "prompts": 802,
+        "calls": 39,
+        "readings": 21669,
+        "maeSeconds": {
+          "local": 161.13259652371548,
+          "ungated": 161.13259652371548,
+          "gated": 161.13259652371548,
+          "optimistic": 161.13259652371548
+        },
+        "miss900": {
+          "local": 0.032702105107890844,
+          "ungated": 0.032702105107890844,
+          "gated": 0.032702105107890844,
+          "optimistic": 0.032702105107890844
+        },
+        "forecast900": {
+          "local": 0.03368667550758385,
+          "ungated": 0.03368667550758385,
+          "gated": 0.03368667550758385,
+          "optimistic": 0.03368667550758385
+        }
+      }
+    }
+  },
+  "holdout": {
+    "anyPrior": {
+      "all": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      },
+      "matched": {
+        "sessions": 1,
+        "prompts": 2,
+        "calls": 2,
+        "readings": 2,
+        "maeSeconds": {
+          "local": 415.1385115669628,
+          "ungated": 415.1385115669628,
+          "gated": 415.1385115669628,
+          "optimistic": 415.1385115669628
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "medium": {
+        "sessions": 29,
+        "prompts": 61,
+        "calls": 6,
+        "readings": 2076,
+        "maeSeconds": {
+          "local": 187.02623482517382,
+          "ungated": 187.02623482517382,
+          "gated": 187.02623482517382,
+          "optimistic": 187.02623482517382
+        },
+        "miss900": {
+          "local": 0.008024507368769664,
+          "ungated": 0.008024507368769664,
+          "gated": 0.008024507368769664,
+          "optimistic": 0.008024507368769664
+        },
+        "forecast900": {
+          "local": 0.014035436330518297,
+          "ungated": 0.014035436330518297,
+          "gated": 0.014035436330518297,
+          "optimistic": 0.014035436330518297
+        }
+      },
+      "long": {
+        "sessions": 21,
+        "prompts": 37,
+        "calls": 13,
+        "readings": 5586,
+        "maeSeconds": {
+          "local": 741.6320466316868,
+          "ungated": 741.6320466316868,
+          "gated": 741.6320466316868,
+          "optimistic": 741.6320466316868
+        },
+        "miss900": {
+          "local": 0.2433888679085057,
+          "ungated": 0.2433888679085057,
+          "gated": 0.2433888679085057,
+          "optimistic": 0.2433888679085057
+        },
+        "forecast900": {
+          "local": 0.17654389399336867,
+          "ungated": 0.17654389399336867,
+          "gated": 0.17654389399336867,
+          "optimistic": 0.17654389399336867
+        }
+      },
+      "30+": {
+        "sessions": 12,
+        "prompts": 17,
+        "calls": 7,
+        "readings": 3878,
+        "maeSeconds": {
+          "local": 1175.2348492745589,
+          "ungated": 1175.2348492745589,
+          "gated": 1175.2348492745589,
+          "optimistic": 1175.2348492745589
+        },
+        "miss900": {
+          "local": 0.4391969869890957,
+          "ungated": 0.4391969869890957,
+          "gated": 0.4391969869890957,
+          "optimistic": 0.4391969869890957
+        },
+        "forecast900": {
+          "local": 0.27765996202965965,
+          "ungated": 0.27765996202965965,
+          "gated": 0.27765996202965965,
+          "optimistic": 0.27765996202965965
+        }
+      },
+      "slow": {
+        "sessions": 25,
+        "prompts": 60,
+        "calls": 7,
+        "readings": 1213,
+        "maeSeconds": {
+          "local": 475.72549349388413,
+          "ungated": 475.72549349388413,
+          "gated": 475.72549349388413,
+          "optimistic": 475.72549349388413
+        },
+        "miss900": {
+          "local": 0.10268473583221202,
+          "ungated": 0.10268473583221202,
+          "gated": 0.10268473583221202,
+          "optimistic": 0.10268473583221202
+        },
+        "forecast900": {
+          "local": 0.1429399292424708,
+          "ungated": 0.1429399292424708,
+          "gated": 0.1429399292424708,
+          "optimistic": 0.1429399292424708
+        }
+      },
+      "short": {
+        "sessions": 22,
+        "prompts": 49,
+        "calls": 4,
+        "readings": 121,
+        "maeSeconds": {
+          "local": 53.26799498013546,
+          "ungated": 53.26799498013546,
+          "gated": 53.26799498013546,
+          "optimistic": 53.26799498013546
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matchedMedium": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedLong": {
+        "sessions": 1,
+        "prompts": 2,
+        "calls": 2,
+        "readings": 2,
+        "maeSeconds": {
+          "local": 415.1385115669628,
+          "ungated": 415.1385115669628,
+          "gated": 415.1385115669628,
+          "optimistic": 415.1385115669628
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matched30Plus": {
+        "sessions": 1,
+        "prompts": 1,
+        "calls": 1,
+        "readings": 1,
+        "maeSeconds": {
+          "local": 679.0238386833302,
+          "ungated": 679.0238386833302,
+          "gated": 679.0238386833302,
+          "optimistic": 679.0238386833302
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matchedSlow": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedShort": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "wait": {
+        "sessions": 25,
+        "prompts": 60,
+        "calls": 10,
+        "readings": 1701,
+        "maeSeconds": {
+          "local": 470.37967322353035,
+          "ungated": 470.37967322353035,
+          "gated": 470.37967322353035,
+          "optimistic": 470.37967322353035
+        },
+        "miss900": {
+          "local": 0.10967153825559299,
+          "ungated": 0.10967153825559299,
+          "gated": 0.10967153825559299,
+          "optimistic": 0.10967153825559299
+        },
+        "forecast900": {
+          "local": 0.14913747412295225,
+          "ungated": 0.14913747412295225,
+          "gated": 0.14913747412295225,
+          "optimistic": 0.14913747412295225
+        }
+      },
+      "waitIdentifiable": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitAmbiguous": {
+        "sessions": 25,
+        "prompts": 60,
+        "calls": 10,
+        "readings": 1701,
+        "maeSeconds": {
+          "local": 470.37967322353035,
+          "ungated": 470.37967322353035,
+          "gated": 470.37967322353035,
+          "optimistic": 470.37967322353035
+        },
+        "miss900": {
+          "local": 0.10967153825559299,
+          "ungated": 0.10967153825559299,
+          "gated": 0.10967153825559299,
+          "optimistic": 0.10967153825559299
+        },
+        "forecast900": {
+          "local": 0.14913747412295225,
+          "ungated": 0.14913747412295225,
+          "gated": 0.14913747412295225,
+          "optimistic": 0.14913747412295225
+        }
+      },
+      "waitStrict": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitIdentifiableWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedUnchanged": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      },
+      "strictChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "strictUnchanged": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      },
+      "optimisticChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "optimisticUnchanged": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      }
+    },
+    "priorAtLeast60Seconds": {
+      "all": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      },
+      "matched": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "medium": {
+        "sessions": 29,
+        "prompts": 61,
+        "calls": 6,
+        "readings": 2076,
+        "maeSeconds": {
+          "local": 187.02623482517382,
+          "ungated": 187.02623482517382,
+          "gated": 187.02623482517382,
+          "optimistic": 187.02623482517382
+        },
+        "miss900": {
+          "local": 0.008024507368769664,
+          "ungated": 0.008024507368769664,
+          "gated": 0.008024507368769664,
+          "optimistic": 0.008024507368769664
+        },
+        "forecast900": {
+          "local": 0.014035436330518297,
+          "ungated": 0.014035436330518297,
+          "gated": 0.014035436330518297,
+          "optimistic": 0.014035436330518297
+        }
+      },
+      "long": {
+        "sessions": 21,
+        "prompts": 37,
+        "calls": 13,
+        "readings": 5586,
+        "maeSeconds": {
+          "local": 741.6320466316868,
+          "ungated": 741.6320466316868,
+          "gated": 741.6320466316868,
+          "optimistic": 741.6320466316868
+        },
+        "miss900": {
+          "local": 0.2433888679085057,
+          "ungated": 0.2433888679085057,
+          "gated": 0.2433888679085057,
+          "optimistic": 0.2433888679085057
+        },
+        "forecast900": {
+          "local": 0.17654389399336867,
+          "ungated": 0.17654389399336867,
+          "gated": 0.17654389399336867,
+          "optimistic": 0.17654389399336867
+        }
+      },
+      "30+": {
+        "sessions": 12,
+        "prompts": 17,
+        "calls": 7,
+        "readings": 3878,
+        "maeSeconds": {
+          "local": 1175.2348492745589,
+          "ungated": 1175.2348492745589,
+          "gated": 1175.2348492745589,
+          "optimistic": 1175.2348492745589
+        },
+        "miss900": {
+          "local": 0.4391969869890957,
+          "ungated": 0.4391969869890957,
+          "gated": 0.4391969869890957,
+          "optimistic": 0.4391969869890957
+        },
+        "forecast900": {
+          "local": 0.27765996202965965,
+          "ungated": 0.27765996202965965,
+          "gated": 0.27765996202965965,
+          "optimistic": 0.27765996202965965
+        }
+      },
+      "slow": {
+        "sessions": 25,
+        "prompts": 60,
+        "calls": 7,
+        "readings": 1213,
+        "maeSeconds": {
+          "local": 475.72549349388413,
+          "ungated": 475.72549349388413,
+          "gated": 475.72549349388413,
+          "optimistic": 475.72549349388413
+        },
+        "miss900": {
+          "local": 0.10268473583221202,
+          "ungated": 0.10268473583221202,
+          "gated": 0.10268473583221202,
+          "optimistic": 0.10268473583221202
+        },
+        "forecast900": {
+          "local": 0.1429399292424708,
+          "ungated": 0.1429399292424708,
+          "gated": 0.1429399292424708,
+          "optimistic": 0.1429399292424708
+        }
+      },
+      "short": {
+        "sessions": 22,
+        "prompts": 49,
+        "calls": 4,
+        "readings": 121,
+        "maeSeconds": {
+          "local": 53.26799498013546,
+          "ungated": 53.26799498013546,
+          "gated": 53.26799498013546,
+          "optimistic": 53.26799498013546
+        },
+        "miss900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        },
+        "forecast900": {
+          "local": 0,
+          "ungated": 0,
+          "gated": 0,
+          "optimistic": 0
+        }
+      },
+      "matchedMedium": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedLong": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matched30Plus": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedSlow": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "matchedShort": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "wait": {
+        "sessions": 25,
+        "prompts": 60,
+        "calls": 10,
+        "readings": 1701,
+        "maeSeconds": {
+          "local": 470.37967322353035,
+          "ungated": 470.37967322353035,
+          "gated": 470.37967322353035,
+          "optimistic": 470.37967322353035
+        },
+        "miss900": {
+          "local": 0.10967153825559299,
+          "ungated": 0.10967153825559299,
+          "gated": 0.10967153825559299,
+          "optimistic": 0.10967153825559299
+        },
+        "forecast900": {
+          "local": 0.14913747412295225,
+          "ungated": 0.14913747412295225,
+          "gated": 0.14913747412295225,
+          "optimistic": 0.14913747412295225
+        }
+      },
+      "waitIdentifiable": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitAmbiguous": {
+        "sessions": 25,
+        "prompts": 60,
+        "calls": 10,
+        "readings": 1701,
+        "maeSeconds": {
+          "local": 470.37967322353035,
+          "ungated": 470.37967322353035,
+          "gated": 470.37967322353035,
+          "optimistic": 470.37967322353035
+        },
+        "miss900": {
+          "local": 0.10967153825559299,
+          "ungated": 0.10967153825559299,
+          "gated": 0.10967153825559299,
+          "optimistic": 0.10967153825559299
+        },
+        "forecast900": {
+          "local": 0.14913747412295225,
+          "ungated": 0.14913747412295225,
+          "gated": 0.14913747412295225,
+          "optimistic": 0.14913747412295225
+        }
+      },
+      "waitStrict": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "waitIdentifiableWithPrior": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "ungatedUnchanged": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      },
+      "strictChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "strictUnchanged": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      },
+      "optimisticChanged": {
+        "sessions": 0,
+        "prompts": 0,
+        "calls": 0,
+        "readings": 0,
+        "maeSeconds": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "miss900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        },
+        "forecast900": {
+          "local": null,
+          "ungated": null,
+          "gated": null,
+          "optimistic": null
+        }
+      },
+      "optimisticUnchanged": {
+        "sessions": 42,
+        "prompts": 176,
+        "calls": 16,
+        "readings": 8027,
+        "maeSeconds": {
+          "local": 244.75514944934423,
+          "ungated": 244.75514944934423,
+          "gated": 244.75514944934423,
+          "optimistic": 244.75514944934423
+        },
+        "miss900": {
+          "local": 0.05394819921653216,
+          "ungated": 0.05394819921653216,
+          "gated": 0.05394819921653216,
+          "optimistic": 0.05394819921653216
+        },
+        "forecast900": {
+          "local": 0.04197889598816056,
+          "ungated": 0.04197889598816056,
+          "gated": 0.04197889598816056,
+          "optimistic": 0.04197889598816056
+        }
+      }
+    }
+  }
+}

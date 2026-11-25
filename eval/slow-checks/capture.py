@@ -87,18 +87,33 @@ def activity(root, label, start, end, number=None):
     dump(root/('span-'+secrets.token_hex(8)), {'kind': label, 'check': number, 'start': start, 'end': end})
 
 
-def join_check(root, number):
+def join_check(root, number, events=False):
     # This witnesses AGENT waiting only when the caller runs join synchronously,
     # not when a shell or the tool host backgrounds it. No inference from silence.
     d = root/f'check-{number}'
     if not (d/'start').is_file():
         raise ValueError('check has not been launched')
+    sample = json.loads((d/'start').read_bytes()) if events else None
+
+    def emit(state):
+        if sample is not None:
+            prior = sample.get('prior_ns')
+            print(json.dumps({'state': state, 'ageS': (now()-sample['ns'])/1e9,
+                              'priorS': None if prior is None else prior/1e9}), flush=True)
+
     with (d/'running').open('rb') as lock:
         started = now()
         try:
-            fcntl.flock(lock, fcntl.LOCK_SH)
+            emit('entry')
+            try:
+                fcntl.flock(lock, fcntl.LOCK_SH | fcntl.LOCK_NB)
+            except BlockingIOError:
+                if not (d/'end').exists():
+                    emit('blocked')
+                fcntl.flock(lock, fcntl.LOCK_SH)
         finally:
             activity(root, 'join', started, now(), number)
+            emit('released')
     if not (d/'end').is_file():
         raise ValueError('check runner stopped without recording an exit')
     return json.loads((d/'end').read_bytes())['code']
@@ -121,6 +136,8 @@ def main():
         p.add_argument('root', type=Path)
         if name in ('run','join'):
             p.add_argument('number', type=int)
+        if name == 'join':
+            p.add_argument('--events', action='store_true', help='stream entry, observed lock contention, and release to a synchronous caller')
         if name in ('run','work'):
             p.add_argument('command', nargs=argparse.REMAINDER)
     args = parser.parse_args()
@@ -131,7 +148,7 @@ def main():
         from summary import report
         print(json.dumps(report(args.root), indent=2, allow_nan=False)); return 0
     if args.action == 'join':
-        return join_check(args.root, args.number)
+        return join_check(args.root, args.number, args.events)
     cmd = args.command[1:] if args.command[:1] == ['--'] else args.command
     if args.action == 'run':
         return record(args.root, salt, args.number, cmd)
